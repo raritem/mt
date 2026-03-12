@@ -276,6 +276,7 @@ input, textarea { font-family: var(--font-body); }
   transition: background var(--transition), border-color var(--transition), transform var(--transition);
   text-decoration: none;
   cursor: pointer;
+  min-width: 0;
 }
 
 .lot-card:hover {

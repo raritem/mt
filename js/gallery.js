@@ -21,6 +21,8 @@ window.LightBox = (() => {
   const lbCounter = document.getElementById('lb-counter');
   const lbThumbs  = document.getElementById('lb-thumbnails');
 
+  const lbTnRow   = document.getElementById('lb-tn-row');
+
   let images  = [];
   let current = 0;
 
@@ -38,22 +40,28 @@ window.LightBox = (() => {
   // UI auto-hide
   let hideTimer = null;
   let uiVisible = false;
+  let thumbsHovered = false;
 
   // ── UI show/hide ──────────────────────────────────────────────
   function showUI() {
     clearTimeout(hideTimer);
     if (!uiVisible) { uiVisible = true; lb.classList.add('ui-visible'); }
-    hideTimer = setTimeout(hideUI, 2500);
+    hideTimer = setTimeout(() => { if (!thumbsHovered) hideUI(); }, 2500);
   }
 
   function hideUI() {
+    if (thumbsHovered) return;
     clearTimeout(hideTimer);
     uiVisible = false;
     lb.classList.remove('ui-visible');
   }
 
+  // Пока курсор над панелью навигации — не прячем UI
+  lbThumbs.addEventListener('mouseenter', () => { thumbsHovered = true; clearTimeout(hideTimer); });
+  lbThumbs.addEventListener('mouseleave', () => { thumbsHovered = false; hideTimer = setTimeout(hideUI, 1000); });
+
   lb.addEventListener('mousemove', showUI, { passive: true });
-  lb.addEventListener('mouseleave', () => { clearTimeout(hideTimer); hideUI(); });
+  lb.addEventListener('mouseleave', () => { clearTimeout(hideTimer); if (!thumbsHovered) hideUI(); });
 
   // ── Трансформация ─────────────────────────────────────────────
   function clamp() {
@@ -156,15 +164,15 @@ window.LightBox = (() => {
   });
 
   // ── Рендер ────────────────────────────────────────────────────
-  function render(dir) {
+  function render(dir, fromThumbs) {
     const src = ROOT + images[current];
     lbCounter.textContent = (current + 1) + ' / ' + images.length;
     lbPrev.disabled = current === 0;
     lbNext.disabled = current === images.length - 1;
 
     resetZoom();
-    // При навигации сразу прячем UI
-    hideUI();
+    // При навигации стрелками/клавишами прячем UI, при навигации через панель — нет
+    if (!fromThumbs) hideUI();
 
     if (dir) {
       lbWrap.classList.remove('lb-slide-in-right', 'lb-slide-in-left');
@@ -184,23 +192,27 @@ window.LightBox = (() => {
     }
 
     // Миниатюры
-    Array.from(lbThumbs.children).forEach((t, i) => t.classList.toggle('active', i === current));
-    const at = lbThumbs.children[current];
-    if (at) at.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    if (lbTnRow) {
+      Array.from(lbTnRow.children).forEach((t, i) => t.classList.toggle('active', i === current));
+      const at = lbTnRow.children[current];
+      if (at) at.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
   }
 
   function renderThumbs() {
-    lbThumbs.innerHTML = '';
+    if (!lbTnRow) return;
+    lbTnRow.innerHTML = '';
     images.forEach((src, i) => {
       const tn = document.createElement('div');
       tn.className = 'lb-tn' + (i === current ? ' active' : '');
       tn.innerHTML = `<img src="${ROOT}${src}" alt="" loading="lazy">`;
       tn.addEventListener('click', () => {
         if (i === current) return;
+        const dir = i > current ? 'next' : 'prev';
         current = i;
-        render(i > current ? 'next' : 'prev');
+        render(dir, true); // fromThumbs=true → не прячем UI
       });
-      lbThumbs.appendChild(tn);
+      lbTnRow.appendChild(tn);
     });
   }
 

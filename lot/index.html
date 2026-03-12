@@ -32,8 +32,11 @@
   <div id="lightbox" class="lightbox" role="dialog" aria-modal="true">
     <div class="lightbox-bg" id="lb-bg"></div>
 
-    <!-- Миниатюры СВЕРХУ -->
-    <div class="lb-thumbnails" id="lb-thumbnails"></div>
+    <!-- Миниатюры + счётчик СНИЗУ -->
+    <div class="lb-thumbnails" id="lb-thumbnails">
+      <div class="lb-tn-row" id="lb-tn-row"></div>
+      <div class="lb-nav-counter" id="lb-counter">1 / 1</div>
+    </div>
 
     <!-- Закрыть — всегда видна -->
     <button class="lb-close" id="lb-close" aria-label="Закрыть">
@@ -61,11 +64,10 @@
       </svg>
     </button>
 
-    <!-- Тулбар СНИЗУ — таблетка с кнопками зума -->
+    <!-- Тулбар СНИЗУ — только зум -->
     <div class="lb-toolbar" id="lb-toolbar">
       <div class="lb-toolbar-pill">
         <button class="lb-tool" id="lb-zoom-in" aria-label="Увеличить" title="+">
-          <!-- zoom-in icon -->
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -75,15 +77,12 @@
         </button>
         <div class="lb-divider"></div>
         <button class="lb-tool" id="lb-zoom-out" aria-label="Уменьшить" title="-">
-          <!-- zoom-out icon -->
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
             <line x1="8" y1="11" x2="14" y2="11"/>
           </svg>
         </button>
-        <div class="lb-divider"></div>
-        <span class="lb-counter" id="lb-counter">1 / 1</span>
       </div>
     </div>
   </div>
