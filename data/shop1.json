@@ -6,14 +6,15 @@
   "lots": [
     {
       "id": "lot_example",
-      "title": "ÐÑÐ¸Ð¼ÐµÑ Ð»Ð¾ÑÐ° â 3 ÑÐ¾Ð¿Ð° + Ð¿ÑÐµÐ¼ ÑÐµÑÐ½Ð¸ÐºÐ°",
+      "title": "ÃÂÃÂÃÂ¸ÃÂ¼ÃÂµÃÂ ÃÂ»ÃÂ¾ÃÂÃÂ° Ã¢ÂÂ 3 ÃÂÃÂ¾ÃÂ¿ÃÂ° + ÃÂ¿ÃÂÃÂµÃÂ¼ ÃÂÃÂµÃÂÃÂ½ÃÂ¸ÃÂºÃÂ°",
       "funpay": "https://funpay.com/lots/",
       "images": [
         "images/shop1/lot_example/001.webp",
         "images/shop1/lot_example/002.webp",
         "images/shop1/lot_example/003.webp",
         "images/shop1/lot_example/004.webp",
-        "images/shop1/lot_example/005.webp"
+        "images/shop1/lot_example/005.webp",
+        "images/shop1/lot_example/015.webp"
       ],
       "thumb": "images/shop1/lot_example/thumb.webp"
     }
