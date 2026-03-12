@@ -374,15 +374,7 @@ input, textarea { font-family: var(--font-body); }
 }
 
 /* ── Footer — всегда внизу ───────────────────────────────────── */
-html, body { height: 100%; }
-
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-main.container { flex: 1; }
+main.container { min-height: calc(100vh - 64px - 80px); }
 
 .site-footer {
   text-align: center;
