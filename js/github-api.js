@@ -99,10 +99,18 @@ window.GH = (() => {
   async function getFile(path) {
     const cfg = getConfig();
     const res = await request('GET', '/contents/' + path + '?ref=' + cfg.branch);
-    return {
-      sha:     res.sha,
-      content: atob(res.content.replace(/\n/g, '')),
-    };
+    // GitHub возвращает base64; декодируем корректно с поддержкой UTF-8 (кириллица)
+    const b64clean = res.content.replace(/\n/g, '');
+    let content;
+    try {
+      // TextDecoder правильно обрабатывает многобайтные символы (кириллица, etc.)
+      const bytes = Uint8Array.from(atob(b64clean), c => c.charCodeAt(0));
+      content = new TextDecoder('utf-8').decode(bytes);
+    } catch (_) {
+      // Fallback для бинарных файлов
+      content = atob(b64clean);
+    }
+    return { sha: res.sha, content };
   }
 
   // ── Получить SHA файла (для обновления) ───────────────────────
@@ -118,9 +126,12 @@ window.GH = (() => {
 
   // ── Создать / обновить текстовый файл ─────────────────────────
   async function putFile(path, content, message, sha) {
-    const cfg  = getConfig();
-    const b64  = btoa(unescape(encodeURIComponent(content)));
-    const body = {
+    const cfg = getConfig();
+    // TextEncoder → Uint8Array → base64: единственный надёжный способ
+    // для кириллицы и любых Unicode символов
+    const bytes = new TextEncoder().encode(content);
+    const b64   = btoa(String.fromCharCode(...bytes));
+    const body  = {
       message: message || 'Update ' + path,
       content: b64,
       branch:  cfg.branch,

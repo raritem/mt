@@ -209,21 +209,33 @@ function renderLots() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  МОДАЛКИ
+//  МОДАЛКИ — прямые ссылки, без динамических ключей
 // ════════════════════════════════════════════════════════════════
 
+// Реестр модалок: имя → {overlay, modal}
+const MODALS = {
+  settings:  { overlay: dom.settingsOverlay, modal: dom.settingsModal },
+  shopModal: { overlay: dom.shopModalOvl,    modal: dom.shopModal     },
+  lotModal:  { overlay: dom.lotModalOvl,     modal: dom.lotModal      },
+  confirm:   { overlay: dom.confirmOverlay,  modal: dom.confirmModal  },
+};
+
 function openModal(name) {
-  dom[name + 'Overlay'].classList.add('open');
-  dom[name + 'Modal'].style.display = 'block';
+  const m = MODALS[name];
+  if (!m) { console.error('openModal: unknown modal', name); return; }
+  m.overlay.classList.add('open');
+  m.modal.style.display = 'block';
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => dom[name + 'Modal'].classList.add('open'));
+    requestAnimationFrame(() => m.modal.classList.add('open'));
   });
 }
 
 function closeModal(name) {
-  dom[name + 'Modal'].classList.remove('open');
-  dom[name + 'Overlay'].classList.remove('open');
-  setTimeout(() => dom[name + 'Modal'].style.display = '', 220);
+  const m = MODALS[name];
+  if (!m) return;
+  m.modal.classList.remove('open');
+  m.overlay.classList.remove('open');
+  setTimeout(() => { m.modal.style.display = ''; }, 220);
 }
 
 // ── Settings modal ────────────────────────────────────────────────
@@ -699,82 +711,76 @@ async function uploadFiles(files) {
     queue.appendChild(div);
   });
 
-  // Считаем startIdx ОДИН РАЗ до цикла — иначе при пакетной загрузке
-  // каждый файл видит уже обновлённый imImages.length от предыдущего
-  const startIdx = imImages.length;
+  // startIdx фиксируется ДО цикла — гарантирует правильную нумерацию в пакете
+  const startIdx  = imImages.length;
+  const baseDir   = 'images/' + state.activeShop + '/' + imLotId;
+  let   thumbSaved = false;   // флаг: thumb уже был создан в этой сессии
+  let   rateLimitHit = false;
 
   for (let i = 0; i < fileList.length; i++) {
+    if (rateLimitHit) {
+      const el = document.getElementById('upload-status-' + i);
+      if (el) { el.textContent = 'Пропущено (rate limit)'; el.className = 'upload-item-status err'; }
+      continue;
+    }
+
     const file     = fileList[i];
     const statusEl = document.getElementById('upload-status-' + i);
 
     try {
       statusEl.textContent = 'Конвертация…';
-
-      // Конвертируем в WebP
       const { base64, ext } = await ImageConvert.toWebP(file);
 
-      // Нумерация: startIdx + i гарантирует уникальность в пакете
       const fileNum  = startIdx + i;
       const fileName = ImageConvert.numberedName(fileNum, ext);
-      const baseDir  = 'images/' + state.activeShop + '/' + imLotId;
       const repoPath = baseDir + '/' + fileName;
 
       statusEl.textContent = 'Загрузка…';
-
-      // Загружаем основной файл
       await GH.putBinaryFile(repoPath, base64, 'Upload ' + fileName);
 
-      // Генерируем миниатюру для первого изображения лота (thumb.webp)
-      // Это позволяет на странице витрины грузить маленький файл,
-      // а не полный скриншот
-      if (fileNum === 0) {
-        statusEl.textContent = 'Генерация превью…';
+      // Thumb: создаём из первого фото всего лота (fileNum === 0)
+      // или из первого фото в текущей пачке если в лоте ещё не было изображений
+      if (!thumbSaved && fileNum === 0) {
         try {
-          const { base64: thumbB64, ext: thumbExt } = await ImageConvert.toWebP(file, 0.75, 480);
-          const thumbPath = baseDir + '/thumb.' + thumbExt;
-          await GH.putBinaryFile(thumbPath, thumbB64, 'Generate thumb for ' + imLotId);
-        } catch (_) {
-          // Неудача с миниатюрой — не критично, продолжаем
-        }
+          statusEl.textContent = 'Превью…';
+          const { base64: tB64, ext: tExt } = await ImageConvert.toWebP(file, 0.75, 480);
+          await GH.putBinaryFile(baseDir + '/thumb.' + tExt, tB64, 'Thumb for ' + imLotId);
+          const lot = state.activeLots.find(l => l.id === imLotId);
+          if (lot) lot.thumb = baseDir + '/thumb.' + tExt;
+          thumbSaved = true;
+        } catch (_) { /* не критично */ }
       }
 
-      // Добавляем путь в локальный массив
+      // Обновляем локальный массив (без записи в GitHub на каждом шаге)
       imImages.push(repoPath);
       const lot = state.activeLots.find(l => l.id === imLotId);
-      if (lot) {
-        lot.images = [...imImages];
-        // Запоминаем путь к миниатюре если это первое фото
-        if (fileNum === 0) {
-          lot.thumb = baseDir + '/thumb.' + ext;
-        }
-      }
-
-      await saveLotsJSON();
+      if (lot) lot.images = [...imImages];
 
       statusEl.textContent = '✓ Готово';
       statusEl.className = 'upload-item-status ok';
 
     } catch (e) {
-      // Детальное сообщение уже сформировано в github-api.js
       statusEl.textContent = e.message;
       statusEl.className = 'upload-item-status err';
 
-      // Rate limit — прерываем всю очередь
       if (e.status === 403 && e.message.includes('лимит')) {
-        const remaining = fileList.slice(i + 1);
-        remaining.forEach((_, j) => {
-          const el = document.getElementById('upload-status-' + (i + 1 + j));
-          if (el) { el.textContent = 'Пропущено (rate limit)'; el.className = 'upload-item-status err'; }
-        });
-        break;
+        rateLimitHit = true;
       }
     }
+  }
+
+  // ── Сохраняем JSON ОДИН РАЗ после всей очереди ────────────────
+  // Это главное исправление 409: не пишем в GitHub на каждый файл,
+  // а делаем один коммит в конце — SHA не успевает устареть
+  try {
+    await saveLotsJSON();
+  } catch (e) {
+    console.error('Не удалось сохранить JSON:', e.message);
   }
 
   renderManagedImages();
   renderLots();
 
-  // Скрываем очередь через 4 секунды
   setTimeout(() => { if (queue) queue.innerHTML = ''; }, 4000);
 }
 
