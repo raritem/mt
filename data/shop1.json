@@ -1,0 +1,14 @@
+{
+  "id": "shop1",
+  "name": "Магазин 1",
+  "description": "Продажа аккаунтов Мир Танков",
+  "seller": "shop1",
+  "lots": [
+    {
+      "id": "lot_example",
+      "title": "Пример лота — 3 топа + прем техника",
+      "funpay": "https://funpay.com/lots/",
+      "images": []
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Витрина — WoT Shop</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <span class="logo-icon">🎯</span>
+        <span class="logo-text">WoT<span class="logo-accent">Shop</span></span>
+      </a>
+      <nav class="breadcrumb" id="breadcrumb">
+        <!-- Генерируется JS -->
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="shop-header" id="shop-header">
+      <!-- Генерируется JS -->
+    </div>
+
+    <div id="lots-grid" class="lots-grid">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Все аккаунты продаются через FunPay — безопасная сделка гарантирована.</p>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <script>
+    // Загружаем витрину по параметру ?id=shopName
+    loadShop();
+  </script>
+</body>
+</html>

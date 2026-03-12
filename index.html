@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WoT Shop — Продажа аккаунтов</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon">🎯</span>
+        <span class="logo-text">WoT<span class="logo-accent">Shop</span></span>
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-hero">
+      <h1 class="hero-title">Магазин аккаунтов<br><span class="hero-sub">Мир Танков</span></h1>
+      <p class="hero-desc">Выберите витрину продавца</p>
+    </div>
+
+    <div id="shops-grid" class="shops-grid">
+      <!-- Генерируется из data/shops.json -->
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Все аккаунты продаются через FunPay — безопасная сделка гарантирована.</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    // Загружаем список витрин
+    loadShops();
+  </script>
+</body>
+</html>

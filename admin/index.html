@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админка — WoT Shop</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-body">
+
+  <header class="admin-header">
+    <div class="header-inner">
+      <a href="../index.html" class="logo">
+        <span class="logo-icon">🎯</span>
+        <span class="logo-text">WoT<span class="logo-accent">Shop</span></span>
+      </a>
+      <span class="admin-badge">Admin</span>
+      <div class="admin-header-right">
+        <span class="token-status" id="token-status">Не подключено</span>
+        <button class="btn btn-ghost" id="settings-btn">⚙ Настройки</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Настройки / Авторизация -->
+  <div class="modal-overlay" id="settings-overlay"></div>
+  <div class="modal" id="settings-modal">
+    <div class="modal-header">
+      <h2>Настройки GitHub</h2>
+      <button class="modal-close" id="settings-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>GitHub Personal Access Token</label>
+        <p class="form-hint">Нужны права: <code>repo</code> (или <code>contents:write</code>)</p>
+        <div class="input-with-eye">
+          <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+          <button class="eye-btn" id="token-eye">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Репозиторий</label>
+        <p class="form-hint">Формат: <code>username/repo-name</code></p>
+        <input type="text" id="repo-input" placeholder="username/wot-shop">
+      </div>
+      <div class="form-group">
+        <label>Ветка</label>
+        <input type="text" id="branch-input" value="main" placeholder="main">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="settings-save">Сохранить и проверить</button>
+      </div>
+      <div class="status-msg" id="settings-status"></div>
+    </div>
+  </div>
+
+  <!-- Основной layout -->
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Витрины</h3>
+        <div id="shop-list" class="shop-list">
+          <div class="loading-spinner"><div class="spinner"></div></div>
+        </div>
+        <button class="btn btn-outline btn-full" id="add-shop-btn">+ Добавить витрину</button>
+      </div>
+    </aside>
+
+    <!-- Контент -->
+    <main class="admin-main" id="admin-main">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🏪</div>
+        <h2>Выберите витрину</h2>
+        <p>Выберите витрину слева или создайте новую</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Модалка: Добавить/редактировать витрину -->
+  <div class="modal-overlay" id="shop-modal-overlay"></div>
+  <div class="modal" id="shop-modal">
+    <div class="modal-header">
+      <h2 id="shop-modal-title">Новая витрина</h2>
+      <button class="modal-close" id="shop-modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>ID витрины (латиница, без пробелов)</label>
+        <input type="text" id="shop-id-input" placeholder="shop1" pattern="[a-z0-9_-]+">
+      </div>
+      <div class="form-group">
+        <label>Название витрины</label>
+        <input type="text" id="shop-name-input" placeholder="Мой магазин">
+      </div>
+      <div class="form-group">
+        <label>Описание (необязательно)</label>
+        <input type="text" id="shop-desc-input" placeholder="Продаю аккаунты WoT">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="shop-modal-cancel">Отмена</button>
+        <button class="btn btn-primary" id="shop-modal-save">Сохранить</button>
+      </div>
+      <div class="status-msg" id="shop-modal-status"></div>
+    </div>
+  </div>
+
+  <!-- Модалка: Добавить/редактировать лот -->
+  <div class="modal-overlay" id="lot-modal-overlay"></div>
+  <div class="modal" id="lot-modal">
+    <div class="modal-header">
+      <h2 id="lot-modal-title">Новый лот</h2>
+      <button class="modal-close" id="lot-modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Название лота</label>
+        <input type="text" id="lot-title-input" placeholder="3 топа + прем техника">
+      </div>
+      <div class="form-group">
+        <label>Ссылка на FunPay</label>
+        <input type="url" id="lot-funpay-input" placeholder="https://funpay.com/lots/...">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="lot-modal-cancel">Отмена</button>
+        <button class="btn btn-primary" id="lot-modal-save">Сохранить</button>
+      </div>
+      <div class="status-msg" id="lot-modal-status"></div>
+    </div>
+  </div>
+
+  <!-- Модалка подтверждения удаления -->
+  <div class="modal-overlay" id="confirm-overlay"></div>
+  <div class="modal modal-sm" id="confirm-modal">
+    <div class="modal-header">
+      <h2>Подтвердите удаление</h2>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-text">Вы уверены?</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="confirm-cancel">Отмена</button>
+        <button class="btn btn-danger" id="confirm-ok">Удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/github-api.js"></script>
+  <script src="../js/image-convert.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>

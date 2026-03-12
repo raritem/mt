@@ -1,0 +1,278 @@
+/* ================================================================
+   WoT Shop — Стили галереи и лайтбокса
+   ================================================================ */
+
+/* ── Сетка превью ────────────────────────────────────────────── */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.gallery-thumb {
+  position: relative;
+  aspect-ratio: 16/9;
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  transition: border-color var(--transition), transform var(--transition);
+}
+
+.gallery-thumb:hover {
+  border-color: rgba(245,197,24,0.3);
+  transform: scale(1.02);
+}
+
+.gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-thumb img.loading { opacity: 0; }
+.gallery-thumb img.loaded  { opacity: 1; }
+
+.gallery-thumb-num {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.gallery-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  opacity: 0;
+  transition: opacity var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-thumb:hover .gallery-thumb-overlay { opacity: 1; }
+
+.gallery-thumb-overlay svg {
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+/* ── Лайтбокс ────────────────────────────────────────────────── */
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox.open { display: flex; }
+
+.lightbox-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+}
+
+/* ── Закрыть ──────────────────────────────────────────────────── */
+.lb-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: background var(--transition);
+}
+.lb-close:hover { background: rgba(255,255,255,0.15); }
+
+/* ── Стрелки ─────────────────────────────────────────────────── */
+.lb-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: background var(--transition), opacity var(--transition);
+}
+
+.lb-arrow:hover { background: rgba(255,255,255,0.15); }
+.lb-arrow:disabled { opacity: 0.2; cursor: default; }
+
+.lb-prev { left: 16px; }
+.lb-next { right: 16px; }
+
+@media (max-width: 600px) {
+  .lb-prev { left: 8px; }
+  .lb-next { right: 8px; }
+  .lb-arrow { width: 40px; height: 40px; }
+}
+
+/* ── Область изображения ─────────────────────────────────────── */
+.lb-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 80px 140px; /* место для стрелок/тулбара */
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .lb-stage { padding: 64px 60px 130px; }
+}
+
+.lb-img-wrap {
+  position: relative;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+  cursor: grab;
+  user-select: none;
+  will-change: transform;
+}
+
+.lb-img-wrap.dragging { cursor: grabbing; transition: none; }
+.lb-img-wrap.zoomed   { cursor: grab; }
+
+#lb-img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 220px);
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: var(--shadow-lg);
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: opacity 0.2s ease;
+}
+
+#lb-img.switching { opacity: 0; transform: scale(0.97); }
+
+/* ── Тулбар ──────────────────────────────────────────────────── */
+.lb-toolbar {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10,12,15,0.85);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 40px;
+  padding: 8px 16px;
+  backdrop-filter: blur(12px);
+}
+
+.lb-tool {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  transition: background var(--transition), color var(--transition);
+}
+
+.lb-tool:hover {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+.lb-counter {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  padding: 0 8px;
+  white-space: nowrap;
+  border-left: 1px solid rgba(255,255,255,0.1);
+  margin-left: 4px;
+}
+
+/* ── Миниатюры ───────────────────────────────────────────────── */
+.lb-thumbnails {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  max-width: calc(100vw - 40px);
+  overflow-x: auto;
+  padding: 6px;
+  background: rgba(10,12,15,0.7);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  scrollbar-width: none;
+}
+
+.lb-thumbnails::-webkit-scrollbar { display: none; }
+
+.lb-tn {
+  flex-shrink: 0;
+  width: 54px;
+  height: 36px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color var(--transition), opacity var(--transition);
+  opacity: 0.55;
+}
+
+.lb-tn:hover { opacity: 0.8; }
+
+.lb-tn.active {
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+.lb-tn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Переход между слайдами ──────────────────────────────────── */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.lb-slide-in-right { animation: slideInRight 0.25s ease both; }
+.lb-slide-in-left  { animation: slideInLeft  0.25s ease both; }
