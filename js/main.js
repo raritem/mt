@@ -21,12 +21,17 @@ const BASE_URL = (() => {
   return window.location.origin;
 })();
 
-// Определяем корень проекта (для вложенных страниц)
+// Определяем корень проекта по текущей директории URL
+// /mt/              → ROOT = './'
+// /mt/shop/         → ROOT = '../'
+// /mt/lot/          → ROOT = '../'
+// /mt/admin/        → ROOT = '../'
 function getRoot() {
-  const parts = window.location.pathname.split('/').filter(Boolean);
-  const depth = ['admin','shop','lot','index.html'].some(x => parts.includes(x)) ? 1 : 0;
-  if (depth === 0) return './';
-  return '../';
+  const path  = window.location.pathname;
+  // Берём последний сегмент директории (без файла)
+  const dir   = path.replace(/\/[^/]*$/, '').split('/').filter(Boolean).pop() || '';
+  const SUB   = ['admin', 'shop', 'lot'];
+  return SUB.includes(dir) ? '../' : './';
 }
 
 const ROOT = getRoot();

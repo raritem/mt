@@ -504,6 +504,17 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 .modal-sm { width: min(360px, calc(100vw - 32px)); }
 
+/* Длинный текст в confirm не должен создавать скроллбар */
+#confirm-text {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
 .modal-header {
   display: flex;
   align-items: center;

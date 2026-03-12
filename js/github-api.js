@@ -179,10 +179,20 @@ window.GH = (() => {
     }
   }
 
-  // ── Прочитать или создать JSON ────────────────────────────────
+  // ── Кеш SHA файлов — избегаем лишних GET запросов ───────────────
+  // После каждого успешного PUT GitHub возвращает новый SHA в ответе.
+  // Сохраняем его, чтобы следующий writeJSON не делал лишний readJSON.
+  const shaCache = {};
+
+  function cacheSha(path, sha) { if (sha) shaCache[path] = sha; }
+  function getCachedSha(path)  { return shaCache[path] || null; }
+  function invalidateSha(path) { delete shaCache[path]; }
+
+  // ── Прочитать JSON ────────────────────────────────────────────
   async function readJSON(path) {
     try {
       const f = await getFile(path);
+      cacheSha(path, f.sha);  // обновляем кеш при чтении
       return { data: JSON.parse(f.content), sha: f.sha };
     } catch (e) {
       if (e.status === 404) return { data: null, sha: null };
@@ -190,18 +200,29 @@ window.GH = (() => {
     }
   }
 
-  // ── Сохранить JSON (с автоповтором при конфликте 409) ────────────
+  // ── Сохранить JSON (с кешем SHA и автоповтором при 409) ──────────
   async function writeJSON(path, data, message) {
     const content = JSON.stringify(data, null, 2);
-    // До 3 попыток: при конфликте (409) перечитываем SHA и повторяем
+
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { sha } = await readJSON(path);
+      // Сначала берём SHA из кеша — избегаем GET если можем
+      let sha = getCachedSha(path);
+      if (!sha) {
+        const r = await readJSON(path);
+        sha = r.sha;
+      }
+
       try {
-        return await putFile(path, content, message || 'Update ' + path, sha);
+        const result = await putFile(path, content, message || 'Update ' + path, sha);
+        // Сохраняем новый SHA из ответа GitHub
+        const newSha = result && result.content && result.content.sha;
+        if (newSha) cacheSha(path, newSha);
+        return result;
       } catch (e) {
         if (e.status === 409 && attempt < 2) {
-          // SHA устарел — повторяем с актуальным
-          await new Promise(r => setTimeout(r, 300 * (attempt + 1)));
+          // SHA устарел — сбрасываем кеш и пробуем снова
+          invalidateSha(path);
+          await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
           continue;
         }
         throw e;
@@ -215,6 +236,7 @@ window.GH = (() => {
     putFile, putBinaryFile,
     deleteFile, deleteFiles,
     readJSON, writeJSON,
+    invalidateSha,
   };
 
 })();

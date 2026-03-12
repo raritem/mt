@@ -185,6 +185,8 @@ async function onSettingsSave() {
 async function loadAllData() {
   dom.shopList.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
+    // readJSON обновляет SHA кеш для shops.json —
+    // последующий writeJSON не будет делать лишний GET
     const { data } = await GH.readJSON('data/shops.json');
     state.shops = (data && Array.isArray(data.shops)) ? data.shops : [];
     renderShopList();
@@ -216,6 +218,8 @@ async function selectShop(shopId) {
   renderShopList();
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
+    // readJSON внутри обновляет SHA кеш — последующий saveLotsJSON
+    // не будет делать лишний GET запрос и не получит 409
     const { data } = await GH.readJSON('data/' + shopId + '.json');
     state.activeLots = (data && Array.isArray(data.lots)) ? data.lots : [];
     renderShopPanel();
@@ -314,6 +318,19 @@ function openShopModal(editId) {
   dom.shopNameInput.value        = shop ? shop.name             : '';
   dom.shopDescInput.value        = shop ? (shop.description || '') : '';
   dom.shopModalStatus.className  = 'status-msg';
+
+  // Показываем подсказку: почему ID нельзя менять
+  const idHint = dom.shopIdInput.closest('.form-group').querySelector('.id-edit-hint');
+  if (shop && !idHint) {
+    const hint = document.createElement('p');
+    hint.className = 'form-hint id-edit-hint';
+    hint.style.color = 'var(--text-muted)';
+    hint.textContent = '⚠ ID нельзя изменить — от него зависят пути к изображениям';
+    dom.shopIdInput.after(hint);
+  } else if (!shop && idHint) {
+    idHint.remove();
+  }
+
   openModal('shopModal');
 }
 
