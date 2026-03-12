@@ -135,8 +135,8 @@ function normalizeLotTitle(str) {
 }
 
 /** Логотип FunPay как inline img с классом */
-function funpayLogo(h) {
-  return `<img src="https://funpay.com/img/layout/logo-funpay.svg" alt="FunPay" class="funpay-logo" style="height:${h || 18}px">`;
+function funpayLogo() {
+  return `<img src="https://funpay.com/img/layout/logo-funpay.svg" alt="FunPay" class="funpay-logo">`;
 }
 
 /** Кнопка "Купить на FunPay" с логотипом */

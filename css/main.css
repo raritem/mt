@@ -353,25 +353,19 @@ input, textarea { font-family: var(--font-body); }
 }
 
 /* ── FunPay логотип ──────────────────────────────────────────── */
-.funpay-logo {
-  display: inline-block;
-  vertical-align: middle;
-  height: 18px;
-  width: auto;
-  margin: 0 4px;
-  position: relative;
-  top: -1px;
-}
-
+.funpay-logo,
 .funpay-logo-footer {
   display: inline-block;
   vertical-align: middle;
-  height: 16px;
+  height: 22px;
   width: auto;
-  margin: 0 5px;
   position: relative;
   top: -1px;
+  filter: brightness(0) invert(1);
 }
+
+.funpay-logo        { margin: 0 4px; }
+.funpay-logo-footer { margin: 0 5px; }
 
 /* ── Footer — всегда внизу ───────────────────────────────────── */
 main.container { min-height: calc(100vh - 64px - 80px); }
