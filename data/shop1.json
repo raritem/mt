@@ -1,6 +1,6 @@
 {
   "id": "shop1",
-  "name": "XMODE",
+  "name": "Магазин 1",
   "description": "Продажа аккаунтов Мир Танков",
   "seller": "shop1",
   "lots": [
@@ -8,7 +8,23 @@
       "id": "lot_example",
       "title": "▒▓██💎СУ-130ПM💎TST💥 𝟏𝟎 𝐲𝐩 (x3) 💥 11 𝙋𝙍𝙀𝙈 тaнкoв  ⚠️7k бoн ⚠️█⁠█▓▒",
       "funpay": "https://funpay.com/lots/",
-      "images": []
+      "images": [
+        "images/shop1/lot_example/001.webp",
+        "images/shop1/lot_example/002.webp",
+        "images/shop1/lot_example/003.webp",
+        "images/shop1/lot_example/004.webp",
+        "images/shop1/lot_example/005.webp",
+        "images/shop1/lot_example/006.webp",
+        "images/shop1/lot_example/007.webp",
+        "images/shop1/lot_example/008.webp",
+        "images/shop1/lot_example/009.webp",
+        "images/shop1/lot_example/010.webp",
+        "images/shop1/lot_example/011.webp",
+        "images/shop1/lot_example/012.webp",
+        "images/shop1/lot_example/013.webp",
+        "images/shop1/lot_example/014.webp"
+      ],
+      "thumb": "images/shop1/lot_example/thumb.webp"
     }
   ]
 }
