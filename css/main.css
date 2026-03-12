@@ -351,6 +351,27 @@ input, textarea { font-family: var(--font-body); }
   border-color: rgba(245,197,24,0.4);
 }
 
+/* ── FunPay логотип ──────────────────────────────────────────── */
+.funpay-logo {
+  display: inline-block;
+  vertical-align: middle;
+  height: 18px;
+  width: auto;
+  margin: 0 4px;
+  position: relative;
+  top: -1px;
+}
+
+.funpay-logo-footer {
+  display: inline-block;
+  vertical-align: middle;
+  height: 16px;
+  width: auto;
+  margin: 0 5px;
+  position: relative;
+  top: -1px;
+}
+
 /* ── Footer — всегда внизу ───────────────────────────────────── */
 html, body { height: 100%; }
 
@@ -371,6 +392,14 @@ main.container { flex: 1; }
   position: relative;
   z-index: 1;
   margin-top: auto;
+}
+
+.site-footer p {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 /* ── Заголовок лота ──────────────────────────────────────────── */
@@ -683,8 +712,8 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .container { padding: 24px 16px 60px; }
   .header-inner { padding: 0 16px; }
   .page-hero { padding: 40px 0 32px; }
-  .shops-grid { grid-template-columns: 1fr; }
-  .lots-grid { grid-template-columns: 1fr; }
+  .shops-grid { grid-template-columns: 1fr 1fr; }
+  /* lots-grid адаптив определён выше, не переопределяем */
 }
 
 /* ── Анимации появления ──────────────────────────────────────── */

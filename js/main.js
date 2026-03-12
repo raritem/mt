@@ -134,10 +134,9 @@ function normalizeLotTitle(str) {
   return result;
 }
 
-/** Логотип FunPay как inline SVG-image */
-function funpayLogo(height) {
-  const h = height || 18;
-  return `<img src="https://funpay.com/img/layout/logo-funpay.svg" alt="FunPay" height="${h}" style="vertical-align:middle;display:inline-block">`;
+/** Логотип FunPay как inline img с классом */
+function funpayLogo(h) {
+  return `<img src="https://funpay.com/img/layout/logo-funpay.svg" alt="FunPay" class="funpay-logo" style="height:${h || 18}px">`;
 }
 
 /** Кнопка "Купить на FunPay" с логотипом */
@@ -268,10 +267,9 @@ async function loadShop() {
     gridEl.innerHTML = '';
 
     data.lots.forEach((lot, idx) => {
-      const card = document.createElement('div');  // div вместо <a> — чтобы кнопка FunPay не открывала лот
+      const card = document.createElement('div');
       card.className = 'lot-card fade-up';
       card.style.animationDelay = (idx * 0.06) + 's';
-      card.style.cursor = 'pointer';
 
       const firstImg = lot.images && lot.images[0];
       const previewSrc = lot.thumb || firstImg;
@@ -279,20 +277,24 @@ async function loadShop() {
         ? `<img class="lot-card-thumb" src="${ROOT}${previewSrc}" alt="${esc(lot.title)}" loading="lazy">`
         : `<div class="lot-card-thumb-placeholder">🎯</div>`;
 
-      const count = (lot.images || []).length;
+      const count  = (lot.images || []).length;
       const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
       const title  = normalizeLotTitle(lot.title);
 
       card.innerHTML = `
-        <a href="${lotUrl}" class="lot-card-link" style="display:contents">
-          ${thumbHtml}
-          <div class="lot-card-body">
-            <div class="lot-card-title">${esc(title)}</div>
-            <div class="lot-card-images-count">📸 ${count} ${plural(count, 'скриншот', 'скриншота', 'скриншотов')}</div>
-          </div>
-        </a>
-        ${lot.funpay ? `<div class="lot-card-footer"><a href="${lot.funpay}" target="_blank" rel="noopener" class="lot-card-funpay-btn" onclick="event.stopPropagation()">Купить на ${funpayLogo(14)}</a></div>` : ''}
+        ${thumbHtml}
+        <div class="lot-card-body">
+          <div class="lot-card-title">${esc(title)}</div>
+          <div class="lot-card-images-count">📸 ${count} ${plural(count, 'скриншот', 'скриншота', 'скриншотов')}</div>
+        </div>
+        ${lot.funpay ? `<div class="lot-card-footer"><a href="${lot.funpay}" target="_blank" rel="noopener" class="lot-card-funpay-btn" id="fp-${idx}">Купить на ${funpayLogo(14)}</a></div>` : ''}
       `;
+
+      // Клик по карточке (не по кнопке FunPay) → переход на лот
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.lot-card-funpay-btn')) return;
+        window.location.href = lotUrl;
+      });
 
       gridEl.appendChild(card);
     });

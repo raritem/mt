@@ -1,12 +1,10 @@
 /* ================================================================
-   WoT Shop — Лайтбокс v3
-   • UI (тулбар/миниатюры) скрывается через 2.5с, показывается при движении мыши
-   • Стрелки остаются, их фон прячется вместе с UI
-   • Зум ограничен — нельзя выйти за границы изображения
-   • Миниатюры сверху, тулбар снизу
-   • Плавный slide-in/out
+   WoT Shop — Лайтбокс v5
+   • UI прячется через 2.5с, показывается при движении мыши
+   • При навигации UI прячется немедленно
+   • Зум в центр viewport (не в центр изображения)
+   • Зум ограничен — нельзя выйти за границы
    ================================================================ */
-
 'use strict';
 
 window.LightBox = (() => {
@@ -22,87 +20,59 @@ window.LightBox = (() => {
   const lbZoomOut = document.getElementById('lb-zoom-out');
   const lbCounter = document.getElementById('lb-counter');
   const lbThumbs  = document.getElementById('lb-thumbnails');
-  const lbToolbar = document.getElementById('lb-toolbar');
 
-  // ── Состояние ─────────────────────────────────────────────────
   let images  = [];
   let current = 0;
 
-  // Зум и позиция
+  // Зум
   let scale  = 1;
-  let tx     = 0;  // translate X
-  let ty     = 0;  // translate Y
-
-  const ZOOM_MIN  = 1;
-  const ZOOM_MAX  = 6;
-  const ZOOM_STEP = 0.35;
+  let tx = 0, ty = 0;
+  const ZOOM_MIN = 1, ZOOM_MAX = 6, ZOOM_STEP = 0.35;
 
   // Drag
-  let dragging   = false;
-  let dragStartX = 0;
-  let dragStartY = 0;
+  let dragging = false, dragStartX = 0, dragStartY = 0;
 
-  // Touch swipe
-  let touchStartX = 0;
-  let touchStartY = 0;
+  // Touch
+  let touchStartX = 0, touchStartY = 0;
 
-  // Auto-hide UI
+  // UI auto-hide
   let hideTimer = null;
   let uiVisible = false;
 
-  // ── Авто-скрытие UI ───────────────────────────────────────────
+  // ── UI show/hide ──────────────────────────────────────────────
   function showUI() {
-    if (!uiVisible) {
-      uiVisible = true;
-      lb.classList.add('ui-visible');
-    }
     clearTimeout(hideTimer);
+    if (!uiVisible) { uiVisible = true; lb.classList.add('ui-visible'); }
     hideTimer = setTimeout(hideUI, 2500);
   }
 
   function hideUI() {
+    clearTimeout(hideTimer);
     uiVisible = false;
     lb.classList.remove('ui-visible');
-    clearTimeout(hideTimer);
   }
 
-  // UI показывается только при движении мыши внутри лайтбокса
   lb.addEventListener('mousemove', showUI, { passive: true });
-  // При уходе мыши скрываем сразу
   lb.addEventListener('mouseleave', () => { clearTimeout(hideTimer); hideUI(); });
 
-  // ── Трансформация изображения ─────────────────────────────────
-  //
-  // Зум применяется к lbImg.style.transform.
-  // После каждого изменения clampPosition() ограничивает tx/ty
-  // так чтобы изображение не уходило за пределы экрана.
-  //
-  function applyTransform() {
-    clampPosition();
-    lbImg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-    lbWrap.classList.toggle('zoomed', scale > 1);
-  }
-
-  // Ограничение позиции — нельзя выйти за границы изображения
-  function clampPosition() {
+  // ── Трансформация ─────────────────────────────────────────────
+  function clamp() {
     if (scale <= 1) { tx = 0; ty = 0; return; }
-    const rect = lbImg.getBoundingClientRect();
-
-    // Размер изображения при текущем масштабе
-    // getBoundingClientRect уже включает scale, но нам нужен «логический» размер
-    const baseW = lbImg.naturalWidth  ? lbImg.offsetWidth  : lbImg.clientWidth;
-    const baseH = lbImg.naturalHeight ? lbImg.offsetHeight : lbImg.clientHeight;
-    const scaledW = baseW * scale;
-    const scaledH = baseH * scale;
+    // Фактический размер img-элемента до масштаба
+    const baseW = lbImg.offsetWidth;
+    const baseH = lbImg.offsetHeight;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-
-    // Максимальное смещение: половина разницы между масштабированным и viewport
-    const maxX = Math.max(0, (scaledW - vw)  / 2);
-    const maxY = Math.max(0, (scaledH - vh) / 2);
-
+    const maxX = Math.max(0, (baseW * scale - vw)  / 2);
+    const maxY = Math.max(0, (baseH * scale - vh) / 2);
     tx = Math.max(-maxX, Math.min(maxX, tx));
     ty = Math.max(-maxY, Math.min(maxY, ty));
+  }
+
+  function applyTransform() {
+    clamp();
+    lbImg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    lbWrap.classList.toggle('zoomed', scale > 1);
   }
 
   function resetZoom() {
@@ -111,42 +81,37 @@ window.LightBox = (() => {
     lbWrap.classList.remove('zoomed');
   }
 
-  function zoomIn(cx, cy) {
-    if (scale >= ZOOM_MAX) return;
-    const prev = scale;
-    scale = Math.min(ZOOM_MAX, parseFloat((scale + ZOOM_STEP).toFixed(2)));
+  // Зум относительно центра VIEWPORT (не изображения).
+  // cx/cy — координаты точки в viewport (clientX/clientY).
+  // Если не переданы — зуммируем в центр экрана.
+  function zoomAt(delta, cx, cy) {
+    const vpCx = cx != null ? cx : window.innerWidth  / 2;
+    const vpCy = cy != null ? cy : window.innerHeight / 2;
 
-    // Зумируем относительно точки курсора
-    if (cx != null) {
-      const imgRect = lbImg.getBoundingClientRect();
-      const ox = cx - (imgRect.left + imgRect.width  / 2);
-      const oy = cy - (imgRect.top  + imgRect.height / 2);
-      tx -= ox * (scale / prev - 1);
-      ty -= oy * (scale / prev - 1);
-    }
+    const prev = scale;
+    scale = parseFloat(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, scale + delta)).toFixed(3));
+    if (scale === prev) return;
+
+    // Пересчёт смещения так чтобы точка vpCx/vpCy оставалась на месте.
+    // При текущем transform: translate(tx,ty) scale(scale)
+    // точка viewport (vpCx, vpCy) соответствует «логической» точке:
+    //   lx = (vpCx - vw/2 - tx) / prev
+    //   ly = (vpCy - vh/2 - ty) / prev
+    // После смены масштаба tx/ty пересчитываем так чтобы lx,ly оставалась под vpCx,vpCy.
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const lx = (vpCx - vw/2 - tx) / prev;
+    const ly = (vpCy - vh/2 - ty) / prev;
+    tx = vpCx - vw/2 - lx * scale;
+    ty = vpCy - vh/2 - ly * scale;
+
     applyTransform();
   }
 
-  function zoomOut(cx, cy) {
-    if (scale <= ZOOM_MIN) return;
-    const prev = scale;
-    scale = Math.max(ZOOM_MIN, parseFloat((scale - ZOOM_STEP).toFixed(2)));
-
-    if (cx != null && scale > 1) {
-      const imgRect = lbImg.getBoundingClientRect();
-      const ox = cx - (imgRect.left + imgRect.width  / 2);
-      const oy = cy - (imgRect.top  + imgRect.height / 2);
-      tx -= ox * (scale / prev - 1);
-      ty -= oy * (scale / prev - 1);
-    }
-    applyTransform();
-  }
-
-  // ── Drag (только при зуме) ────────────────────────────────────
+  // ── Drag ──────────────────────────────────────────────────────
   lbImg.addEventListener('mousedown', (e) => {
     if (scale <= 1) return;
     e.preventDefault();
-    dragging   = true;
+    dragging = true;
     dragStartX = e.clientX - tx;
     dragStartY = e.clientY - ty;
     lbImg.style.cursor = 'grabbing';
@@ -163,20 +128,20 @@ window.LightBox = (() => {
     if (dragging) { dragging = false; lbImg.style.cursor = ''; }
   });
 
-  // ── Wheel zoom ─────────────────────────────────────────────────
+  // ── Wheel ─────────────────────────────────────────────────────
   lb.addEventListener('wheel', (e) => {
     e.preventDefault();
-    if (e.deltaY < 0) zoomIn(e.clientX, e.clientY);
-    else              zoomOut(e.clientX, e.clientY);
+    zoomAt(e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP, e.clientX, e.clientY);
   }, { passive: false });
 
   // ── Double click ──────────────────────────────────────────────
   lbImg.addEventListener('dblclick', (e) => {
     if (scale > 1) resetZoom();
-    else { zoomIn(e.clientX, e.clientY); zoomIn(e.clientX, e.clientY); }
+    else { zoomAt(ZOOM_STEP * 2, e.clientX, e.clientY); }
+    applyTransform();
   });
 
-  // ── Touch ─────────────────────────────────────────────────────
+  // ── Touch swipe ───────────────────────────────────────────────
   lb.addEventListener('touchstart', (e) => {
     touchStartX = e.changedTouches[0].clientX;
     touchStartY = e.changedTouches[0].clientY;
@@ -185,19 +150,21 @@ window.LightBox = (() => {
   lb.addEventListener('touchend', (e) => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-    if (Math.abs(dx) > 50 && dy < 80) {
+    if (Math.abs(dx) > 50 && dy < 80 && scale <= 1) {
       if (dx < 0) next(); else prev();
     }
   });
 
-  // ── Рендер слайда ─────────────────────────────────────────────
+  // ── Рендер ────────────────────────────────────────────────────
   function render(dir) {
     const src = ROOT + images[current];
     lbCounter.textContent = (current + 1) + ' / ' + images.length;
-    lbPrev.disabled = (current === 0);
-    lbNext.disabled = (current === images.length - 1);
+    lbPrev.disabled = current === 0;
+    lbNext.disabled = current === images.length - 1;
 
     resetZoom();
+    // При навигации сразу прячем UI
+    hideUI();
 
     if (dir) {
       lbWrap.classList.remove('lb-slide-in-right', 'lb-slide-in-left');
@@ -208,7 +175,7 @@ window.LightBox = (() => {
           lbImg.style.opacity = '1';
           void lbWrap.offsetWidth;
           lbWrap.classList.add(dir === 'next' ? 'lb-slide-in-right' : 'lb-slide-in-left');
-          setTimeout(() => lbWrap.classList.remove('lb-slide-in-right', 'lb-slide-in-left'), 300);
+          setTimeout(() => lbWrap.classList.remove('lb-slide-in-right', 'lb-slide-in-left'), 280);
         };
       }, 110);
     } else {
@@ -216,10 +183,10 @@ window.LightBox = (() => {
       lbImg.style.opacity = '1';
     }
 
-    // Активная миниатюра
-    Array.from(lbThumbs.children).forEach((tn, i) => tn.classList.toggle('active', i === current));
-    const activeTn = lbThumbs.children[current];
-    if (activeTn) activeTn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    // Миниатюры
+    Array.from(lbThumbs.children).forEach((t, i) => t.classList.toggle('active', i === current));
+    const at = lbThumbs.children[current];
+    if (at) at.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
 
   function renderThumbs() {
@@ -230,15 +197,13 @@ window.LightBox = (() => {
       tn.innerHTML = `<img src="${ROOT}${src}" alt="" loading="lazy">`;
       tn.addEventListener('click', () => {
         if (i === current) return;
-        const dir = i > current ? 'next' : 'prev';
         current = i;
-        render(dir);
+        render(i > current ? 'next' : 'prev');
       });
       lbThumbs.appendChild(tn);
     });
   }
 
-  // ── Навигация ─────────────────────────────────────────────────
   function prev() { if (current > 0) { current--; render('prev'); } }
   function next() { if (current < images.length - 1) { current++; render('next'); } }
 
@@ -253,7 +218,7 @@ window.LightBox = (() => {
     renderThumbs();
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
-    hideUI(); // начинаем со скрытым UI
+    hideUI();
   }
 
   function close() {
@@ -266,21 +231,21 @@ window.LightBox = (() => {
 
   // ── Кнопки ────────────────────────────────────────────────────
   lbClose.addEventListener('click', close);
-  lbBg.addEventListener('click',    close);
-  lbPrev.addEventListener('click',  prev);
-  lbNext.addEventListener('click',  next);
-  lbZoomIn.addEventListener('click',  () => zoomIn());
-  lbZoomOut.addEventListener('click', () => zoomOut());
+  lbBg.addEventListener('click', (e) => { if (e.target === lbBg) close(); });
+  lbPrev.addEventListener('click', prev);
+  lbNext.addEventListener('click', next);
+  lbZoomIn.addEventListener('click',  () => zoomAt( ZOOM_STEP));
+  lbZoomOut.addEventListener('click', () => zoomAt(-ZOOM_STEP));
 
-  // ── Клавиши — навигация НЕ показывает UI ─────────────────────
+  // ── Клавиши — НЕ показывают UI ────────────────────────────────
   document.addEventListener('keydown', (e) => {
     if (!lb.classList.contains('open')) return;
     switch (e.key) {
-      case 'ArrowLeft':  case 'ArrowUp':   prev();      break;
-      case 'ArrowRight': case 'ArrowDown': next();      break;
-      case 'Escape':                        close();     break;
-      case '+': case '=':                   zoomIn();    break;
-      case '-':                             zoomOut();   break;
+      case 'ArrowLeft': case 'ArrowUp':    prev();  break;
+      case 'ArrowRight': case 'ArrowDown': next();  break;
+      case 'Escape':                        close(); break;
+      case '+': case '=': zoomAt( ZOOM_STEP, window.innerWidth/2, window.innerHeight/2); break;
+      case '-':           zoomAt(-ZOOM_STEP, window.innerWidth/2, window.innerHeight/2); break;
     }
   });
 

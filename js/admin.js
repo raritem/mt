@@ -244,16 +244,16 @@ function renderShopPanel() {
         <div class="shop-panel-title">${esc(shop.name || state.activeShop)}</div>
         <div class="shop-panel-actions">
           <a href="../shop/?id=${encodeURIComponent(state.activeShop)}" target="_blank" class="btn btn-ghost">
-            <i data-lucide="external-link" width="14" height="14"></i> Открыть
+            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span> Открыть
           </a>
           <button class="btn btn-ghost" id="edit-shop-btn">
-            <i data-lucide="pencil" width="14" height="14"></i> Изменить
+            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span> Изменить
           </button>
           <button class="btn btn-ghost" style="color:var(--danger)" id="delete-shop-btn">
-            <i data-lucide="trash-2" width="14" height="14"></i> Удалить
+            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span> Удалить
           </button>
           <button class="btn btn-primary" id="add-lot-btn">
-            <i data-lucide="plus" width="14" height="14"></i> Добавить лот
+            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> Добавить лот
           </button>
         </div>
       </div>
@@ -296,18 +296,18 @@ function renderLots() {
         <div class="admin-lot-title">${esc(lot.title)}</div>
         <div class="admin-lot-meta">
           <span>${(lot.images || []).length} фото</span>
-          ${lot.funpay ? `<a href="${lot.funpay}" target="_blank" style="color:var(--accent)">FunPay <i data-lucide="external-link" width="11" height="11" style="display:inline-block;vertical-align:middle"></i></a>` : ''}
+          ${lot.funpay ? `<a href="${lot.funpay}" target="_blank" style="color:var(--accent)">FunPay <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg style="display:inline-block;vertical-align:middle" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span></a>` : ''}
         </div>
       </div>
       <div class="admin-lot-actions">
         <button class="btn btn-ghost" data-action="images" data-lot="${lot.id}" title="Фото">
-          <i data-lucide="images" width="15" height="15"></i>
+          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="14" rx="2"/><circle cx="8" cy="8" r="2"/><path d="m2 14 4-4 4 4 4-5 6 5"/><path d="M0 20h20" stroke-width="0"/><line x1="4" y1="20" x2="20" y2="20"/><line x1="4" y1="22" x2="16" y2="22"/></svg></span>
         </button>
         <button class="btn btn-ghost" data-action="edit" data-lot="${lot.id}" title="Изменить">
-          <i data-lucide="pencil" width="15" height="15"></i>
+          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
         </button>
         <button class="btn btn-ghost" style="color:var(--danger)" data-action="delete" data-lot="${lot.id}" title="Удалить">
-          <i data-lucide="trash-2" width="15" height="15"></i>
+          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
         </button>
       </div>
     `;
@@ -496,20 +496,20 @@ function openImageManager(lotId) {
   panel.innerHTML = `
     <div class="image-manager-header">
       <button class="btn btn-ghost" id="im-back">
-        <i data-lucide="arrow-left" width="15" height="15"></i> Назад
+        <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Назад
       </button>
       <div class="image-manager-title">${esc(lot ? lot.title : lotId)}</div>
       <button class="btn btn-ghost" id="im-refresh-thumb">
-        <i data-lucide="image" width="15" height="15"></i> Обновить превью
+        <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span> Обновить превью
       </button>
       <button class="btn btn-primary" id="im-upload-trigger">
-        <i data-lucide="upload" width="15" height="15"></i> Добавить фото
+        <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Добавить фото
       </button>
     </div>
     <div class="image-manager-body">
       <div class="dropzone" id="im-dropzone">
         <input type="file" id="im-file-input" accept="image/*" multiple>
-        <div class="dropzone-icon"><i data-lucide="upload-cloud" width="40" height="40" style="color:var(--text-muted)"></i></div>
+        <div class="dropzone-icon"><span style="display:inline-flex;align-items:center;vertical-align:middle"><svg style="color:var(--text-muted)" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></span></div>
         <div class="dropzone-text">Перетащите изображения сюда</div>
         <div class="dropzone-hint">PNG, JPG, GIF → WebP</div>
       </div>
@@ -560,14 +560,14 @@ function renderManagedImages() {
     card.dataset.idx = idx;
     card.draggable = true;
     card.innerHTML = `
-      <div class="drag-handle"><i data-lucide="grip-vertical" width="14" height="14"></i></div>
+      <div class="drag-handle"><span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg></span></div>
       <img src="../${src}" alt="" loading="lazy">
       <div class="managed-img-footer">
         <span class="managed-img-num">${idx + 1}</span>
         <div class="managed-img-actions">
-          <button class="img-action-btn" data-action="up"   data-idx="${idx}" title="Вверх"><i data-lucide="arrow-up" width="13" height="13"></i></button>
-          <button class="img-action-btn" data-action="down" data-idx="${idx}" title="Вниз"><i data-lucide="arrow-down" width="13" height="13"></i></button>
-          <button class="img-action-btn danger" data-action="del" data-idx="${idx}" title="Удалить"><i data-lucide="trash-2" width="13" height="13"></i></button>
+          <button class="img-action-btn" data-action="up"   data-idx="${idx}" title="Вверх"><span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></span></button>
+          <button class="img-action-btn" data-action="down" data-idx="${idx}" title="Вниз"><span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></span></button>
+          <button class="img-action-btn danger" data-action="del" data-idx="${idx}" title="Удалить"><span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span></button>
         </div>
       </div>
     `;
@@ -821,8 +821,8 @@ async function saveLotsJSON() {
 function setStatus(el, msg, type) {
   if (!el) return;
   if (type === 'ok') {
-    el.innerHTML = '<i data-lucide="check" width="14" height="14" style="display:inline-block;vertical-align:middle;margin-right:5px"></i>' + esc(msg);
-    if (window.lucide) lucide.createIcons();
+    el.innerHTML = '<span style="display:inline-flex;align-items:center;vertical-align:middle"><svg style="display:inline-block;vertical-align:middle;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>' + esc(msg);
+    
   } else {
     el.textContent = msg;
   }
