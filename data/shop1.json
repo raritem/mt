@@ -1,14 +1,17 @@
 {
   "id": "shop1",
-  "name": "Магазин 1",
-  "description": "Продажа аккаунтов Мир Танков",
+  "name": "ÐÐ°Ð³Ð°Ð·Ð¸Ð½ 1",
+  "description": "ÐÑÐ¾Ð´Ð°Ð¶Ð° Ð°ÐºÐºÐ°ÑÐ½ÑÐ¾Ð² ÐÐ¸Ñ Ð¢Ð°Ð½ÐºÐ¾Ð²",
   "seller": "shop1",
   "lots": [
     {
       "id": "lot_example",
-      "title": "Пример лота — 3 топа + прем техника",
+      "title": "ÐÑÐ¸Ð¼ÐµÑ Ð»Ð¾ÑÐ° â 3 ÑÐ¾Ð¿Ð° + Ð¿ÑÐµÐ¼ ÑÐµÑÐ½Ð¸ÐºÐ°",
       "funpay": "https://funpay.com/lots/",
-      "images": []
+      "images": [
+        "images/shop1/lot_example/001.webp"
+      ],
+      "thumb": "images/shop1/lot_example/thumb.webp"
     }
   ]
 }
