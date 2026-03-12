@@ -4,6 +4,11 @@
       "id": "shop1",
       "name": "XMODE",
       "description": "Продажа аккаунтов Мир Танков"
+    },
+    {
+      "id": "universe",
+      "name": "UNIVERSE",
+      "description": ""
     }
   ]
 }
