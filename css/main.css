@@ -296,37 +296,76 @@ input, textarea { font-family: var(--font-body); }
   color: var(--text-muted);
 }
 
-.lot-card-funpay {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+.lot-card-funpay { display: none; } /* старый класс — не используется */
+
+/* Кнопка FunPay внизу карточки */
+.lot-card-footer {
+  padding: 0 16px 16px;
+}
+
+.lot-card-funpay-btn {
+  display: block;
+  text-align: center;
+  padding: 9px 14px;
   background: var(--accent-dim);
-  border: 1px solid rgba(245,197,24,0.2);
+  border: 1px solid rgba(245,197,24,0.25);
   border-radius: var(--radius-sm);
   color: var(--accent);
   font-size: 13px;
   font-weight: 500;
-  margin-top: auto;
+  text-decoration: none;
   transition: background var(--transition), border-color var(--transition);
-  width: fit-content;
 }
 
-.lot-card-funpay:hover {
+.lot-card-funpay-btn:hover {
   background: rgba(245,197,24,0.2);
-  border-color: rgba(245,197,24,0.35);
+  border-color: rgba(245,197,24,0.4);
+}
+
+/* ── Footer — всегда внизу ───────────────────────────────────── */
+html, body { height: 100%; }
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main.container { flex: 1; }
+
+.site-footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 13px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
 }
 
 /* ── Заголовок лота ──────────────────────────────────────────── */
 .lot-header {
-  padding: 32px 0 28px;
+  padding: 24px 0 28px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 32px;
+}
+
+.lot-header-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 8px 14px;
 }
 
 .lot-title {
@@ -608,17 +647,6 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   cursor: pointer;
   padding: 4px;
   font-size: 16px;
-}
-
-/* ── Footer ──────────────────────────────────────────────────── */
-.site-footer {
-  text-align: center;
-  padding: 24px;
-  font-size: 13px;
-  color: var(--text-muted);
-  border-top: 1px solid var(--border);
-  position: relative;
-  z-index: 1;
 }
 
 /* ── Адаптив ─────────────────────────────────────────────────── */

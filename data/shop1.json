@@ -1,32 +1,14 @@
 {
   "id": "shop1",
-  "name": "XMODE",
+  "name": "Магазин 1",
   "description": "Продажа аккаунтов Мир Танков",
   "seller": "shop1",
   "lots": [
     {
       "id": "lot_example",
-      "title": "▒▓██💎СУ-130ПM💎TST💥 𝟏𝟎 𝐲𝐩 (x3) 💥 11 𝙋𝙍𝙀𝙈 тaнкoв  ⚠️7k бoн ⚠️█⁠█▓▒",
-      "funpay": "https://funpay.com/lots/offer?id=34782431",
-      "images": [
-        "images/shop1/lot_example/001.webp",
-        "images/shop1/lot_example/002.webp",
-        "images/shop1/lot_example/003.webp",
-        "images/shop1/lot_example/004.webp",
-        "images/shop1/lot_example/005.webp"
-      ],
-      "thumb": "images/shop1/lot_example/thumb.webp"
-    },
-    {
-      "id": "lot_1773308803079",
-      "title": "▒▓██🆘Turtle I🆘СУ-130ПM🆘Doppel🆘𝟏𝟎𝐲𝐩 (x3)🆘12 𝙋𝙍𝙀𝙈⚠️7k бoн ⁠██▓▒",
-      "funpay": "https://funpay.com/lots/offer?id=34781165",
-      "images": [
-        "images/shop1/lot_1773308803079/001.webp",
-        "images/shop1/lot_1773308803079/002.webp",
-        "images/shop1/lot_1773308803079/003.webp"
-      ],
-      "thumb": "images/shop1/lot_1773308803079/thumb.webp"
+      "title": "Пример лота — 3 топа + прем техника",
+      "funpay": "https://funpay.com/lots/",
+      "images": []
     }
   ]
 }

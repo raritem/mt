@@ -199,28 +199,29 @@ async function loadShop() {
     gridEl.innerHTML = '';
 
     data.lots.forEach((lot, idx) => {
-      const card = document.createElement('a');
-      card.href  = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
+      const card = document.createElement('div');  // div вместо <a> — чтобы кнопка FunPay не открывала лот
       card.className = 'lot-card fade-up';
       card.style.animationDelay = (idx * 0.06) + 's';
+      card.style.cursor = 'pointer';
 
       const firstImg = lot.images && lot.images[0];
-      // thumb.webp — маленькая миниатюра (~480px), грузится быстро на странице витрины
-      // Генерируется автоматически при загрузке первого фото в менеджере изображений
       const previewSrc = lot.thumb || firstImg;
       const thumbHtml = previewSrc
         ? `<img class="lot-card-thumb" src="${ROOT}${previewSrc}" alt="${esc(lot.title)}" loading="lazy">`
         : `<div class="lot-card-thumb-placeholder">🎯</div>`;
 
       const count = (lot.images || []).length;
+      const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
 
       card.innerHTML = `
-        ${thumbHtml}
-        <div class="lot-card-body">
-          <div class="lot-card-title">${esc(lot.title)}</div>
-          <div class="lot-card-images-count">📸 ${count} ${plural(count, 'скриншот', 'скриншота', 'скриншотов')}</div>
-          ${lot.funpay ? `<div class="lot-card-funpay">Купить на FunPay ↗</div>` : ''}
-        </div>
+        <a href="${lotUrl}" class="lot-card-link" style="display:contents">
+          ${thumbHtml}
+          <div class="lot-card-body">
+            <div class="lot-card-title">${esc(lot.title)}</div>
+            <div class="lot-card-images-count">📸 ${count} ${plural(count, 'скриншот', 'скриншота', 'скриншотов')}</div>
+          </div>
+        </a>
+        ${lot.funpay ? `<div class="lot-card-footer"><a href="${lot.funpay}" target="_blank" rel="noopener" class="lot-card-funpay-btn" onclick="event.stopPropagation()">Купить на FunPay ↗</a></div>` : ''}
       `;
 
       gridEl.appendChild(card);
@@ -270,14 +271,18 @@ async function loadLot() {
     // Заголовок лота
     if (headerEl) {
       const funpayBtn = lot.funpay
-        ? `<a href="${lot.funpay}" target="_blank" rel="noopener" class="funpay-btn">🛒 Купить на FunPay</a>`
+        ? `<a href="${lot.funpay}" target="_blank" rel="noopener" class="funpay-btn">Купить на FunPay ↗</a>`
         : '';
       headerEl.innerHTML = `
-        <div>
-          <h1 class="lot-title">${esc(lot.title)}</h1>
-          <p style="color:var(--text-muted);font-size:13px;margin-top:6px">📸 ${(lot.images||[]).length} скриншотов</p>
+        <div class="lot-header-top">
+          <a href="${ROOT}shop/?id=${encodeURIComponent(shopId)}" class="btn btn-ghost back-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Назад
+          </a>
+          ${funpayBtn}
         </div>
-        ${funpayBtn}
+        <h1 class="lot-title">${esc(lot.title)}</h1>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:4px">📸 ${(lot.images||[]).length} скриншотов</p>
       `;
     }
 

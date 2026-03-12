@@ -7,6 +7,8 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
   <link rel="stylesheet" href="../css/main.css">
   <link rel="stylesheet" href="../css/admin.css">
+  <!-- Lucide Icons -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.383.0/umd/lucide.min.js"></script>
 </head>
 <body class="admin-body">
 
@@ -19,7 +21,10 @@
       <span class="admin-badge">Admin</span>
       <div class="admin-header-right">
         <span class="token-status" id="token-status">Не подключено</span>
-        <button class="btn btn-ghost" id="settings-btn">⚙ Настройки</button>
+        <button class="btn btn-ghost" id="settings-btn">
+          <i data-lucide="settings" width="15" height="15"></i>
+          Настройки
+        </button>
       </div>
     </div>
   </header>
@@ -29,7 +34,9 @@
   <div class="modal" id="settings-modal">
     <div class="modal-header">
       <h2>Настройки GitHub</h2>
-      <button class="modal-close" id="settings-close">✕</button>
+      <button class="modal-close" id="settings-close">
+        <i data-lucide="x" width="18" height="18"></i>
+      </button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -37,7 +44,9 @@
         <p class="form-hint">Нужны права: <code>repo</code> (или <code>contents:write</code>)</p>
         <div class="input-with-eye">
           <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
-          <button class="eye-btn" id="token-eye">👁</button>
+          <button class="eye-btn" id="token-eye">
+            <i data-lucide="eye" width="16" height="16"></i>
+          </button>
         </div>
       </div>
       <div class="form-group">
@@ -58,18 +67,19 @@
 
   <!-- Основной layout -->
   <div class="admin-layout">
-    <!-- Sidebar -->
     <aside class="admin-sidebar">
       <div class="sidebar-section">
         <h3 class="sidebar-title">Витрины</h3>
         <div id="shop-list" class="shop-list">
           <div class="loading-spinner"><div class="spinner"></div></div>
         </div>
-        <button class="btn btn-outline btn-full" id="add-shop-btn">+ Добавить витрину</button>
+        <button class="btn btn-outline btn-full" id="add-shop-btn">
+          <i data-lucide="plus" width="15" height="15"></i>
+          Добавить витрину
+        </button>
       </div>
     </aside>
 
-    <!-- Контент -->
     <main class="admin-main" id="admin-main">
       <div class="empty-state" id="empty-state">
         <div class="empty-icon">🏪</div>
@@ -79,12 +89,14 @@
     </main>
   </div>
 
-  <!-- Модалка: Добавить/редактировать витрину -->
+  <!-- Модалка: витрина -->
   <div class="modal-overlay" id="shop-modal-overlay"></div>
   <div class="modal" id="shop-modal">
     <div class="modal-header">
       <h2 id="shop-modal-title">Новая витрина</h2>
-      <button class="modal-close" id="shop-modal-close">✕</button>
+      <button class="modal-close" id="shop-modal-close">
+        <i data-lucide="x" width="18" height="18"></i>
+      </button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -107,12 +119,14 @@
     </div>
   </div>
 
-  <!-- Модалка: Добавить/редактировать лот -->
+  <!-- Модалка: лот -->
   <div class="modal-overlay" id="lot-modal-overlay"></div>
   <div class="modal" id="lot-modal">
     <div class="modal-header">
       <h2 id="lot-modal-title">Новый лот</h2>
-      <button class="modal-close" id="lot-modal-close">✕</button>
+      <button class="modal-close" id="lot-modal-close">
+        <i data-lucide="x" width="18" height="18"></i>
+      </button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -131,7 +145,7 @@
     </div>
   </div>
 
-  <!-- Модалка подтверждения удаления -->
+  <!-- Модалка подтверждения -->
   <div class="modal-overlay" id="confirm-overlay"></div>
   <div class="modal modal-sm" id="confirm-modal">
     <div class="modal-header">
@@ -141,7 +155,10 @@
       <p id="confirm-text">Вы уверены?</p>
       <div class="modal-actions">
         <button class="btn btn-ghost" id="confirm-cancel">Отмена</button>
-        <button class="btn btn-danger" id="confirm-ok">Удалить</button>
+        <button class="btn btn-danger" id="confirm-ok">
+          <i data-lucide="trash-2" width="14" height="14"></i>
+          Удалить
+        </button>
       </div>
     </div>
   </div>
@@ -150,5 +167,16 @@
   <script src="../js/github-api.js"></script>
   <script src="../js/image-convert.js"></script>
   <script src="../js/admin.js"></script>
+  <!-- Инициализация Lucide после рендера -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+      // Перерисовываем иконки при динамических обновлениях DOM
+      const obs = new MutationObserver(() => {
+        if (window.lucide) lucide.createIcons();
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+    });
+  </script>
 </body>
 </html>

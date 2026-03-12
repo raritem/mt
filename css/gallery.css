@@ -2,11 +2,15 @@
    WoT Shop — Стили галереи и лайтбокса
    ================================================================ */
 
-/* ── Сетка превью ────────────────────────────────────────────── */
+/* ── Сетка превью — 1.5x крупнее ────────────────────────────── */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .gallery-grid { grid-template-columns: 1fr; }
 }
 
 .gallery-thumb {
@@ -102,7 +106,7 @@
 }
 .lb-close:hover { background: rgba(255,255,255,0.15); }
 
-/* ── Стрелки ─────────────────────────────────────────────────── */
+/* ── Стрелки — без эффекта нажатия ──────────────────────────── */
 .lb-arrow {
   position: absolute;
   top: 50%;
@@ -118,9 +122,14 @@
   justify-content: center;
   color: white;
   transition: background var(--transition), opacity var(--transition);
+  /* Убираем эффект нажатия — кнопка не уменьшается */
+  -webkit-appearance: none;
+  user-select: none;
 }
 
-.lb-arrow:hover { background: rgba(255,255,255,0.15); }
+/* Нет :active transform — скрин не уменьшается при клике */
+.lb-arrow:hover   { background: rgba(255,255,255,0.15); }
+.lb-arrow:active  { background: rgba(255,255,255,0.18); }
 .lb-arrow:disabled { opacity: 0.2; cursor: default; }
 
 .lb-prev { left: 16px; }
@@ -132,46 +141,62 @@
   .lb-arrow { width: 40px; height: 40px; }
 }
 
-/* ── Область изображения ─────────────────────────────────────── */
+/* ── Область изображения — занимает всё окно ─────────────────── */
 .lb-stage {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 80px 140px; /* место для стрелок/тулбара */
+  /* Минимальные отступы: только для стрелок и тулбара */
+  padding: 64px 72px 110px;
   overflow: hidden;
 }
 
 @media (max-width: 600px) {
-  .lb-stage { padding: 64px 60px 130px; }
+  .lb-stage { padding: 56px 56px 120px; }
 }
 
 .lb-img-wrap {
   position: relative;
   transform-origin: center center;
-  transition: transform 0.2s ease;
+  /* Анимация НЕ на transform — зум применяется к img напрямую */
   cursor: grab;
   user-select: none;
-  will-change: transform;
+  will-change: contents;
+  /* Максимальный размер = всё доступное пространство stage */
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.lb-img-wrap.dragging { cursor: grabbing; transition: none; }
-.lb-img-wrap.zoomed   { cursor: grab; }
+.lb-img-wrap.zoomed { cursor: grab; }
 
 #lb-img {
   display: block;
-  max-width: 100%;
-  max-height: calc(100vh - 220px);
+  /* Занимает всё доступное место в stage */
+  max-width:  calc(100vw - 144px);
+  max-height: calc(100vh - 174px);
+  width: auto;
+  height: auto;
   object-fit: contain;
   border-radius: 4px;
   box-shadow: var(--shadow-lg);
   user-select: none;
   -webkit-user-drag: none;
-  transition: opacity 0.2s ease;
+  /* transform-origin на самом изображении для точного зума */
+  transform-origin: center center;
+  transition: opacity 0.15s ease;
 }
 
-#lb-img.switching { opacity: 0; transform: scale(0.97); }
+@media (max-width: 600px) {
+  #lb-img {
+    max-width:  calc(100vw - 112px);
+    max-height: calc(100vh - 176px);
+  }
+}
 
 /* ── Тулбар ──────────────────────────────────────────────────── */
 .lb-toolbar {

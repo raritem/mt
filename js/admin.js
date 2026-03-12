@@ -241,12 +241,20 @@ function renderShopPanel() {
   dom.adminMain.innerHTML = `
     <div class="shop-panel">
       <div class="shop-panel-header">
-        <div class="shop-panel-title">🏪 ${esc(shop.name || state.activeShop)}</div>
+        <div class="shop-panel-title">${esc(shop.name || state.activeShop)}</div>
         <div class="shop-panel-actions">
-          <a href="../shop/?id=${encodeURIComponent(state.activeShop)}" target="_blank" class="btn btn-ghost">↗ Открыть</a>
-          <button class="btn btn-ghost" id="edit-shop-btn">✏ Изменить</button>
-          <button class="btn btn-ghost" style="color:var(--danger)" id="delete-shop-btn">🗑 Удалить</button>
-          <button class="btn btn-primary" id="add-lot-btn">+ Добавить лот</button>
+          <a href="../shop/?id=${encodeURIComponent(state.activeShop)}" target="_blank" class="btn btn-ghost">
+            <i data-lucide="external-link" width="14" height="14"></i> Открыть
+          </a>
+          <button class="btn btn-ghost" id="edit-shop-btn">
+            <i data-lucide="pencil" width="14" height="14"></i> Изменить
+          </button>
+          <button class="btn btn-ghost" style="color:var(--danger)" id="delete-shop-btn">
+            <i data-lucide="trash-2" width="14" height="14"></i> Удалить
+          </button>
+          <button class="btn btn-primary" id="add-lot-btn">
+            <i data-lucide="plus" width="14" height="14"></i> Добавить лот
+          </button>
         </div>
       </div>
       <div class="admin-lots-list" id="admin-lots-list"></div>
@@ -287,14 +295,20 @@ function renderLots() {
       <div class="admin-lot-info">
         <div class="admin-lot-title">${esc(lot.title)}</div>
         <div class="admin-lot-meta">
-          <span>📸 ${(lot.images || []).length} фото</span>
-          ${lot.funpay ? `<a href="${lot.funpay}" target="_blank" style="color:var(--accent)">FunPay ↗</a>` : ''}
+          <span>${(lot.images || []).length} фото</span>
+          ${lot.funpay ? `<a href="${lot.funpay}" target="_blank" style="color:var(--accent)">FunPay <i data-lucide="external-link" width="11" height="11" style="display:inline-block;vertical-align:middle"></i></a>` : ''}
         </div>
       </div>
       <div class="admin-lot-actions">
-        <button class="btn btn-ghost" data-action="images" data-lot="${lot.id}" title="Фото">🖼</button>
-        <button class="btn btn-ghost" data-action="edit"   data-lot="${lot.id}" title="Изменить">✏</button>
-        <button class="btn btn-ghost" style="color:var(--danger)" data-action="delete" data-lot="${lot.id}" title="Удалить">🗑</button>
+        <button class="btn btn-ghost" data-action="images" data-lot="${lot.id}" title="Фото">
+          <i data-lucide="images" width="15" height="15"></i>
+        </button>
+        <button class="btn btn-ghost" data-action="edit" data-lot="${lot.id}" title="Изменить">
+          <i data-lucide="pencil" width="15" height="15"></i>
+        </button>
+        <button class="btn btn-ghost" style="color:var(--danger)" data-action="delete" data-lot="${lot.id}" title="Удалить">
+          <i data-lucide="trash-2" width="15" height="15"></i>
+        </button>
       </div>
     `;
     list.appendChild(card);
@@ -481,15 +495,21 @@ function openImageManager(lotId) {
 
   panel.innerHTML = `
     <div class="image-manager-header">
-      <button class="btn btn-ghost" id="im-back">← Назад</button>
-      <div class="image-manager-title">📸 ${esc(lot ? lot.title : lotId)}</div>
-      <button class="btn btn-ghost" id="im-refresh-thumb">🖼 Обновить превью</button>
-      <button class="btn btn-primary" id="im-upload-trigger">+ Добавить фото</button>
+      <button class="btn btn-ghost" id="im-back">
+        <i data-lucide="arrow-left" width="15" height="15"></i> Назад
+      </button>
+      <div class="image-manager-title">${esc(lot ? lot.title : lotId)}</div>
+      <button class="btn btn-ghost" id="im-refresh-thumb">
+        <i data-lucide="image" width="15" height="15"></i> Обновить превью
+      </button>
+      <button class="btn btn-primary" id="im-upload-trigger">
+        <i data-lucide="upload" width="15" height="15"></i> Добавить фото
+      </button>
     </div>
     <div class="image-manager-body">
       <div class="dropzone" id="im-dropzone">
         <input type="file" id="im-file-input" accept="image/*" multiple>
-        <div class="dropzone-icon">📤</div>
+        <div class="dropzone-icon"><i data-lucide="upload-cloud" width="40" height="40" style="color:var(--text-muted)"></i></div>
         <div class="dropzone-text">Перетащите изображения сюда</div>
         <div class="dropzone-hint">PNG, JPG, GIF → WebP</div>
       </div>
@@ -540,14 +560,14 @@ function renderManagedImages() {
     card.dataset.idx = idx;
     card.draggable = true;
     card.innerHTML = `
-      <div class="drag-handle">⠿</div>
+      <div class="drag-handle"><i data-lucide="grip-vertical" width="14" height="14"></i></div>
       <img src="../${src}" alt="" loading="lazy">
       <div class="managed-img-footer">
         <span class="managed-img-num">${idx + 1}</span>
         <div class="managed-img-actions">
-          <button class="img-action-btn" data-action="up"   data-idx="${idx}">↑</button>
-          <button class="img-action-btn" data-action="down" data-idx="${idx}">↓</button>
-          <button class="img-action-btn danger" data-action="del" data-idx="${idx}">🗑</button>
+          <button class="img-action-btn" data-action="up"   data-idx="${idx}" title="Вверх"><i data-lucide="arrow-up" width="13" height="13"></i></button>
+          <button class="img-action-btn" data-action="down" data-idx="${idx}" title="Вниз"><i data-lucide="arrow-down" width="13" height="13"></i></button>
+          <button class="img-action-btn danger" data-action="del" data-idx="${idx}" title="Удалить"><i data-lucide="trash-2" width="13" height="13"></i></button>
         </div>
       </div>
     `;
