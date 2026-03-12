@@ -1,60 +1,91 @@
 /* ================================================================
    WoT Shop — Админ панель (admin.js)
-   Управление витринами, лотами и изображениями
    ================================================================ */
 
 'use strict';
 
-// ── Состояние ───────────────────────────────────────────────────
-let state = {
-  shops:       [],   // [{id, name, description}]
-  activeShop:  null, // id активной витрины
-  activeLots:  [],   // лоты активной витрины
-  editingLot:  null, // {id} — редактируемый лот
+// ════════════════════════════════════════════════════════════════
+//  СОСТОЯНИЕ
+// ════════════════════════════════════════════════════════════════
+const state = {
+  shops:      [],
+  activeShop: null,
+  activeLots: [],
+  editingLot: null,
 };
 
-// ── DOM ────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+//  DOM
+// ════════════════════════════════════════════════════════════════
+function $(id) { return document.getElementById(id); }
+
 const dom = {
-  tokenStatus:     document.getElementById('token-status'),
-  shopList:        document.getElementById('shop-list'),
-  adminMain:       document.getElementById('admin-main'),
-  emptyState:      document.getElementById('empty-state'),
+  tokenStatus:     $('token-status'),
+  shopList:        $('shop-list'),
+  adminMain:       $('admin-main'),
 
-  // Модалки
-  settingsOverlay: document.getElementById('settings-overlay'),
-  settingsModal:   document.getElementById('settings-modal'),
-  tokenInput:      document.getElementById('token-input'),
-  tokenEye:        document.getElementById('token-eye'),
-  repoInput:       document.getElementById('repo-input'),
-  branchInput:     document.getElementById('branch-input'),
-  settingsStatus:  document.getElementById('settings-status'),
+  settingsOverlay: $('settings-overlay'),
+  settingsModal:   $('settings-modal'),
+  tokenInput:      $('token-input'),
+  tokenEye:        $('token-eye'),
+  repoInput:       $('repo-input'),
+  branchInput:     $('branch-input'),
+  settingsStatus:  $('settings-status'),
 
-  shopModalOvl:    document.getElementById('shop-modal-overlay'),
-  shopModal:       document.getElementById('shop-modal'),
-  shopModalTitle:  document.getElementById('shop-modal-title'),
-  shopIdInput:     document.getElementById('shop-id-input'),
-  shopNameInput:   document.getElementById('shop-name-input'),
-  shopDescInput:   document.getElementById('shop-desc-input'),
-  shopModalStatus: document.getElementById('shop-modal-status'),
+  shopModalOvl:    $('shop-modal-overlay'),
+  shopModal:       $('shop-modal'),
+  shopModalTitle:  $('shop-modal-title'),
+  shopIdInput:     $('shop-id-input'),
+  shopNameInput:   $('shop-name-input'),
+  shopDescInput:   $('shop-desc-input'),
+  shopModalStatus: $('shop-modal-status'),
 
-  lotModalOvl:     document.getElementById('lot-modal-overlay'),
-  lotModal:        document.getElementById('lot-modal'),
-  lotModalTitle:   document.getElementById('lot-modal-title'),
-  lotTitleInput:   document.getElementById('lot-title-input'),
-  lotFunpayInput:  document.getElementById('lot-funpay-input'),
-  lotModalStatus:  document.getElementById('lot-modal-status'),
+  lotModalOvl:     $('lot-modal-overlay'),
+  lotModal:        $('lot-modal'),
+  lotModalTitle:   $('lot-modal-title'),
+  lotTitleInput:   $('lot-title-input'),
+  lotFunpayInput:  $('lot-funpay-input'),
+  lotModalStatus:  $('lot-modal-status'),
 
-  confirmOverlay:  document.getElementById('confirm-overlay'),
-  confirmModal:    document.getElementById('confirm-modal'),
-  confirmText:     document.getElementById('confirm-text'),
-  confirmOk:       document.getElementById('confirm-ok'),
+  confirmOverlay:  $('confirm-overlay'),
+  confirmModal:    $('confirm-modal'),
+  confirmText:     $('confirm-text'),
+  confirmOk:       $('confirm-ok'),
 };
 
-// ── Инициализация ────────────────────────────────────────────────
-(async function init() {
+// ════════════════════════════════════════════════════════════════
+//  МОДАЛКИ — явный реестр, без динамических ключей
+// ════════════════════════════════════════════════════════════════
+const MODALS = {
+  settings:  { overlay: dom.settingsOverlay, modal: dom.settingsModal },
+  shopModal: { overlay: dom.shopModalOvl,    modal: dom.shopModal     },
+  lotModal:  { overlay: dom.lotModalOvl,     modal: dom.lotModal      },
+  confirm:   { overlay: dom.confirmOverlay,  modal: dom.confirmModal  },
+};
+
+function openModal(name) {
+  const m = MODALS[name];
+  if (!m) { console.error('[admin] openModal: unknown =', name); return; }
+  m.overlay.classList.add('open');
+  m.modal.style.display = 'block';
+  requestAnimationFrame(() => requestAnimationFrame(() => m.modal.classList.add('open')));
+}
+
+function closeModal(name) {
+  const m = MODALS[name];
+  if (!m) return;
+  m.modal.classList.remove('open');
+  m.overlay.classList.remove('open');
+  setTimeout(() => { m.modal.style.display = ''; }, 220);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  СТАРТ — ждём полной загрузки DOM
+// ════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async function () {
   loadSettingsToForm();
   updateTokenStatus();
-  bindEvents();
+  bindAllEvents();
 
   if (GH.isConfigured()) {
     await loadAllData();
@@ -62,9 +93,55 @@ const dom = {
     openModal('settings');
     setStatus(dom.settingsStatus, 'Настройте GitHub для начала работы', 'info');
   }
-})();
+});
 
-// ── Загрузить settings в форму ───────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+//  ВСЕ СОБЫТИЯ — в одном месте
+// ════════════════════════════════════════════════════════════════
+function bindAllEvents() {
+  // Settings
+  $('settings-btn').addEventListener('click', () => { loadSettingsToForm(); openModal('settings'); });
+  $('settings-close').addEventListener('click', () => closeModal('settings'));
+  dom.settingsOverlay.addEventListener('click', () => closeModal('settings'));
+  $('settings-save').addEventListener('click', onSettingsSave);
+
+  // Eye toggle для токена
+  let tokenVisible = false;
+  dom.tokenEye.addEventListener('click', () => {
+    tokenVisible = !tokenVisible;
+    dom.tokenInput.type = tokenVisible ? 'text' : 'password';
+    dom.tokenEye.textContent = tokenVisible ? '🙈' : '👁';
+  });
+
+  // Shop modal
+  $('add-shop-btn').addEventListener('click',      () => openShopModal(null));
+  $('shop-modal-close').addEventListener('click',  () => closeModal('shopModal'));
+  $('shop-modal-cancel').addEventListener('click', () => closeModal('shopModal'));
+  dom.shopModalOvl.addEventListener('click',       () => closeModal('shopModal'));
+  $('shop-modal-save').addEventListener('click',   onShopSave);
+
+  // Lot modal
+  $('lot-modal-close').addEventListener('click',   () => closeModal('lotModal'));
+  $('lot-modal-cancel').addEventListener('click',  () => closeModal('lotModal'));
+  dom.lotModalOvl.addEventListener('click',        () => closeModal('lotModal'));
+  $('lot-modal-save').addEventListener('click',    onLotSave);
+
+  // Confirm
+  $('confirm-cancel').addEventListener('click',    () => closeModal('confirm'));
+  dom.confirmOverlay.addEventListener('click',     () => closeModal('confirm'));
+
+  // ESC
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const im = $('image-manager');
+    if (im && im.classList.contains('open')) { closeImageManager(); return; }
+    Object.keys(MODALS).forEach(closeModal);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SETTINGS
+// ════════════════════════════════════════════════════════════════
 function loadSettingsToForm() {
   const cfg = GH.getConfig();
   dom.tokenInput.value  = cfg.token;
@@ -72,11 +149,9 @@ function loadSettingsToForm() {
   dom.branchInput.value = cfg.branch || 'main';
 }
 
-// ── Обновить статус токена в хедере ─────────────────────────────
 function updateTokenStatus() {
   if (GH.isConfigured()) {
-    const cfg = GH.getConfig();
-    dom.tokenStatus.textContent = '✓ ' + cfg.repo;
+    dom.tokenStatus.textContent = '✓ ' + GH.getConfig().repo;
     dom.tokenStatus.classList.add('connected');
   } else {
     dom.tokenStatus.textContent = 'Не настроено';
@@ -84,19 +159,43 @@ function updateTokenStatus() {
   }
 }
 
-// ── Загрузить все данные ─────────────────────────────────────────
+async function onSettingsSave() {
+  const token  = dom.tokenInput.value.trim();
+  const repo   = dom.repoInput.value.trim().replace(/\/+$/, '');
+  const branch = dom.branchInput.value.trim() || 'main';
+
+  if (!token) { setStatus(dom.settingsStatus, 'Введите токен', 'err'); return; }
+  if (!repo)  { setStatus(dom.settingsStatus, 'Введите репозиторий', 'err'); return; }
+
+  GH.saveConfig(token, repo, branch);
+  setStatus(dom.settingsStatus, 'Проверяю подключение…', 'info');
+  try {
+    await GH.ping();
+    setStatus(dom.settingsStatus, '✓ Подключено!', 'ok');
+    updateTokenStatus();
+    setTimeout(() => { closeModal('settings'); loadAllData(); }, 800);
+  } catch (e) {
+    setStatus(dom.settingsStatus, 'Ошибка: ' + e.message, 'err');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ДАННЫЕ
+// ════════════════════════════════════════════════════════════════
 async function loadAllData() {
   dom.shopList.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
     const { data } = await GH.readJSON('data/shops.json');
-    state.shops = (data && data.shops) ? data.shops : [];
+    state.shops = (data && Array.isArray(data.shops)) ? data.shops : [];
     renderShopList();
   } catch (e) {
     dom.shopList.innerHTML = '<p style="font-size:12px;color:var(--danger);padding:8px">' + esc(e.message) + '</p>';
   }
 }
 
-// ── Рендер списка витрин (sidebar) ──────────────────────────────
+// ════════════════════════════════════════════════════════════════
+//  SIDEBAR
+// ════════════════════════════════════════════════════════════════
 function renderShopList() {
   dom.shopList.innerHTML = '';
   if (state.shops.length === 0) {
@@ -106,33 +205,29 @@ function renderShopList() {
   state.shops.forEach(shop => {
     const item = document.createElement('div');
     item.className = 'shop-list-item' + (shop.id === state.activeShop ? ' active' : '');
-    item.dataset.id = shop.id;
-    item.innerHTML = `
-      <span class="shop-list-item-icon">🏪</span>
-      <span class="shop-list-item-name">${esc(shop.name)}</span>
-    `;
+    item.innerHTML = '<span class="shop-list-item-icon">🏪</span><span class="shop-list-item-name">' + esc(shop.name) + '</span>';
     item.addEventListener('click', () => selectShop(shop.id));
     dom.shopList.appendChild(item);
   });
 }
 
-// ── Выбрать витрину ──────────────────────────────────────────────
 async function selectShop(shopId) {
   state.activeShop = shopId;
   renderShopList();
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
-
   try {
     const { data } = await GH.readJSON('data/' + shopId + '.json');
-    state.activeLots = (data && data.lots) ? data.lots : [];
-    renderShopPanel(data);
+    state.activeLots = (data && Array.isArray(data.lots)) ? data.lots : [];
+    renderShopPanel();
   } catch (e) {
     dom.adminMain.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h2>' + esc(e.message) + '</h2></div>';
   }
 }
 
-// ── Рендер панели витрины ────────────────────────────────────────
-function renderShopPanel(shopData) {
+// ════════════════════════════════════════════════════════════════
+//  SHOP PANEL
+// ════════════════════════════════════════════════════════════════
+function renderShopPanel() {
   const shop = state.shops.find(s => s.id === state.activeShop) || {};
 
   dom.adminMain.innerHTML = `
@@ -140,46 +235,47 @@ function renderShopPanel(shopData) {
       <div class="shop-panel-header">
         <div class="shop-panel-title">🏪 ${esc(shop.name || state.activeShop)}</div>
         <div class="shop-panel-actions">
-          <a href="../shop/?id=${encodeURIComponent(state.activeShop)}" target="_blank" class="btn btn-ghost">↗ Открыть витрину</a>
+          <a href="../shop/?id=${encodeURIComponent(state.activeShop)}" target="_blank" class="btn btn-ghost">↗ Открыть</a>
           <button class="btn btn-ghost" id="edit-shop-btn">✏ Изменить</button>
-          <button class="btn btn-ghost" style="color:var(--danger)" id="delete-shop-btn">🗑 Удалить витрину</button>
+          <button class="btn btn-ghost" style="color:var(--danger)" id="delete-shop-btn">🗑 Удалить</button>
           <button class="btn btn-primary" id="add-lot-btn">+ Добавить лот</button>
         </div>
       </div>
-      <div class="admin-lots-list" id="admin-lots-list">
-        ${state.activeLots.length === 0
-          ? '<div class="empty-state"><div class="empty-icon">📦</div><h2>Нет лотов</h2><p>Нажмите «+ Добавить лот»</p></div>'
-          : ''
-        }
-      </div>
+      <div class="admin-lots-list" id="admin-lots-list"></div>
     </div>
   `;
 
-  if (state.activeLots.length > 0) renderLots();
+  // Кнопки создаются динамически — привязываем сразу после innerHTML
+  $('edit-shop-btn').addEventListener('click',   () => openShopModal(state.activeShop));
+  $('delete-shop-btn').addEventListener('click', () => confirmDeleteShop(state.activeShop));
+  $('add-lot-btn').addEventListener('click',     () => openLotModal(null));
 
-  // Привязка кнопок
-  document.getElementById('add-lot-btn').addEventListener('click', () => openLotModal(null));
-  document.getElementById('edit-shop-btn').addEventListener('click', () => openShopModal(state.activeShop));
-  document.getElementById('delete-shop-btn').addEventListener('click', () => confirmDeleteShop(state.activeShop));
+  renderLots();
 }
 
-// ── Рендер лотов в панели ────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+//  LOTS
+// ════════════════════════════════════════════════════════════════
 function renderLots() {
-  const list = document.getElementById('admin-lots-list');
+  const list = $('admin-lots-list');
   if (!list) return;
-  list.innerHTML = '';
 
-  state.activeLots.forEach((lot) => {
-    const firstImg  = lot.images && lot.images[0];
-    const thumbHtml = firstImg
-      ? `<img class="admin-lot-thumb" src="../${firstImg}" alt="" loading="lazy">`
+  if (state.activeLots.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><h2>Нет лотов</h2><p>Нажмите «+ Добавить лот»</p></div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  state.activeLots.forEach(lot => {
+    const preview = lot.thumb || (lot.images && lot.images[0]);
+    const thumb   = preview
+      ? `<img class="admin-lot-thumb" src="../${preview}" alt="" loading="lazy">`
       : `<div class="admin-lot-thumb-placeholder">🎯</div>`;
 
     const card = document.createElement('div');
     card.className = 'admin-lot-card';
-    card.dataset.id = lot.id;
     card.innerHTML = `
-      ${thumbHtml}
+      ${thumb}
       <div class="admin-lot-info">
         <div class="admin-lot-title">${esc(lot.title)}</div>
         <div class="admin-lot-meta">
@@ -188,15 +284,14 @@ function renderLots() {
         </div>
       </div>
       <div class="admin-lot-actions">
-        <button class="btn btn-ghost" data-action="images" data-lot="${lot.id}" title="Управление фото">🖼</button>
-        <button class="btn btn-ghost" data-action="edit"   data-lot="${lot.id}" title="Редактировать">✏</button>
+        <button class="btn btn-ghost" data-action="images" data-lot="${lot.id}" title="Фото">🖼</button>
+        <button class="btn btn-ghost" data-action="edit"   data-lot="${lot.id}" title="Изменить">✏</button>
         <button class="btn btn-ghost" style="color:var(--danger)" data-action="delete" data-lot="${lot.id}" title="Удалить">🗑</button>
       </div>
     `;
     list.appendChild(card);
   });
 
-  // Делегированные события
   list.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -209,192 +304,102 @@ function renderLots() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  МОДАЛКИ — прямые ссылки, без динамических ключей
+//  SHOP MODAL
 // ════════════════════════════════════════════════════════════════
-
-// Реестр модалок: имя → {overlay, modal}
-const MODALS = {
-  settings:  { overlay: dom.settingsOverlay, modal: dom.settingsModal },
-  shopModal: { overlay: dom.shopModalOvl,    modal: dom.shopModal     },
-  lotModal:  { overlay: dom.lotModalOvl,     modal: dom.lotModal      },
-  confirm:   { overlay: dom.confirmOverlay,  modal: dom.confirmModal  },
-};
-
-function openModal(name) {
-  const m = MODALS[name];
-  if (!m) { console.error('openModal: unknown modal', name); return; }
-  m.overlay.classList.add('open');
-  m.modal.style.display = 'block';
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => m.modal.classList.add('open'));
-  });
-}
-
-function closeModal(name) {
-  const m = MODALS[name];
-  if (!m) return;
-  m.modal.classList.remove('open');
-  m.overlay.classList.remove('open');
-  setTimeout(() => { m.modal.style.display = ''; }, 220);
-}
-
-// ── Settings modal ────────────────────────────────────────────────
-document.getElementById('settings-btn').addEventListener('click', () => {
-  loadSettingsToForm();
-  openModal('settings');
-});
-document.getElementById('settings-close').addEventListener('click', () => closeModal('settings'));
-dom.settingsOverlay.addEventListener('click', () => closeModal('settings'));
-
-// Eye toggle
-let tokenVisible = false;
-dom.tokenEye.addEventListener('click', () => {
-  tokenVisible = !tokenVisible;
-  dom.tokenInput.type = tokenVisible ? 'text' : 'password';
-  dom.tokenEye.textContent = tokenVisible ? '🙈' : '👁';
-});
-
-// Сохранить настройки
-document.getElementById('settings-save').addEventListener('click', async () => {
-  const token  = dom.tokenInput.value.trim();
-  const repo   = dom.repoInput.value.trim();
-  const branch = dom.branchInput.value.trim() || 'main';
-
-  if (!token) { setStatus(dom.settingsStatus, 'Введите токен', 'err'); return; }
-  if (!repo)  { setStatus(dom.settingsStatus, 'Введите репозиторий', 'err'); return; }
-
-  GH.saveConfig(token, repo, branch);
-  setStatus(dom.settingsStatus, 'Проверяю подключение…', 'info');
-
-  try {
-    await GH.ping();
-    setStatus(dom.settingsStatus, '✓ Подключено!', 'ok');
-    updateTokenStatus();
-    setTimeout(() => {
-      closeModal('settings');
-      loadAllData();
-    }, 800);
-  } catch (e) {
-    setStatus(dom.settingsStatus, 'Ошибка: ' + e.message, 'err');
-  }
-});
-
-// ── Shop modal ────────────────────────────────────────────────────
-document.getElementById('add-shop-btn').addEventListener('click', () => openShopModal(null));
-document.getElementById('shop-modal-close').addEventListener('click', () => closeModal('shopModal'));
-document.getElementById('shop-modal-cancel').addEventListener('click', () => closeModal('shopModal'));
-dom.shopModalOvl.addEventListener('click', () => closeModal('shopModal'));
-
 function openShopModal(editId) {
   const shop = editId ? state.shops.find(s => s.id === editId) : null;
-  dom.shopModalTitle.textContent  = shop ? 'Редактировать витрину' : 'Новая витрина';
-  dom.shopIdInput.value           = shop ? shop.id          : '';
-  dom.shopIdInput.disabled        = !!shop; // нельзя менять id
-  dom.shopNameInput.value         = shop ? shop.name        : '';
-  dom.shopDescInput.value         = shop ? (shop.description || '') : '';
-  dom.shopModalStatus.className   = 'status-msg';
+  dom.shopModalTitle.textContent = shop ? 'Редактировать витрину' : 'Новая витрина';
+  dom.shopIdInput.value          = shop ? shop.id               : '';
+  dom.shopIdInput.disabled       = !!shop;
+  dom.shopNameInput.value        = shop ? shop.name             : '';
+  dom.shopDescInput.value        = shop ? (shop.description || '') : '';
+  dom.shopModalStatus.className  = 'status-msg';
   openModal('shopModal');
 }
 
-document.getElementById('shop-modal-save').addEventListener('click', async () => {
+async function onShopSave() {
   const id   = dom.shopIdInput.value.trim();
   const name = dom.shopNameInput.value.trim();
   const desc = dom.shopDescInput.value.trim();
 
   if (!id)   { setStatus(dom.shopModalStatus, 'Введите ID', 'err'); return; }
   if (!name) { setStatus(dom.shopModalStatus, 'Введите название', 'err'); return; }
-  if (!/^[a-z0-9_-]+$/.test(id)) { setStatus(dom.shopModalStatus, 'ID: только a-z, 0-9, _, -', 'err'); return; }
+  if (!/^[a-z0-9_-]+$/.test(id)) {
+    setStatus(dom.shopModalStatus, 'ID: только латинские буквы, цифры, _, -', 'err'); return;
+  }
 
   setStatus(dom.shopModalStatus, 'Сохраняю…', 'info');
-
   try {
     const existing = state.shops.find(s => s.id === id);
-
     if (!existing) {
-      // Создаём новую витрину
-      state.shops.push({ id, name, description: desc });
-      // Создаём файл данных витрины
+      // Новая витрина — создаём JSON файл
       await GH.writeJSON('data/' + id + '.json', {
         id, name, description: desc, seller: id, lots: []
       }, 'Create shop ' + id);
+      state.shops.push({ id, name, description: desc });
     } else {
-      // Обновляем существующую
+      // Редактирование — обновляем в shops.json и в файле витрины
       existing.name        = name;
       existing.description = desc;
+      const { data } = await GH.readJSON('data/' + id + '.json');
+      if (data) {
+        data.name = name; data.description = desc;
+        await GH.writeJSON('data/' + id + '.json', data, 'Update shop ' + id);
+      }
     }
-
-    // Обновляем shops.json
     await GH.writeJSON('data/shops.json', { shops: state.shops }, 'Update shops list');
     setStatus(dom.shopModalStatus, '✓ Сохранено', 'ok');
-
     setTimeout(() => {
       closeModal('shopModal');
       renderShopList();
-      if (state.activeShop) selectShop(state.activeShop);
+      if (state.activeShop === id) renderShopPanel();
     }, 600);
-
   } catch (e) {
     setStatus(dom.shopModalStatus, 'Ошибка: ' + e.message, 'err');
   }
-});
+}
 
-// ── Lot modal ─────────────────────────────────────────────────────
-document.getElementById('lot-modal-close').addEventListener('click',  () => closeModal('lotModal'));
-document.getElementById('lot-modal-cancel').addEventListener('click', () => closeModal('lotModal'));
-dom.lotModalOvl.addEventListener('click', () => closeModal('lotModal'));
-
+// ════════════════════════════════════════════════════════════════
+//  LOT MODAL
+// ════════════════════════════════════════════════════════════════
 function openLotModal(editLotId) {
   const lot = editLotId ? state.activeLots.find(l => l.id === editLotId) : null;
   state.editingLot = editLotId;
-
   dom.lotModalTitle.textContent = lot ? 'Редактировать лот' : 'Новый лот';
-  dom.lotTitleInput.value       = lot ? lot.title  : '';
+  dom.lotTitleInput.value       = lot ? lot.title          : '';
   dom.lotFunpayInput.value      = lot ? (lot.funpay || '') : '';
   dom.lotModalStatus.className  = 'status-msg';
   openModal('lotModal');
 }
 
-document.getElementById('lot-modal-save').addEventListener('click', async () => {
+async function onLotSave() {
   const title  = dom.lotTitleInput.value.trim();
   const funpay = dom.lotFunpayInput.value.trim();
-
   if (!title) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
   setStatus(dom.lotModalStatus, 'Сохраняю…', 'info');
-
   try {
     if (state.editingLot) {
-      // Редактирование
       const lot = state.activeLots.find(l => l.id === state.editingLot);
       if (lot) { lot.title = title; lot.funpay = funpay; }
     } else {
-      // Создание нового лота
-      const id = 'lot_' + Date.now();
-      state.activeLots.push({ id, title, funpay, images: [] });
+      state.activeLots.push({ id: 'lot_' + Date.now(), title, funpay, images: [] });
     }
-
     await saveLotsJSON();
     setStatus(dom.lotModalStatus, '✓ Сохранено', 'ok');
-
-    setTimeout(() => {
-      closeModal('lotModal');
-      renderLots();
-    }, 500);
-
+    setTimeout(() => { closeModal('lotModal'); renderLots(); }, 500);
   } catch (e) {
     setStatus(dom.lotModalStatus, 'Ошибка: ' + e.message, 'err');
   }
-});
+}
 
-// ── Confirm modal ─────────────────────────────────────────────────
-dom.confirmOverlay.addEventListener('click', () => closeModal('confirm'));
-document.getElementById('confirm-cancel').addEventListener('click', () => closeModal('confirm'));
-
+// ════════════════════════════════════════════════════════════════
+//  CONFIRM
+// ════════════════════════════════════════════════════════════════
 function openConfirm(text, onOk) {
   dom.confirmText.textContent = text;
   dom.confirmOk.onclick = async () => {
     dom.confirmOk.disabled = true;
-    await onOk();
-    dom.confirmOk.disabled = false;
+    try { await onOk(); } finally { dom.confirmOk.disabled = false; }
     closeModal('confirm');
   };
   openModal('confirm');
@@ -402,77 +407,50 @@ function openConfirm(text, onOk) {
 
 function confirmDeleteShop(shopId) {
   const shop = state.shops.find(s => s.id === shopId);
-  openConfirm(
-    'Удалить витрину «' + (shop ? shop.name : shopId) + '»? Все лоты и изображения будут удалены.',
-    () => deleteShop(shopId)
-  );
+  openConfirm('Удалить витрину «' + esc(shop ? shop.name : shopId) + '»?', () => deleteShop(shopId));
 }
-
 function confirmDeleteLot(lotId) {
   const lot = state.activeLots.find(l => l.id === lotId);
-  openConfirm(
-    'Удалить лот «' + (lot ? lot.title : lotId) + '»? Изображения будут удалены.',
-    () => deleteLot(lotId)
-  );
+  openConfirm('Удалить лот «' + esc(lot ? lot.title : lotId) + '»?', () => deleteLot(lotId));
 }
 
 // ════════════════════════════════════════════════════════════════
 //  УДАЛЕНИЕ
 // ════════════════════════════════════════════════════════════════
-
 async function deleteShop(shopId) {
-  try {
-    // Удаляем из списка
-    state.shops = state.shops.filter(s => s.id !== shopId);
-    await GH.writeJSON('data/shops.json', { shops: state.shops }, 'Delete shop ' + shopId);
-
-    // Пытаемся удалить JSON витрины и изображения (не критично если не получится)
-    try { await GH.deleteFile('data/' + shopId + '.json', 'Delete shop data'); } catch (_) {}
-
-    if (state.activeShop === shopId) {
-      state.activeShop = null;
-      state.activeLots = [];
-      dom.adminMain.innerHTML = dom.emptyState ? dom.emptyState.outerHTML : '';
-    }
-
-    renderShopList();
-  } catch (e) {
-    alert('Ошибка удаления: ' + e.message);
+  state.shops = state.shops.filter(s => s.id !== shopId);
+  await GH.writeJSON('data/shops.json', { shops: state.shops }, 'Delete shop ' + shopId);
+  try { await GH.deleteFile('data/' + shopId + '.json', 'Delete shop data'); } catch (_) {}
+  if (state.activeShop === shopId) {
+    state.activeShop = null; state.activeLots = [];
+    dom.adminMain.innerHTML = '<div class="empty-state"><div class="empty-icon">🏪</div><h2>Выберите витрину</h2></div>';
   }
+  renderShopList();
 }
 
 async function deleteLot(lotId) {
   const lot = state.activeLots.find(l => l.id === lotId);
   if (!lot) return;
-
-  try {
-    // Удаляем изображения
-    if (lot.images && lot.images.length > 0) {
-      await GH.deleteFiles(lot.images, 'Delete lot ' + lotId + ' images');
-    }
-
-    state.activeLots = state.activeLots.filter(l => l.id !== lotId);
-    await saveLotsJSON();
-    renderLots();
-  } catch (e) {
-    alert('Ошибка удаления: ' + e.message);
-  }
+  const files = [...(lot.images || [])];
+  if (lot.thumb) files.push(lot.thumb);
+  if (files.length > 0) await GH.deleteFiles(files, 'Delete lot ' + lotId);
+  state.activeLots = state.activeLots.filter(l => l.id !== lotId);
+  await saveLotsJSON();
+  renderLots();
 }
 
 // ════════════════════════════════════════════════════════════════
 //  IMAGE MANAGER
 // ════════════════════════════════════════════════════════════════
-
-let imLotId = null;       // id текущего лота в менеджере
-let imImages = [];        // текущий массив путей
+let imLotId  = null;
+let imImages = [];
 
 function openImageManager(lotId) {
-  imLotId = lotId;
+  imLotId  = lotId;
   const lot = state.activeLots.find(l => l.id === lotId);
   imImages  = lot ? [...(lot.images || [])] : [];
 
-  // Создаём панель если не существует
-  let panel = document.getElementById('image-manager');
+  let panel = $('image-manager');
   if (!panel) {
     panel = document.createElement('div');
     panel.id = 'image-manager';
@@ -483,8 +461,8 @@ function openImageManager(lotId) {
   panel.innerHTML = `
     <div class="image-manager-header">
       <button class="btn btn-ghost" id="im-back">← Назад</button>
-      <div class="image-manager-title">📸 Изображения: ${esc(lot ? lot.title : lotId)}</div>
-      <button class="btn btn-ghost" id="im-refresh-thumb" title="Перегенерировать превью из первого фото">🖼 Обновить превью</button>
+      <div class="image-manager-title">📸 ${esc(lot ? lot.title : lotId)}</div>
+      <button class="btn btn-ghost" id="im-refresh-thumb">🖼 Обновить превью</button>
       <button class="btn btn-primary" id="im-upload-trigger">+ Добавить фото</button>
     </div>
     <div class="image-manager-body">
@@ -492,7 +470,7 @@ function openImageManager(lotId) {
         <input type="file" id="im-file-input" accept="image/*" multiple>
         <div class="dropzone-icon">📤</div>
         <div class="dropzone-text">Перетащите изображения сюда</div>
-        <div class="dropzone-hint">или нажмите «+ Добавить фото» • PNG, JPG, GIF → WebP</div>
+        <div class="dropzone-hint">PNG, JPG, GIF → WebP</div>
       </div>
       <div class="upload-queue" id="im-upload-queue"></div>
       <div class="managed-images" id="im-managed-images"></div>
@@ -500,23 +478,38 @@ function openImageManager(lotId) {
   `;
 
   renderManagedImages();
-  bindImageManagerEvents(panel);
+
+  $('im-back').addEventListener('click', closeImageManager);
+  $('im-refresh-thumb').addEventListener('click', regenerateThumb);
+  $('im-upload-trigger').addEventListener('click', () => $('im-file-input').click());
+
+  const fi = $('im-file-input');
+  fi.addEventListener('change', () => { if (fi.files.length) uploadFiles(fi.files); fi.value = ''; });
+
+  const dz = $('im-dropzone');
+  dz.addEventListener('click',    () => $('im-file-input').click());
+  dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave',()  => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', (e) => {
+    e.preventDefault(); dz.classList.remove('dragover');
+    if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
+  });
 
   requestAnimationFrame(() => panel.classList.add('open'));
 }
 
 function closeImageManager() {
-  const panel = document.getElementById('image-manager');
-  if (panel) panel.classList.remove('open');
+  const p = $('image-manager');
+  if (p) p.classList.remove('open');
 }
 
 function renderManagedImages() {
-  const container = document.getElementById('im-managed-images');
-  if (!container) return;
-  container.innerHTML = '';
+  const c = $('im-managed-images');
+  if (!c) return;
+  c.innerHTML = '';
 
   if (imImages.length === 0) {
-    container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;grid-column:1/-1">Нет изображений</p>';
+    c.innerHTML = '<p style="color:var(--text-muted);font-size:13px;grid-column:1/-1">Нет изображений</p>';
     return;
   }
 
@@ -526,67 +519,44 @@ function renderManagedImages() {
     card.dataset.idx = idx;
     card.draggable = true;
     card.innerHTML = `
-      <div class="drag-handle" title="Перетащить для сортировки">⠿</div>
+      <div class="drag-handle">⠿</div>
       <img src="../${src}" alt="" loading="lazy">
       <div class="managed-img-footer">
         <span class="managed-img-num">${idx + 1}</span>
         <div class="managed-img-actions">
-          <button class="img-action-btn" data-action="up"     data-idx="${idx}" title="Вверх">↑</button>
-          <button class="img-action-btn" data-action="down"   data-idx="${idx}" title="Вниз">↓</button>
-          <button class="img-action-btn danger" data-action="del" data-idx="${idx}" title="Удалить">🗑</button>
+          <button class="img-action-btn" data-action="up"   data-idx="${idx}">↑</button>
+          <button class="img-action-btn" data-action="down" data-idx="${idx}">↓</button>
+          <button class="img-action-btn danger" data-action="del" data-idx="${idx}">🗑</button>
         </div>
       </div>
     `;
-    container.appendChild(card);
+    c.appendChild(card);
     bindDragSort(card);
   });
 
-  // Делегированные события кнопок
-  container.onclick = async (e) => {
+  c.onclick = async (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
-    const idx    = parseInt(btn.dataset.idx);
-    const action = btn.dataset.action;
-
-    if (action === 'up'   && idx > 0)               { swap(idx, idx - 1); await saveOrder(); }
-    if (action === 'down' && idx < imImages.length-1){ swap(idx, idx + 1); await saveOrder(); }
-    if (action === 'del') await deleteImage(idx);
+    const idx = parseInt(btn.dataset.idx);
+    const act = btn.dataset.action;
+    if (act === 'up'   && idx > 0)               { swap(idx, idx-1); await saveOrder(); }
+    if (act === 'down' && idx < imImages.length-1){ swap(idx, idx+1); await saveOrder(); }
+    if (act === 'del') await deleteImage(idx);
   };
 }
 
-// ── Drag & drop сортировка ────────────────────────────────────────
 let dragSrcIdx = null;
-
 function bindDragSort(card) {
-  card.addEventListener('dragstart', (e) => {
-    dragSrcIdx = parseInt(card.dataset.idx);
-    card.classList.add('dragging-card');
-    e.dataTransfer.effectAllowed = 'move';
-  });
-
-  card.addEventListener('dragend', () => {
-    card.classList.remove('dragging-card');
-  });
-
-  card.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    document.querySelectorAll('.managed-img-card').forEach(c => c.classList.remove('drag-over-card'));
-    card.classList.add('drag-over-card');
-  });
-
-  card.addEventListener('dragleave', () => {
-    card.classList.remove('drag-over-card');
-  });
-
+  card.addEventListener('dragstart', (e) => { dragSrcIdx = parseInt(card.dataset.idx); card.classList.add('dragging-card'); e.dataTransfer.effectAllowed = 'move'; });
+  card.addEventListener('dragend',   ()  => card.classList.remove('dragging-card'));
+  card.addEventListener('dragover',  (e) => { e.preventDefault(); document.querySelectorAll('.managed-img-card').forEach(c=>c.classList.remove('drag-over-card')); card.classList.add('drag-over-card'); });
+  card.addEventListener('dragleave', ()  => card.classList.remove('drag-over-card'));
   card.addEventListener('drop', async (e) => {
-    e.preventDefault();
-    card.classList.remove('drag-over-card');
-    const destIdx = parseInt(card.dataset.idx);
-    if (dragSrcIdx !== null && dragSrcIdx !== destIdx) {
-      // Вставляем на новое место
+    e.preventDefault(); card.classList.remove('drag-over-card');
+    const dest = parseInt(card.dataset.idx);
+    if (dragSrcIdx !== null && dragSrcIdx !== dest) {
       const item = imImages.splice(dragSrcIdx, 1)[0];
-      imImages.splice(destIdx, 0, item);
+      imImages.splice(dest, 0, item);
       renderManagedImages();
       await saveOrder();
     }
@@ -594,235 +564,143 @@ function bindDragSort(card) {
   });
 }
 
-function swap(a, b) {
-  [imImages[a], imImages[b]] = [imImages[b], imImages[a]];
-  renderManagedImages();
-}
+function swap(a, b) { [imImages[a], imImages[b]] = [imImages[b], imImages[a]]; renderManagedImages(); }
 
-// ── Сохранить порядок ────────────────────────────────────────────
 async function saveOrder() {
   const lot = state.activeLots.find(l => l.id === imLotId);
   if (lot) lot.images = [...imImages];
-  try { await saveLotsJSON(); } catch (e) { console.error(e); }
+  try { await saveLotsJSON(); } catch (e) { console.error('saveOrder:', e.message); }
 }
 
-// ── Удалить изображение ──────────────────────────────────────────
 async function deleteImage(idx) {
-  if (!confirm('Удалить изображение ' + (idx + 1) + '?')) return;
+  if (!confirm('Удалить изображение ' + (idx+1) + '?')) return;
   const path = imImages[idx];
-  try {
-    await GH.deleteFile(path, 'Delete image ' + path);
-  } catch (e) {
-    if (e.status !== 404) {
-      alert('Не удалось удалить файл: ' + e.message);
-      return;
-    }
-  }
+  try { await GH.deleteFile(path, 'Delete image'); } catch (e) { if (e.status !== 404) { alert('Ошибка: ' + e.message); return; } }
   imImages.splice(idx, 1);
   await saveOrder();
   renderManagedImages();
   renderLots();
 }
 
-// ── Upload ────────────────────────────────────────────────────────
-function bindImageManagerEvents(panel) {
-  document.getElementById('im-back').addEventListener('click', closeImageManager);
-  document.getElementById('im-refresh-thumb').addEventListener('click', regenerateThumb);
-  document.getElementById('im-upload-trigger').addEventListener('click', () => {
-    document.getElementById('im-file-input').click();
-  });
-
-  const fileInput = document.getElementById('im-file-input');
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files.length > 0) uploadFiles(fileInput.files);
-    fileInput.value = '';
-  });
-
-  const dropzone = document.getElementById('im-dropzone');
-  dropzone.addEventListener('click', () => document.getElementById('im-file-input').click());
-  dropzone.addEventListener('dragover', (e) => {
-    e.preventDefault(); dropzone.classList.add('dragover');
-  });
-  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-  dropzone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropzone.classList.remove('dragover');
-    if (e.dataTransfer.files.length > 0) uploadFiles(e.dataTransfer.files);
-  });
-}
-
-// ── Перегенерировать миниатюру из первого изображения ────────────
 async function regenerateThumb() {
-  if (imImages.length === 0) { alert('Нет изображений для генерации превью.'); return; }
-
-  const btn = document.getElementById('im-refresh-thumb');
-  if (btn) { btn.textContent = '⏳ Генерация…'; btn.disabled = true; }
-
+  if (!imImages.length) { alert('Нет изображений.'); return; }
+  const btn = $('im-refresh-thumb');
+  if (btn) { btn.textContent = '⏳…'; btn.disabled = true; }
   try {
-    // Скачиваем первое изображение из репозитория
-    const firstPath = imImages[0];
-    const { content } = await GH.getFile(firstPath);
-
-    // content — бинарные данные, конвертируем через Blob
-    const byteChars  = content;
-    const byteArrays = [];
-    for (let i = 0; i < byteChars.length; i += 512) {
-      const slice  = byteChars.slice(i, i + 512);
-      const bytes  = new Uint8Array(slice.length);
-      for (let j = 0; j < slice.length; j++) bytes[j] = slice.charCodeAt(j);
-      byteArrays.push(bytes);
-    }
-    const blob = new Blob(byteArrays, { type: 'image/webp' });
-    const file = new File([blob], 'source.webp', { type: 'image/webp' });
-
+    const { content } = await GH.getFile(imImages[0]);
+    const bytes = Uint8Array.from(content, c => c.charCodeAt(0));
+    const file  = new File([new Blob([bytes])], 'src.webp', { type: 'image/webp' });
     const { base64, ext } = await ImageConvert.toWebP(file, 0.75, 480);
-    const baseDir   = 'images/' + state.activeShop + '/' + imLotId;
-    const thumbPath = baseDir + '/thumb.' + ext;
-
-    await GH.putBinaryFile(thumbPath, base64, 'Regenerate thumb for ' + imLotId);
-
+    const thumbPath = 'images/' + state.activeShop + '/' + imLotId + '/thumb.' + ext;
+    const sha = await GH.getFileSha(thumbPath);
+    await GH.putBinaryFile(thumbPath, base64, 'Regenerate thumb', sha || undefined);
     const lot = state.activeLots.find(l => l.id === imLotId);
     if (lot) lot.thumb = thumbPath;
     await saveLotsJSON();
-
-    if (btn) { btn.textContent = '✓ Превью обновлено'; }
+    if (btn) btn.textContent = '✓ Готово';
     setTimeout(() => { if (btn) { btn.textContent = '🖼 Обновить превью'; btn.disabled = false; } }, 2000);
-
   } catch (e) {
-    if (btn) { btn.textContent = '⚠ Ошибка'; btn.disabled = false; }
-    alert('Не удалось обновить превью: ' + e.message);
+    if (btn) { btn.textContent = '⚠'; btn.disabled = false; }
+    alert('Ошибка: ' + e.message);
   }
 }
 
+// ════════════════════════════════════════════════════════════════
+//  ЗАГРУЗКА ФАЙЛОВ
+// ════════════════════════════════════════════════════════════════
 async function uploadFiles(files) {
-  const queue    = document.getElementById('im-upload-queue');
+  const queue    = $('im-upload-queue');
   const fileList = Array.from(files);
-
-  // Рендерим очередь загрузки
   queue.innerHTML = '';
+
   fileList.forEach((f, i) => {
     const div = document.createElement('div');
     div.className = 'upload-item';
-    div.id = 'upload-item-' + i;
-    div.innerHTML = `
-      <span class="upload-item-name">${esc(f.name)}</span>
-      <span class="upload-item-status busy" id="upload-status-${i}">Подготовка…</span>
-    `;
+    div.innerHTML = `<span class="upload-item-name">${esc(f.name)}</span><span class="upload-item-status busy" id="upload-status-${i}">Подготовка…</span>`;
     queue.appendChild(div);
   });
 
-  // startIdx фиксируется ДО цикла — гарантирует правильную нумерацию в пакете
-  const startIdx  = imImages.length;
-  const baseDir   = 'images/' + state.activeShop + '/' + imLotId;
-  let   thumbSaved = false;   // флаг: thumb уже был создан в этой сессии
+  const baseDir  = 'images/' + state.activeShop + '/' + imLotId;
+  const startIdx = imImages.length; // фиксируем ДО цикла
   let   rateLimitHit = false;
 
   for (let i = 0; i < fileList.length; i++) {
-    if (rateLimitHit) {
-      const el = document.getElementById('upload-status-' + i);
-      if (el) { el.textContent = 'Пропущено (rate limit)'; el.className = 'upload-item-status err'; }
-      continue;
-    }
-
-    const file     = fileList[i];
-    const statusEl = document.getElementById('upload-status-' + i);
+    const statusEl = $('upload-status-' + i);
+    if (rateLimitHit) { statusEl.textContent = 'Пропущено'; statusEl.className = 'upload-item-status err'; continue; }
 
     try {
       statusEl.textContent = 'Конвертация…';
-      const { base64, ext } = await ImageConvert.toWebP(file);
+      const { base64, ext } = await ImageConvert.toWebP(fileList[i]);
 
       const fileNum  = startIdx + i;
       const fileName = ImageConvert.numberedName(fileNum, ext);
       const repoPath = baseDir + '/' + fileName;
 
       statusEl.textContent = 'Загрузка…';
-      await GH.putBinaryFile(repoPath, base64, 'Upload ' + fileName);
 
-      // Thumb: создаём из первого фото всего лота (fileNum === 0)
-      // или из первого фото в текущей пачке если в лоте ещё не было изображений
-      if (!thumbSaved && fileNum === 0) {
+      // Проверяем SHA: если файл уже есть — передаём sha, иначе undefined (новый)
+      const existingSha = await GH.getFileSha(repoPath);
+      await GH.putBinaryFile(repoPath, base64, 'Upload ' + fileName, existingSha || undefined);
+
+      // Thumb для первого фото лота
+      if (fileNum === 0) {
         try {
-          statusEl.textContent = 'Превью…';
-          const { base64: tB64, ext: tExt } = await ImageConvert.toWebP(file, 0.75, 480);
-          await GH.putBinaryFile(baseDir + '/thumb.' + tExt, tB64, 'Thumb for ' + imLotId);
+          const { base64: tB64, ext: tExt } = await ImageConvert.toWebP(fileList[i], 0.75, 480);
+          const thumbPath = baseDir + '/thumb.' + tExt;
+          const thumbSha  = await GH.getFileSha(thumbPath);
+          await GH.putBinaryFile(thumbPath, tB64, 'Thumb for ' + imLotId, thumbSha || undefined);
           const lot = state.activeLots.find(l => l.id === imLotId);
-          if (lot) lot.thumb = baseDir + '/thumb.' + tExt;
-          thumbSaved = true;
-        } catch (_) { /* не критично */ }
+          if (lot) lot.thumb = thumbPath;
+        } catch (_) {}
       }
 
-      // Обновляем локальный массив (без записи в GitHub на каждом шаге)
       imImages.push(repoPath);
       const lot = state.activeLots.find(l => l.id === imLotId);
       if (lot) lot.images = [...imImages];
 
       statusEl.textContent = '✓ Готово';
-      statusEl.className = 'upload-item-status ok';
-
+      statusEl.className   = 'upload-item-status ok';
     } catch (e) {
       statusEl.textContent = e.message;
-      statusEl.className = 'upload-item-status err';
-
-      if (e.status === 403 && e.message.includes('лимит')) {
-        rateLimitHit = true;
-      }
+      statusEl.className   = 'upload-item-status err';
+      if (e.status === 403 && e.message.includes('лимит')) rateLimitHit = true;
     }
   }
 
-  // ── Сохраняем JSON ОДИН РАЗ после всей очереди ────────────────
-  // Это главное исправление 409: не пишем в GitHub на каждый файл,
-  // а делаем один коммит в конце — SHA не успевает устареть
-  try {
-    await saveLotsJSON();
-  } catch (e) {
-    console.error('Не удалось сохранить JSON:', e.message);
-  }
+  // Один коммит JSON после всей очереди
+  try { await saveLotsJSON(); } catch (e) { console.error('saveLotsJSON after upload:', e.message); }
 
   renderManagedImages();
   renderLots();
-
   setTimeout(() => { if (queue) queue.innerHTML = ''; }, 4000);
 }
 
 // ════════════════════════════════════════════════════════════════
-//  СОХРАНЕНИЕ ЛОТОВ
+//  СОХРАНЕНИЕ JSON
 // ════════════════════════════════════════════════════════════════
-
 async function saveLotsJSON() {
   const shop = state.shops.find(s => s.id === state.activeShop) || {};
-  const data = {
+  await GH.writeJSON('data/' + state.activeShop + '.json', {
     id:          state.activeShop,
     name:        shop.name        || state.activeShop,
     description: shop.description || '',
     seller:      state.activeShop,
     lots:        state.activeLots,
-  };
-  await GH.writeJSON('data/' + state.activeShop + '.json', data, 'Update ' + state.activeShop + ' lots');
+  }, 'Update ' + state.activeShop);
 }
 
-// ── Bind events ────────────────────────────────────────────────────
-function bindEvents() {
-  // ESC закрывает все модалки
-  document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    ['settings', 'shopModal', 'lotModal', 'confirm'].forEach(n => {
-      if (dom[n + 'Modal'] && dom[n + 'Modal'].classList.contains('open')) closeModal(n);
-    });
-    const imPanel = document.getElementById('image-manager');
-    if (imPanel && imPanel.classList.contains('open')) closeImageManager();
-  });
-}
-
-// ── Утилиты ────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+//  УТИЛИТЫ
+// ════════════════════════════════════════════════════════════════
 function setStatus(el, msg, type) {
   if (!el) return;
   el.textContent = msg;
   el.className = 'status-msg visible ' + (type || '');
-  if (type === 'ok') setTimeout(() => el.className = 'status-msg', 3000);
+  if (type === 'ok') setTimeout(() => { el.className = 'status-msg'; }, 3000);
 }
 
 function esc(str) {
   const d = document.createElement('div');
-  d.textContent = str || '';
+  d.textContent = String(str || '');
   return d.innerHTML;
 }
