@@ -21,17 +21,23 @@ const BASE_URL = (() => {
   return window.location.origin;
 })();
 
-// Определяем корень проекта по текущей директории URL
-// /mt/              → ROOT = './'
-// /mt/shop/         → ROOT = '../'
-// /mt/lot/          → ROOT = '../'
-// /mt/admin/        → ROOT = '../'
+// Определяем корень проекта по последнему сегменту пути.
+// Примеры на GitHub Pages (репо = mt):
+//   /mt/             → последний сегмент = 'mt'  → ROOT = './'
+//   /mt/shop/        → последний сегмент = 'shop' → ROOT = '../'
+//   /mt/lot/         → последний сегмент = 'lot'  → ROOT = '../'
+//   /mt/admin/       → последний сегмент = 'admin' → ROOT = '../'
+// Localhost:
+//   /                → ROOT = './'
+//   /shop/           → ROOT = '../'
 function getRoot() {
-  const path  = window.location.pathname;
-  // Берём последний сегмент директории (без файла)
-  const dir   = path.replace(/\/[^/]*$/, '').split('/').filter(Boolean).pop() || '';
-  const SUB   = ['admin', 'shop', 'lot'];
-  return SUB.includes(dir) ? '../' : './';
+  // Берём все непустые части пути, последняя — текущая директория
+  const parts = window.location.pathname.split('/').filter(Boolean);
+  const last  = parts[parts.length - 1] || '';
+  // Если последний сегмент — одна из подстраниц, мы внутри неё
+  if (['admin', 'shop', 'lot'].includes(last)) return '../';
+  // Иначе мы в корне (или в корне репозитория на GitHub Pages)
+  return './';
 }
 
 const ROOT = getRoot();

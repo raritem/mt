@@ -185,10 +185,14 @@ async function onSettingsSave() {
 async function loadAllData() {
   dom.shopList.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    // readJSON обновляет SHA кеш для shops.json —
-    // последующий writeJSON не будет делать лишний GET
     const { data } = await GH.readJSON('data/shops.json');
-    state.shops = (data && Array.isArray(data.shops)) ? data.shops : [];
+    if (data === null) {
+      // Файл не существует — создаём пустой (первый запуск)
+      await GH.writeJSON('data/shops.json', { shops: [] }, 'Init shops.json');
+      state.shops = [];
+    } else {
+      state.shops = Array.isArray(data.shops) ? data.shops : [];
+    }
     renderShopList();
   } catch (e) {
     dom.shopList.innerHTML = '<p style="font-size:12px;color:var(--danger);padding:8px">' + esc(e.message) + '</p>';
@@ -604,9 +608,15 @@ async function regenerateThumb() {
   const btn = $('im-refresh-thumb');
   if (btn) { btn.textContent = '⏳…'; btn.disabled = true; }
   try {
-    const { content } = await GH.getFile(imImages[0]);
-    const bytes = Uint8Array.from(content, c => c.charCodeAt(0));
-    const file  = new File([new Blob([bytes])], 'src.webp', { type: 'image/webp' });
+    // getFileBytes возвращает Uint8Array — корректно для бинарных данных
+    const { bytes } = await GH.getFileBytes(imImages[0]);
+    // Определяем MIME по первым байтам (magic bytes)
+    let mime = 'image/webp';
+    if (bytes[0] === 0xFF && bytes[1] === 0xD8) mime = 'image/jpeg';
+    if (bytes[0] === 0x89 && bytes[1] === 0x50) mime = 'image/png';
+    if (bytes[0] === 0x47 && bytes[1] === 0x49) mime = 'image/gif';
+
+    const file = new File([new Blob([bytes], { type: mime })], 'source', { type: mime });
     const { base64, ext } = await ImageConvert.toWebP(file, 0.75, 480);
     const thumbPath = 'images/' + state.activeShop + '/' + imLotId + '/thumb.' + ext;
     const sha = await GH.getFileSha(thumbPath);
