@@ -9,7 +9,11 @@
       "title": "ÐÑÐ¸Ð¼ÐµÑ Ð»Ð¾ÑÐ° â 3 ÑÐ¾Ð¿Ð° + Ð¿ÑÐµÐ¼ ÑÐµÑÐ½Ð¸ÐºÐ°",
       "funpay": "https://funpay.com/lots/",
       "images": [
-        "images/shop1/lot_example/001.webp"
+        "images/shop1/lot_example/001.webp",
+        "images/shop1/lot_example/002.webp",
+        "images/shop1/lot_example/003.webp",
+        "images/shop1/lot_example/004.webp",
+        "images/shop1/lot_example/005.webp"
       ],
       "thumb": "images/shop1/lot_example/thumb.webp"
     }
