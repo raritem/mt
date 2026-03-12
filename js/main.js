@@ -76,6 +76,75 @@ function showStatus(el, msg, type) {
   }
 }
 
+/** Нормализация текста лота:
+ *  Заменяет математические/bold Unicode символы "ур" и "PREM" на обычные ASCII.
+ *  Например: 𝟏𝟎𝐲𝐩(x3) → 10ур(x3),  𝙋𝙍𝙀𝙈 → PREM
+ */
+function normalizeLotTitle(str) {
+  if (!str) return str;
+
+  // Таблица Unicode→ASCII для bold/italic/sans-serif вариантов
+  const map = {};
+  const ranges = [
+    // Mathematical Bold
+    [0x1D400, 'A'], [0x1D41A, 'a'],
+    // Mathematical Italic
+    [0x1D434, 'A'], [0x1D44E, 'a'],
+    // Mathematical Bold Italic
+    [0x1D468, 'A'], [0x1D482, 'a'],
+    // Mathematical Sans-Serif Bold
+    [0x1D5D4, 'A'], [0x1D5EE, 'a'],
+    // Mathematical Sans-Serif Bold Italic
+    [0x1D63C, 'A'], [0x1D656, 'a'],
+    // Mathematical Monospace
+    [0x1D670, 'A'], [0x1D68A, 'a'],
+    // Digits: Bold
+    [0x1D7CE, '0'],
+    // Digits: Double-struck
+    [0x1D7D8, '0'],
+    // Digits: Sans-serif
+    [0x1D7E2, '0'],
+    // Digits: Sans-serif Bold
+    [0x1D7EC, '0'],
+    // Digits: Monospace
+    [0x1D7F6, '0'],
+  ];
+
+  ranges.forEach(([start, baseChar]) => {
+    const base = baseChar.codePointAt(0);
+    const count = baseChar >= 'a' && baseChar <= 'z' ? 26 :
+                  baseChar >= 'A' && baseChar <= 'Z' ? 26 : 10;
+    for (let i = 0; i < count; i++) {
+      map[String.fromCodePoint(start + i)] = String.fromCodePoint(base + i);
+    }
+  });
+
+  // Применяем замену посимвольно
+  let result = '';
+  for (const ch of str) {
+    result += (map[ch] !== undefined ? map[ch] : ch);
+  }
+
+  // Теперь заменяем "yp" / "ур" (и варианты через ASCII y+p) → "ур"
+  // и "PREM" (уже ASCII после нормализации) остаётся PREM
+  result = result
+    .replace(/yp/g,  'ур')   // ASCII y+p (частый вариант)
+    .replace(/YP/g,  'УР');
+
+  return result;
+}
+
+/** Логотип FunPay как inline SVG-image */
+function funpayLogo(height) {
+  const h = height || 18;
+  return `<img src="https://funpay.com/img/layout/logo-funpay.svg" alt="FunPay" height="${h}" style="vertical-align:middle;display:inline-block">`;
+}
+
+/** Кнопка "Купить на FunPay" с логотипом */
+function funpayBtn(href, cls) {
+  return `<a href="${href}" target="_blank" rel="noopener" class="${cls || 'funpay-btn'}">Купить на ${funpayLogo(16)}</a>`;
+}
+
 /** Простая анимация добавления элементов */
 function animateIn(parent) {
   Array.from(parent.children).forEach((el, i) => {
@@ -212,16 +281,17 @@ async function loadShop() {
 
       const count = (lot.images || []).length;
       const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
+      const title  = normalizeLotTitle(lot.title);
 
       card.innerHTML = `
         <a href="${lotUrl}" class="lot-card-link" style="display:contents">
           ${thumbHtml}
           <div class="lot-card-body">
-            <div class="lot-card-title">${esc(lot.title)}</div>
+            <div class="lot-card-title">${esc(title)}</div>
             <div class="lot-card-images-count">📸 ${count} ${plural(count, 'скриншот', 'скриншота', 'скриншотов')}</div>
           </div>
         </a>
-        ${lot.funpay ? `<div class="lot-card-footer"><a href="${lot.funpay}" target="_blank" rel="noopener" class="lot-card-funpay-btn" onclick="event.stopPropagation()">Купить на FunPay ↗</a></div>` : ''}
+        ${lot.funpay ? `<div class="lot-card-footer"><a href="${lot.funpay}" target="_blank" rel="noopener" class="lot-card-funpay-btn" onclick="event.stopPropagation()">Купить на ${funpayLogo(14)}</a></div>` : ''}
       `;
 
       gridEl.appendChild(card);
@@ -255,23 +325,24 @@ async function loadLot() {
 
     if (!lot) throw new Error('Лот не найден');
 
-    document.title = lot.title + ' — WoT Shop';
+    const title = normalizeLotTitle(lot.title);
+    document.title = title + ' — WoT Shop';
 
-    // Хлебные крошки
+    // Хлебные крошки — с overflow truncation на мобиле
     if (bcEl) {
       bcEl.innerHTML = `
         <a href="${ROOT}index.html">Главная</a>
         <span class="sep">/</span>
-        <a href="${ROOT}shop/?id=${encodeURIComponent(shopId)}">${esc(data.name || shopId)}</a>
+        <a href="${ROOT}shop/?id=${encodeURIComponent(shopId)}" class="bc-shop">${esc(data.name || shopId)}</a>
         <span class="sep">/</span>
-        <span class="current">${esc(lot.title)}</span>
+        <span class="current bc-lot">${esc(title)}</span>
       `;
     }
 
     // Заголовок лота
     if (headerEl) {
-      const funpayBtn = lot.funpay
-        ? `<a href="${lot.funpay}" target="_blank" rel="noopener" class="funpay-btn">Купить на FunPay ↗</a>`
+      const fp = lot.funpay
+        ? `<a href="${lot.funpay}" target="_blank" rel="noopener" class="funpay-btn">Купить на ${funpayLogo(16)}</a>`
         : '';
       headerEl.innerHTML = `
         <div class="lot-header-top">
@@ -279,9 +350,9 @@ async function loadLot() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
             Назад
           </a>
-          ${funpayBtn}
+          ${fp}
         </div>
-        <h1 class="lot-title">${esc(lot.title)}</h1>
+        <h1 class="lot-title">${esc(title)}</h1>
         <p style="color:var(--text-muted);font-size:13px;margin-top:4px">📸 ${(lot.images||[]).length} скриншотов</p>
       `;
     }

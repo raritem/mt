@@ -613,14 +613,93 @@ async function saveOrder() {
   try { await saveLotsJSON(); } catch (e) { console.error('saveOrder:', e.message); }
 }
 
+// ── Undo toast ────────────────────────────────────────────────
+let undoToast   = null;
+let undoTimer   = null;
+let undoPending = null; // { path, idx, images: [...до удаления] }
+const UNDO_DURATION = 15000;
+
+function showUndoToast(msg, onUndo) {
+  // Если уже показан — сначала применяем предыдущее
+  if (undoTimer) commitPendingDelete();
+
+  if (!undoToast) {
+    undoToast = document.createElement('div');
+    undoToast.className = 'undo-toast';
+    undoToast.innerHTML = `
+      <span class="undo-toast-text"></span>
+      <button class="undo-toast-btn">Отменить</button>
+      <div class="undo-toast-progress"></div>
+    `;
+    document.body.appendChild(undoToast);
+    undoToast.querySelector('.undo-toast-btn').addEventListener('click', () => {
+      if (undoPending && onUndo) onUndo();
+      hideUndoToast(true);
+    });
+  }
+
+  undoToast.querySelector('.undo-toast-text').textContent = msg;
+  // Обновляем обработчик кнопки
+  const btn = undoToast.querySelector('.undo-toast-btn');
+  btn.onclick = () => { if (undoPending) onUndo(); hideUndoToast(true); };
+
+  // Анимация прогресс-бара
+  const bar = undoToast.querySelector('.undo-toast-progress');
+  bar.style.transition = 'none';
+  bar.style.transform  = 'scaleX(1)';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    bar.style.transition = `transform ${UNDO_DURATION}ms linear`;
+    bar.style.transform  = 'scaleX(0)';
+  }));
+
+  requestAnimationFrame(() => undoToast.classList.add('visible'));
+  undoTimer = setTimeout(() => { commitPendingDelete(); hideUndoToast(false); }, UNDO_DURATION);
+}
+
+function hideUndoToast(cancelled) {
+  clearTimeout(undoTimer);
+  undoTimer = null;
+  if (undoToast) undoToast.classList.remove('visible');
+}
+
+async function commitPendingDelete() {
+  if (!undoPending) return;
+  const { path } = undoPending;
+  undoPending = null;
+  try {
+    await GH.deleteFile(path, 'Delete image');
+  } catch (e) {
+    console.error('commitPendingDelete:', e.message);
+  }
+}
+
 async function deleteImage(idx) {
-  if (!confirm('Удалить изображение ' + (idx+1) + '?')) return;
-  const path = imImages[idx];
-  try { await GH.deleteFile(path, 'Delete image'); } catch (e) { if (e.status !== 404) { alert('Ошибка: ' + e.message); return; } }
+  const path         = imImages[idx];
+  const savedImages  = [...imImages];     // снапшот для undo
+  const savedIdx     = idx;
+
+  // Удаляем из UI немедленно
   imImages.splice(idx, 1);
-  await saveOrder();
+  const lot = state.activeLots.find(l => l.id === imLotId);
+  if (lot) lot.images = [...imImages];
   renderManagedImages();
   renderLots();
+
+  // Сохраняем JSON без удалённого файла
+  try { await saveLotsJSON(); } catch (e) { console.error('deleteImage saveJSON:', e.message); }
+
+  undoPending = { path, idx: savedIdx, savedImages };
+
+  showUndoToast(`Фото ${savedIdx + 1} удалено`, async () => {
+    // Отмена — восстанавливаем снапшот
+    imImages = [...savedImages];
+    const lot = state.activeLots.find(l => l.id === imLotId);
+    if (lot) lot.images = [...imImages];
+    undoPending = null;
+    renderManagedImages();
+    renderLots();
+    try { await saveLotsJSON(); } catch (_) {}
+  });
 }
 
 async function regenerateThumb() {
@@ -741,7 +820,12 @@ async function saveLotsJSON() {
 // ════════════════════════════════════════════════════════════════
 function setStatus(el, msg, type) {
   if (!el) return;
-  el.textContent = msg;
+  if (type === 'ok') {
+    el.innerHTML = '<i data-lucide="check" width="14" height="14" style="display:inline-block;vertical-align:middle;margin-right:5px"></i>' + esc(msg);
+    if (window.lucide) lucide.createIcons();
+  } else {
+    el.textContent = msg;
+  }
   el.className = 'status-msg visible ' + (type || '');
   if (type === 'ok') setTimeout(() => { el.className = 'status-msg'; }, 3000);
 }
