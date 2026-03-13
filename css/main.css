@@ -59,7 +59,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 input, textarea { font-family: var(--font-body); }
 
 /* ── Звёздный фон ────────────────────────────────────────────── */
-.stars {
+/*.stars {
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -67,7 +67,7 @@ input, textarea { font-family: var(--font-body); }
   background:
     radial-gradient(ellipse at 20% 50%, rgba(245,197,24,0.03) 0%, transparent 60%),
     radial-gradient(ellipse at 80% 20%, rgba(245,197,24,0.02) 0%, transparent 50%);
-}
+}*/
 
 /* ── Header ──────────────────────────────────────────────────── */
 .site-header {
