@@ -274,7 +274,7 @@ async function loadShop() {
       const firstImg = lot.images && lot.images[0];
       const previewSrc = lot.thumb || firstImg;
       const thumbHtml = previewSrc
-        ? `<img class="lot-card-thumb" src="${ROOT}${previewSrc}" alt="${esc(lot.title)}" loading="lazy">`
+        ? `<div class="lot-card-thumb-wrap"><img class="lot-card-thumb" src="${ROOT}${previewSrc}" alt="${esc(lot.title)}" loading="lazy"><div class="lot-card-thumb-fade"></div></div>`
         : `<div class="lot-card-thumb-placeholder">🎯</div>`;
 
       const count  = (lot.images || []).length;

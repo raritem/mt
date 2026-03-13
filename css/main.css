@@ -285,14 +285,47 @@ input, textarea { font-family: var(--font-body); }
   transform: translateY(-3px);
 }
 
-.lot-card-thumb {
+/* ── Thumbnail с «дорогим» fade-эффектом ────────────────────── */
+.lot-card-thumb-wrap {
+  position: relative;
   width: 100%;
   aspect-ratio: 16/9;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+.lot-card-thumb {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  /* display:block убирает нижний зазор, image-rendering убирает замыленность */
   display: block;
   image-rendering: auto;
-  background: #0d1117;
+  transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.lot-card:hover .lot-card-thumb {
+  transform: scale(1.04);
+  filter: brightness(0.85);
+}
+
+/* Градиент + blur-слой поверх картинки */
+.lot-card-thumb-fade {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 35%,
+    rgba(17, 20, 24, 0.55) 62%,
+    rgba(17, 20, 24, 0.92) 82%,
+    #111418 100%
+  );
+  /* Blur применяем только к нижней зоне через маску */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 30%, black 70%);
+  mask-image: linear-gradient(to bottom, transparent 30%, black 70%);
+  backdrop-filter: blur(5px);
+  pointer-events: none;
+  transition: opacity 0.4s ease;
 }
 
 .lot-card-thumb-placeholder {
