@@ -250,7 +250,7 @@ input, textarea { font-family: var(--font-body); }
   letter-spacing: -0.02em;
 }
 
-.shop-title span { color: var(--accent); }
+.shop-title span { color: #e1e1e1; }
 
 /* ── Сетка лотов — несколько колонок на ПК ───────────────────── */
 .lots-grid {
@@ -268,7 +268,7 @@ input, textarea { font-family: var(--font-body); }
 
 .lot-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
@@ -336,8 +336,8 @@ input, textarea { font-family: var(--font-body); }
 .lot-card-funpay-btn {
   display: block;
   text-align: center;
-  padding: 9px 14px;
-  background: var(--accent-dim);
+  padding: 5px 14px;
+  background: rgb(21 124 255);
   border: 0px solid rgba(245,197,24,0.25);
   border-radius: var(--radius-sm);
   color: var(--accent);
@@ -709,9 +709,9 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.fade-up {
+/*.fade-up {
   animation: fadeUp 0.4s ease both;
-}
+}*/
 
 .fade-up:nth-child(1) { animation-delay: 0.05s; }
 .fade-up:nth-child(2) { animation-delay: 0.10s; }
