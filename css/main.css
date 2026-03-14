@@ -336,7 +336,7 @@ input, textarea { font-family: var(--font-body); }
 .lot-card-funpay-btn {
   display: block;
   text-align: center;
-  padding: 5px 14px;
+  padding: 8px 14px;
   background: rgb(21 124 255);
   border: 0px solid rgba(245,197,24,0.25);
   border-radius: var(--radius-sm);
