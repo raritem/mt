@@ -38,10 +38,19 @@
 .token-status {
   font-size: 12px;
   color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .token-status.connected {
   color: var(--success);
+}
+
+.token-status-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 /* ── Admin layout ────────────────────────────────────────────── */
@@ -153,20 +162,20 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 5px;
   display: flex;
   align-items: flex-start;
   gap: 16px;
 }
 
 .admin-lot-thumb {
-  width: 100px;
-  height: 64px;
+  width: 120px;
+  height: 80px;
   border-radius: var(--radius-sm);
   object-fit: cover;
   background: #0d1117;
   flex-shrink: 0;
-  border: 1px solid var(--border);
+  border: 0px solid var(--border);
 }
 
 .admin-lot-thumb-placeholder {
@@ -197,12 +206,97 @@
   text-overflow: ellipsis;
 }
 
+.admin-lot-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  vertical-align: middle;
+}
+.admin-lot-badge-funpay {
+  color: var(--accent);
+  background: rgba(245,197,24,0.10);
+  border-color: rgba(245,197,24,0.22);
+}
+.admin-lot-badge-hidden {
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.03);
+}
+
 .admin-lot-meta {
   font-size: 12px;
   color: var(--text-muted);
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* ── Toggle (лот: показывать в профиле FunPay) ────────────────── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle-row input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-ui {
+  width: 46px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  position: relative;
+  transition: background var(--transition), border-color var(--transition);
+  flex-shrink: 0;
+}
+
+.toggle-ui::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: #0d1117;
+  border: 1px solid rgba(255,255,255,0.14);
+  transition: left var(--transition), background var(--transition), border-color var(--transition);
+}
+
+#lot-onfunpay-input:checked + .toggle-label .toggle-ui {
+  background: rgba(245,197,24,0.16);
+  border-color: rgba(245,197,24,0.35);
+}
+
+#lot-onfunpay-input:checked + .toggle-label .toggle-ui::after {
+  left: 23px;
+  background: var(--accent);
+  border-color: rgba(0,0,0,0.25);
+}
+
+.toggle-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
 .admin-lot-actions {
@@ -487,4 +581,46 @@
 
   .admin-main { padding: 16px; }
   .managed-images { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}
+
+#lot-title-input {
+  resize: vertical;
+  min-height: 62px;
+  line-height: 1.5;
+}
+
+.admin-lot-title {
+  line-height: 1.4;
+}
+
+/* ── Resource fields in lot modal ───────────────────────────── */
+.resource-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resource-field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.resource-field-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+.resource-field-row input {
+  flex: 1;
+}
+
+.form-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.7;
 }

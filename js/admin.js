@@ -4,6 +4,25 @@
 
 'use strict';
 
+// ── GitHub RAW (картинки при локальном запуске) ──────────────────
+function getGhRawBase() {
+  try {
+    const cfg = (window.GH && GH.getConfig) ? GH.getConfig() : { repo: '', branch: 'main' };
+    const repo = String(cfg.repo || '').trim().replace(/\/+$/, '');
+    const branch = String(cfg.branch || 'main').trim() || 'main';
+    if (!repo) return null;
+    return 'https://raw.githubusercontent.com/' + repo + '/' + branch + '/';
+  } catch (_) {
+    return null;
+  }
+}
+
+function assetUrl(path) {
+  const base = getGhRawBase();
+  const p = String(path || '').replace(/^\/+/, '');
+  return base ? (base + p) : ('../' + p);
+}
+
 // ════════════════════════════════════════════════════════════════
 //  СОСТОЯНИЕ
 // ════════════════════════════════════════════════════════════════
@@ -45,6 +64,7 @@ const dom = {
   lotModalTitle:   $('lot-modal-title'),
   lotTitleInput:   $('lot-title-input'),
   lotFunpayInput:  $('lot-funpay-input'),
+  lotOnFunpayInput:$('lot-onfunpay-input'),
   lotModalStatus:  $('lot-modal-status'),
 
   confirmOverlay:  $('confirm-overlay'),
@@ -151,7 +171,13 @@ function loadSettingsToForm() {
 
 function updateTokenStatus() {
   if (GH.isConfigured()) {
-    dom.tokenStatus.textContent = '✓ ' + GH.getConfig().repo;
+    const repo = GH.getConfig().repo;
+    dom.tokenStatus.innerHTML = `
+      <span class="token-status-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-check-icon lucide-check-check"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
+      </span>
+      <span class="token-status-repo">${esc(repo)}</span>
+    `;
     dom.tokenStatus.classList.add('connected');
   } else {
     dom.tokenStatus.textContent = 'Не настроено';
@@ -285,28 +311,33 @@ function renderLots() {
   state.activeLots.forEach(lot => {
     const preview = lot.thumb || (lot.images && lot.images[0]);
     const thumb   = preview
-      ? `<img class="admin-lot-thumb" src="../${preview}" alt="" loading="lazy">`
+      ? `<img class="admin-lot-thumb" src="${assetUrl(preview)}" alt="" loading="lazy">`
       : `<div class="admin-lot-thumb-placeholder">🎯</div>`;
+
+    const onFunpay = (lot.onFunpay !== false); // совместимость со старыми лотами
+    const badge = onFunpay
+      ? `<span class="admin-lot-badge admin-lot-badge-funpay">FunPay</span>`
+      : `<span class="admin-lot-badge admin-lot-badge-hidden">Скрыт</span>`;
 
     const card = document.createElement('div');
     card.className = 'admin-lot-card';
     card.innerHTML = `
       ${thumb}
       <div class="admin-lot-info">
-        <div class="admin-lot-title">${esc(lot.title)}</div>
+        <div class="admin-lot-title">${escWithBr(lot.title)} ${badge}</div>
         <div class="admin-lot-meta">
           <span>${(lot.images || []).length} фото</span>
           ${lot.funpay ? `<a href="${lot.funpay}" target="_blank" style="color:var(--accent)">FunPay <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg style="display:inline-block;vertical-align:middle" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span></a>` : ''}
         </div>
       </div>
       <div class="admin-lot-actions">
-        <button class="btn btn-ghost" data-action="images" data-lot="${lot.id}" title="Фото">
-          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="14" rx="2"/><circle cx="8" cy="8" r="2"/><path d="m2 14 4-4 4 4 4-5 6 5"/><path d="M0 20h20" stroke-width="0"/><line x1="4" y1="20" x2="20" y2="20"/><line x1="4" y1="22" x2="16" y2="22"/></svg></span>
+        <button class="btn btn-ghost btn-no-border" data-action="images" data-lot="${lot.id}" title="Фото">
+          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
         </button>
-        <button class="btn btn-ghost" data-action="edit" data-lot="${lot.id}" title="Изменить">
+        <button class="btn btn-ghost btn-no-border" data-action="edit" data-lot="${lot.id}" title="Изменить">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
         </button>
-        <button class="btn btn-ghost" style="color:var(--danger)" data-action="delete" data-lot="${lot.id}" title="Удалить">
+        <button class="btn btn-ghost btn-no-border" style="color:var(--danger)" data-action="delete" data-lot="${lot.id}" title="Удалить">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
         </button>
       </div>
@@ -383,7 +414,7 @@ async function onShopSave() {
       }
     }
     await GH.writeJSON('data/shops.json', { shops: state.shops }, 'Update shops list');
-    setStatus(dom.shopModalStatus, '✓ Сохранено', 'ok');
+    setStatus(dom.shopModalStatus, 'Сохранено', 'ok');
     setTimeout(() => {
       closeModal('shopModal');
       renderShopList();
@@ -403,6 +434,29 @@ function openLotModal(editLotId) {
   dom.lotModalTitle.textContent = lot ? 'Редактировать лот' : 'Новый лот';
   dom.lotTitleInput.value       = lot ? lot.title          : '';
   dom.lotFunpayInput.value      = lot ? (lot.funpay || '') : '';
+  if (dom.lotOnFunpayInput) {
+    dom.lotOnFunpayInput.checked = lot ? (lot.onFunpay !== false) : false;
+  }
+
+  // Заполняем поля ресурсов
+  const res = (lot && lot.resources) ? lot.resources : {};
+  const bondsEl  = $('lot-bonds-input');
+  const goldEl   = $('lot-gold-input');
+  const silverEl = $('lot-silver-input');
+  if (bondsEl)  bondsEl.value  = res.bonds  !== undefined ? res.bonds  : '';
+  if (goldEl)   goldEl.value   = res.gold   !== undefined ? res.gold   : '';
+  if (silverEl) silverEl.value = res.silver !== undefined ? res.silver : '';
+
+  // Вставляем иконки в поля ресурсов
+  if (typeof RESOURCE_ICONS !== 'undefined') {
+    const iconBonds  = $('res-icon-bonds');
+    const iconGold   = $('res-icon-gold');
+    const iconSilver = $('res-icon-silver');
+    if (iconBonds)  iconBonds.src  = RESOURCE_ICONS.bonds;
+    if (iconGold)   iconGold.src   = RESOURCE_ICONS.gold;
+    if (iconSilver) iconSilver.src = RESOURCE_ICONS.silver;
+  }
+
   dom.lotModalStatus.className  = 'status-msg';
   openModal('lotModal');
 }
@@ -410,17 +464,34 @@ function openLotModal(editLotId) {
 async function onLotSave() {
   const title  = dom.lotTitleInput.value.trim();
   const funpay = dom.lotFunpayInput.value.trim();
+  const onFunpay = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked : false;
   if (!title) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
+
+  // Читаем ресурсы, очищаем пробелы
+  const bondsRaw  = ($('lot-bonds-input')  ? $('lot-bonds-input').value  : '').replace(/\s+/g, '');
+  const goldRaw   = ($('lot-gold-input')   ? $('lot-gold-input').value   : '').replace(/\s+/g, '');
+  const silverRaw = ($('lot-silver-input') ? $('lot-silver-input').value : '').replace(/\s+/g, '');
+
+  const resources = {};
+  if (bondsRaw  !== '') resources.bonds  = bondsRaw;
+  if (goldRaw   !== '') resources.gold   = goldRaw;
+  if (silverRaw !== '') resources.silver = silverRaw;
+
   setStatus(dom.lotModalStatus, 'Сохраняю…', 'info');
   try {
     if (state.editingLot) {
       const lot = state.activeLots.find(l => l.id === state.editingLot);
-      if (lot) { lot.title = title; lot.funpay = funpay; }
+      if (lot) {
+        lot.title = title; lot.funpay = funpay; lot.onFunpay = onFunpay;
+        lot.resources = Object.keys(resources).length ? resources : undefined;
+      }
     } else {
-      state.activeLots.push({ id: 'lot_' + Date.now(), title, funpay, images: [] });
+      const newLot = { id: 'lot_' + Date.now(), title, funpay, onFunpay, images: [] };
+      if (Object.keys(resources).length) newLot.resources = resources;
+      state.activeLots.push(newLot);
     }
     await saveLotsJSON();
-    setStatus(dom.lotModalStatus, '✓ Сохранено', 'ok');
+    setStatus(dom.lotModalStatus, 'Сохранено', 'ok');
     setTimeout(() => { closeModal('lotModal'); renderLots(); }, 500);
   } catch (e) {
     setStatus(dom.lotModalStatus, 'Ошибка: ' + e.message, 'err');
@@ -561,7 +632,7 @@ function renderManagedImages() {
     card.draggable = true;
     card.innerHTML = `
       <div class="drag-handle"><span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/></svg></span></div>
-      <img src="../${src}" alt="" loading="lazy">
+      <img src="${assetUrl(src)}" alt="" loading="lazy">
       <div class="managed-img-footer">
         <span class="managed-img-num">${idx + 1}</span>
         <div class="managed-img-actions">
@@ -716,7 +787,7 @@ async function regenerateThumb() {
     if (bytes[0] === 0x47 && bytes[1] === 0x49) mime = 'image/gif';
 
     const file = new File([new Blob([bytes], { type: mime })], 'source', { type: mime });
-    const { base64, ext } = await ImageConvert.toWebP(file, 0.75, 480);
+    const { base64, ext } = await ImageConvert.toWebP(file, 0.92, 1600);
     const thumbPath = 'images/' + state.activeShop + '/' + imLotId + '/thumb.' + ext;
     const sha = await GH.getFileSha(thumbPath);
     await GH.putBinaryFile(thumbPath, base64, 'Regenerate thumb', sha || undefined);
@@ -747,7 +818,20 @@ async function uploadFiles(files) {
   });
 
   const baseDir  = 'images/' + state.activeShop + '/' + imLotId;
-  const startIdx = imImages.length; // фиксируем ДО цикла
+  const startIdx = (() => {
+    // Берём следующий номер по фактическим именам файлов (не по length),
+    // чтобы не перезаписывать существующие картинки при пропусках/дубликатах.
+    let max = -1;
+    for (const p of imImages) {
+      const m = String(p || '').match(/\/(\d{3,})\.[a-z0-9]+$/i);
+      if (!m) continue;
+      const n = parseInt(m[1], 10);
+      if (!Number.isFinite(n)) continue;
+      // numberedName(idx) = (idx+1).padStart(3,'0') → значит idx = n-1
+      max = Math.max(max, n - 1);
+    }
+    return max + 1;
+  })();
   let   rateLimitHit = false;
 
   for (let i = 0; i < fileList.length; i++) {
@@ -756,7 +840,8 @@ async function uploadFiles(files) {
 
     try {
       statusEl.textContent = 'Конвертация…';
-      const { base64, ext } = await ImageConvert.toWebP(fileList[i]);
+      const file = fileList[i];
+      const { base64, ext } = await ImageConvert.toWebP(file);
 
       const fileNum  = startIdx + i;
       const fileName = ImageConvert.numberedName(fileNum, ext);
@@ -769,9 +854,9 @@ async function uploadFiles(files) {
       await GH.putBinaryFile(repoPath, base64, 'Upload ' + fileName, existingSha || undefined);
 
       // Thumb для первого фото лота
-      if (fileNum === 0) {
+      if (imImages.length === 0 && i === 0) {
         try {
-          const { base64: tB64, ext: tExt } = await ImageConvert.toWebP(fileList[i], 0.75, 480);
+          const { base64: tB64, ext: tExt } = await ImageConvert.toWebP(file, 0.92, 1600);
           const thumbPath = baseDir + '/thumb.' + tExt;
           const thumbSha  = await GH.getFileSha(thumbPath);
           await GH.putBinaryFile(thumbPath, tB64, 'Thumb for ' + imLotId, thumbSha || undefined);
@@ -834,4 +919,10 @@ function esc(str) {
   const d = document.createElement('div');
   d.textContent = String(str || '');
   return d.innerHTML;
+}
+
+function escWithBr(str) {
+  const d = document.createElement('div');
+  d.textContent = String(str || '');
+  return d.innerHTML.replace(/\n/g, '<br>');
 }

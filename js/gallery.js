@@ -12,6 +12,7 @@ window.LightBox = (() => {
   const lb        = document.getElementById('lightbox');
   const lbBg      = document.getElementById('lb-bg');
   const lbClose   = document.getElementById('lb-close');
+  const lbBack    = document.getElementById('lb-back');
   const lbPrev    = document.getElementById('lb-prev');
   const lbNext    = document.getElementById('lb-next');
   const lbImg     = document.getElementById('lb-img');
@@ -165,7 +166,9 @@ window.LightBox = (() => {
 
   // ── Рендер ────────────────────────────────────────────────────
   function render(dir, fromThumbs) {
-    const src = ROOT + images[current];
+    const src = (typeof assetUrl === 'function')
+      ? assetUrl(images[current])
+      : (ROOT + images[current]);
     lbCounter.textContent = (current + 1) + ' / ' + images.length;
     lbPrev.disabled = current === 0;
     lbNext.disabled = current === images.length - 1;
@@ -205,7 +208,8 @@ window.LightBox = (() => {
     images.forEach((src, i) => {
       const tn = document.createElement('div');
       tn.className = 'lb-tn' + (i === current ? ' active' : '');
-      tn.innerHTML = `<img src="${ROOT}${src}" alt="" loading="lazy">`;
+      const u = (typeof assetUrl === 'function') ? assetUrl(src) : (ROOT + src);
+      tn.innerHTML = `<img src="${u}" alt="" loading="lazy">`;
       tn.addEventListener('click', () => {
         if (i === current) return;
         const dir = i > current ? 'next' : 'prev';
@@ -243,6 +247,7 @@ window.LightBox = (() => {
 
   // ── Кнопки ────────────────────────────────────────────────────
   lbClose.addEventListener('click', close);
+  if (lbBack) lbBack.addEventListener('click', close);
   lbBg.addEventListener('click', (e) => { if (e.target === lbBg) close(); });
   lbPrev.addEventListener('click', prev);
   lbNext.addEventListener('click', next);

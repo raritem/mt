@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Админка — WoT Shop</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
-  <link rel="stylesheet" href="../css/main.css">
-  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="stylesheet" href="../css/main.css?v=__CACHE_VER__">
+  <link rel="stylesheet" href="../css/admin.css?v=__CACHE_VER__">
   <!-- Lucide Icons -->
 </head>
 <body class="admin-body">
@@ -130,11 +130,39 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Название лота</label>
-        <input type="text" id="lot-title-input" placeholder="3 топа + прем техника">
+        <textarea id="lot-title-input" placeholder="3 топа + прем техника" rows="3"></textarea>
       </div>
       <div class="form-group">
         <label>Ссылка на FunPay</label>
         <input type="url" id="lot-funpay-input" placeholder="https://funpay.com/lots/...">
+      </div>
+      <div class="form-group" id="resources-form-group">
+        <label>Ресурсы аккаунта</label>
+        <div class="resource-fields" id="resource-fields">
+          <div class="resource-field-row">
+            <img id="res-icon-bonds" class="resource-field-icon" alt="Боны">
+            <input type="text" id="lot-bonds-input" placeholder="Боны (напр. 11200)" inputmode="numeric">
+          </div>
+          <div class="resource-field-row">
+            <img id="res-icon-gold" class="resource-field-icon" alt="Золото">
+            <input type="text" id="lot-gold-input" placeholder="Золото (напр. 4560)" inputmode="numeric">
+          </div>
+          <div class="resource-field-row">
+            <img id="res-icon-silver" class="resource-field-icon" alt="Серебро">
+            <input type="text" id="lot-silver-input" placeholder="Серебро (напр. 8568930)" inputmode="numeric">
+          </div>
+        </div>
+        <p class="form-hint">Оставьте поле пустым — ресурс не будет показан</p>
+      </div>
+      <div class="form-group">
+        <label>Показывать в профиле FunPay</label>
+        <div class="toggle-row">
+          <input type="checkbox" id="lot-onfunpay-input">
+          <label for="lot-onfunpay-input" class="toggle-label">
+            <span class="toggle-ui" aria-hidden="true"></span>
+            <span class="toggle-text">Если выключено — лот попадёт в таблицу “ещё аккаунты”</span>
+          </label>
+        </div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" id="lot-modal-cancel">Отмена</button>
@@ -162,10 +190,11 @@
     </div>
   </div>
 
-  <script src="../js/main.js"></script>
-  <script src="../js/github-api.js"></script>
-  <script src="../js/image-convert.js"></script>
-  <script src="../js/admin.js"></script>
+  <script src="../js/main.js?v=__CACHE_VER__"></script>
+  <script src="../js/resources.js?v=__CACHE_VER__"></script>
+  <script src="../js/github-api.js?v=__CACHE_VER__"></script>
+  <script src="../js/image-convert.js?v=__CACHE_VER__"></script>
+  <script src="../js/admin.js?v=__CACHE_VER__"></script>
   <!-- Инициализация Lucide после рендера -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {

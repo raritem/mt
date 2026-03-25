@@ -1,0 +1,199 @@
+{
+  "id": "xmode",
+  "name": "XMODE",
+  "description": "",
+  "seller": "xmode",
+  "lots": [
+    {
+      "id": "lot_1773309676444",
+      "title": "СУ-130ПM, TST",
+      "funpay": "https://funpay.com/lots/offer?id=34782431",
+      "images": [
+        "images/xmode/lot_1773309676444/023.webp",
+        "images/xmode/lot_1773309676444/022.webp",
+        "images/xmode/lot_1773309676444/013.webp",
+        "images/xmode/lot_1773309676444/016.webp",
+        "images/xmode/lot_1773309676444/021.webp",
+        "images/xmode/lot_1773309676444/020.webp",
+        "images/xmode/lot_1773309676444/019.webp",
+        "images/xmode/lot_1773309676444/018.webp",
+        "images/xmode/lot_1773309676444/017.webp",
+        "images/xmode/lot_1773309676444/015.webp",
+        "images/xmode/lot_1773309676444/014.webp",
+        "images/xmode/lot_1773309676444/013.webp",
+        "images/xmode/lot_1773309676444/014.webp",
+        "images/xmode/lot_1773309676444/010.webp",
+        "images/xmode/lot_1773309676444/006.webp",
+        "images/xmode/lot_1773309676444/012.webp",
+        "images/xmode/lot_1773309676444/011.webp",
+        "images/xmode/lot_1773309676444/004.webp",
+        "images/xmode/lot_1773309676444/001.webp",
+        "images/xmode/lot_1773309676444/003.webp",
+        "images/xmode/lot_1773309676444/002.webp",
+        "images/xmode/lot_1773309676444/005.webp",
+        "images/xmode/lot_1773309676444/012.webp"
+      ],
+      "thumb": "images/xmode/lot_1773309676444/thumb.webp",
+      "onFunpay": true,
+      "resources": {
+        "bonds": "11200",
+        "gold": "4560",
+        "silver": "8568945"
+      }
+    },
+    {
+      "id": "lot_1773309692187",
+      "title": "Turtle I, СУ-130ПM, Doppel",
+      "funpay": "https://funpay.com/lots/offer?id=34781165",
+      "images": [
+        "images/xmode/lot_1773309692187/014.webp",
+        "images/xmode/lot_1773309692187/013.webp",
+        "images/xmode/lot_1773309692187/012.webp",
+        "images/xmode/lot_1773309692187/006.webp",
+        "images/xmode/lot_1773309692187/011.webp",
+        "images/xmode/lot_1773309692187/010.webp",
+        "images/xmode/lot_1773309692187/009.webp",
+        "images/xmode/lot_1773309692187/008.webp",
+        "images/xmode/lot_1773309692187/007.webp",
+        "images/xmode/lot_1773309692187/005.webp",
+        "images/xmode/lot_1773309692187/001.webp",
+        "images/xmode/lot_1773309692187/002.webp",
+        "images/xmode/lot_1773309692187/003.webp",
+        "images/xmode/lot_1773309692187/004.webp"
+      ],
+      "thumb": "images/xmode/lot_1773309692187/thumb.webp",
+      "onFunpay": true,
+      "resources": {
+        "bonds": "11345",
+        "silver": "15004284"
+      }
+    },
+    {
+      "id": "lot_1773309712036",
+      "title": "Skorpian, 703 II (100)",
+      "funpay": "https://funpay.com/lots/offer?id=33494261",
+      "images": [
+        "images/xmode/lot_1773309712036/013.webp",
+        "images/xmode/lot_1773309712036/011.webp",
+        "images/xmode/lot_1773309712036/005.webp",
+        "images/xmode/lot_1773309712036/012.webp",
+        "images/xmode/lot_1773309712036/010.webp",
+        "images/xmode/lot_1773309712036/009.webp",
+        "images/xmode/lot_1773309712036/008.webp",
+        "images/xmode/lot_1773309712036/007.webp",
+        "images/xmode/lot_1773309712036/006.webp",
+        "images/xmode/lot_1773309712036/004.webp",
+        "images/xmode/lot_1773309712036/001.webp",
+        "images/xmode/lot_1773309712036/002.webp",
+        "images/xmode/lot_1773309712036/003.webp"
+      ],
+      "thumb": "images/xmode/lot_1773309712036/thumb.webp",
+      "onFunpay": true,
+      "resources": {
+        "bonds": "11492",
+        "silver": "4034783"
+      }
+    },
+    {
+      "id": "lot_1773309726201",
+      "title": "Дуплeт, Зaщитник",
+      "funpay": "https://funpay.com/lots/offer?id=33494200",
+      "images": [
+        "images/xmode/lot_1773309726201/008.webp",
+        "images/xmode/lot_1773309726201/007.webp",
+        "images/xmode/lot_1773309726201/004.webp",
+        "images/xmode/lot_1773309726201/006.webp",
+        "images/xmode/lot_1773309726201/005.webp",
+        "images/xmode/lot_1773309726201/001.webp",
+        "images/xmode/lot_1773309726201/002.webp",
+        "images/xmode/lot_1773309726201/003.webp"
+      ],
+      "thumb": "images/xmode/lot_1773309726201/thumb.webp",
+      "onFunpay": true,
+      "resources": {
+        "bonds": "11923",
+        "gold": "4463",
+        "silver": "7932491"
+      }
+    },
+    {
+      "id": "lot_1773309773805",
+      "title": "TYPE 63",
+      "funpay": "https://funpay.com/lots/offer?id=32464196",
+      "images": [
+        "images/xmode/lot_1773309773805/009.webp",
+        "images/xmode/lot_1773309773805/008.webp",
+        "images/xmode/lot_1773309773805/004.webp",
+        "images/xmode/lot_1773309773805/007.webp",
+        "images/xmode/lot_1773309773805/006.webp",
+        "images/xmode/lot_1773309773805/005.webp",
+        "images/xmode/lot_1773309773805/001.webp",
+        "images/xmode/lot_1773309773805/002.webp",
+        "images/xmode/lot_1773309773805/003.webp"
+      ],
+      "thumb": "images/xmode/lot_1773309773805/thumb.webp",
+      "onFunpay": true,
+      "resources": {
+        "bonds": "10548",
+        "silver": "9039222"
+      }
+    },
+    {
+      "id": "lot_1773738565427",
+      "title": "TYPE 63, 10  ур (х2), 11 PREM танков",
+      "funpay": "https://funpay.com/users/2854472/",
+      "onFunpay": false,
+      "images": [
+        "images/xmode/lot_1773738565427/012.webp",
+        "images/xmode/lot_1773738565427/011.webp",
+        "images/xmode/lot_1773738565427/010.webp",
+        "images/xmode/lot_1773738565427/009.webp",
+        "images/xmode/lot_1773738565427/008.webp",
+        "images/xmode/lot_1773738565427/007.webp",
+        "images/xmode/lot_1773738565427/006.webp",
+        "images/xmode/lot_1773738565427/005.webp",
+        "images/xmode/lot_1773738565427/004.webp",
+        "images/xmode/lot_1773738565427/003.webp",
+        "images/xmode/lot_1773738565427/002.webp",
+        "images/xmode/lot_1773738565427/004.webp"
+      ],
+      "thumb": "images/xmode/lot_1773738565427/thumb.webp",
+      "resources": {
+        "bonds": "10654",
+        "gold": "5789",
+        "silver": "6345699"
+      }
+    },
+    {
+      "id": "lot_1773739012044",
+      "title": "СУ-130ПM, TST\n10 уровень: 3⠀|⠀Премиум техника: 11⠀|⠀Боны: 7.845",
+      "funpay": "https://funpay.com/users/2854472/",
+      "onFunpay": false,
+      "images": [
+        "images/xmode/lot_1773739012044/008.webp",
+        "images/xmode/lot_1773739012044/007.webp",
+        "images/xmode/lot_1773739012044/006.webp",
+        "images/xmode/lot_1773739012044/005.webp",
+        "images/xmode/lot_1773739012044/004.webp",
+        "images/xmode/lot_1773739012044/003.webp",
+        "images/xmode/lot_1773739012044/002.webp"
+      ],
+      "thumb": "images/xmode/lot_1773739012044/thumb.webp"
+    },
+    {
+      "id": "lot_1773761393864",
+      "title": "Turtle I, СУ-130ПM, Doppel\n𝟏𝟎𝐲𝐩 (x3) | 12 𝙋𝙍𝙀𝙈 танков | 7k бoн",
+      "funpay": "https://funpay.com/users/2854472/",
+      "onFunpay": false,
+      "images": [
+        "images/xmode/lot_1773761393864/006.webp",
+        "images/xmode/lot_1773761393864/005.webp",
+        "images/xmode/lot_1773761393864/003.webp",
+        "images/xmode/lot_1773761393864/002.webp",
+        "images/xmode/lot_1773761393864/001.webp",
+        "images/xmode/lot_1773761393864/004.webp"
+      ],
+      "thumb": "images/xmode/lot_1773761393864/thumb.webp"
+    }
+  ]
+}

@@ -142,12 +142,6 @@ function esc(str) {
   return d.innerHTML;
 }
 
-function escWithBr(str) {
-  const d = document.createElement('div');
-  d.textContent = str || '';
-  return d.innerHTML.replace(/\n/g, '<br>');
-}
-
 /** Показать статус в элементе */
 function showStatus(el, msg, type) {
   if (!el) return;
@@ -386,21 +380,18 @@ async function loadShop() {
       const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
       const title  = normalizeLotTitle(lot.title);
 
-      const resHtml = (typeof renderResourceIcons === 'function')
-        ? renderResourceIcons(lot.resources, 'short')
-        : '';
-
       card.innerHTML = `
         ${thumbHtml}
         <div class="lot-card-body">
-          <div class="lot-card-title">${escWithBr(title)}</div>
+          <div class="lot-card-title">${esc(title)}</div>
           <div class="lot-card-images-count">📸 ${count} ${plural(count, 'скриншот', 'скриншота', 'скриншотов')}</div>
-          ${resHtml ? `<div class="lot-card-resources">${resHtml}</div>` : ''}
         </div>
+        ${lot.funpay ? `<div class="lot-card-footer"><a href="${lot.funpay}" target="_blank" rel="noopener" class="lot-card-funpay-btn">Купить на ${funpayLogo(14)}</a></div>` : ''}
       `;
 
-      // Клик по карточке → переход на лот
+      // Клик по карточке (не по кнопке FunPay) → переход на лот
       card.addEventListener('click', (e) => {
+        if (e.target.closest('.lot-card-funpay-btn')) return;
         window.location.href = lotUrl;
       });
 
@@ -415,6 +406,19 @@ async function loadShop() {
       } else {
         tableSectionEl.style.display = '';
 
+        // Анимация таблицы — только когда доскроллили до секции
+        if (!tableSectionEl.dataset.ioBound) {
+          tableSectionEl.dataset.ioBound = '1';
+          const io = new IntersectionObserver((entries) => {
+            const e = entries[0];
+            if (!e || !e.isIntersecting) return;
+            tableSectionEl.dataset.seen = '1';
+            applyFadeUpStagger(tableEl, '.lot-row-card', 0.03);
+            io.disconnect();
+          }, { threshold: 0.08 });
+          io.observe(tableSectionEl);
+        }
+
         const renderHidden = () => {
           const q = (qEl ? qEl.value : '').trim().toLowerCase();
           const filtered = !q
@@ -428,13 +432,9 @@ async function loadShop() {
             return;
           }
 
-          // Строки всегда рендерим с fade-prep — они невидимы до тех пор пока
-          // IO не запустит анимацию. Если IO уже сработал (seen=1), сразу видимые.
-          const alreadySeen = tableSectionEl.dataset.seen === '1';
-
           filtered.forEach((lot, i) => {
             const row = document.createElement('div');
-            row.className = alreadySeen ? 'lot-row-card' : 'lot-row-card fade-prep';
+            row.className = 'lot-row-card fade-prep';
 
             const firstImg = lot.images && lot.images[0];
             const previewSrc = lot.thumb || firstImg;
@@ -443,21 +443,16 @@ async function loadShop() {
               : `<div class="lot-row-thumb-placeholder">🎯</div>`;
 
             const title = normalizeLotTitle(lot.title);
-            // Ресурсы: мобайл → short, десктоп → full
-            const isMobile = window.innerWidth < 640;
-            const resIconsHtml = (typeof renderResourceIcons === 'function')
-              ? renderResourceIcons(lot.resources, isMobile ? 'short' : 'full')
-              : '';
             const tags = Array.isArray(lot.tags) ? lot.tags : [];
-            const tagsHtml = resIconsHtml || (tags.length
+            const tagsHtml = tags.length
               ? tags.slice(0, 10).map(t => `<span class="lot-row-tag">${esc(String(t))}</span>`).join('')
-              : '');
+              : `<span class="lot-row-tags-empty">Иконки ценности добавим позже</span>`;
 
             row.innerHTML = `
               <div class="lot-row-left">
                 ${thumbHtml}
                 <div class="lot-row-mid">
-                  <div class="lot-row-title">${escWithBr(title)}</div>
+                  <div class="lot-row-title">${esc(title)}</div>
                   <div class="lot-row-tags">${tagsHtml}</div>
                 </div>
               </div>
@@ -470,28 +465,17 @@ async function loadShop() {
 
             tableEl.appendChild(row);
           });
+
+          // Если секция уже была показана — анимируем новые результаты фильтра сразу
+          if (tableSectionEl.dataset.seen === '1') {
+            applyFadeUpStagger(tableEl, '.lot-row-card', 0.03);
+          }
         };
 
         // Привязка фильтра
-        if (qEl) qEl.oninput = () => renderHidden();
+        if (qEl) qEl.oninput = renderHidden;
 
-        // Первый рендер — строки в fade-prep (невидимы), IO запустит анимацию
         renderHidden();
-
-        // IO запускает анимацию на уже готовых строках — без повторного рендера.
-        // Так нет двойного рендера и нет дёрганья.
-        if (!tableSectionEl.dataset.ioBound) {
-          tableSectionEl.dataset.ioBound = '1';
-          const io = new IntersectionObserver((entries) => {
-            const e = entries[0];
-            if (!e.isIntersecting) return;
-            if (tableSectionEl.dataset.seen === '1') return;
-            tableSectionEl.dataset.seen = '1';
-            applyFadeUpStagger(tableEl, '.lot-row-card', 0.03);
-            io.disconnect();
-          }, { threshold: 0, rootMargin: '0px 0px -120px 0px' });
-          io.observe(tableEl);
-        }
       }
     }
 
@@ -555,7 +539,7 @@ async function loadLot() {
           </a>
           ${fp}
         </div>
-        <h1 class="lot-title">${escWithBr(title)}</h1>
+        <h1 class="lot-title">${esc(title)}</h1>
         <p style="color:var(--text-muted);font-size:13px;margin-top:4px">📸 ${(lot.images||[]).length} скриншотов</p>
       `;
     }

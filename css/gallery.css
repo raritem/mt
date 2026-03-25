@@ -21,7 +21,7 @@
   border: 1px solid var(--border);
   transition: border-color var(--transition), transform var(--transition);
 }
-.gallery-thumb:hover { border-color: rgba(245,197,24,0.3); transform: scale(1.02); }
+.gallery-thumb:hover { /*border-color: rgba(245,197,24,0.3);*/ transform: scale(1.02); }
 .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s ease; }
 .gallery-thumb img.loading { opacity: 0; }
 .gallery-thumb img.loaded  { opacity: 1; }
@@ -29,7 +29,10 @@
 .gallery-thumb-num {
   position: absolute; bottom: 8px; right: 8px;
   background: rgba(0,0,0,0.6); color: #fff; font-size: 11px;
-  padding: 2px 7px; border-radius: 20px; backdrop-filter: blur(4px);
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; backdrop-filter: blur(4px);
+  flex-shrink: 0;
 }
 .gallery-thumb-overlay {
   position: absolute; inset: 0;
@@ -53,6 +56,21 @@
 .lightbox-bg {
   position: absolute; inset: 0; z-index: 0;
 }
+
+/* ── Кнопка назад — левый верхний угол ──────────────────────── */
+.lb-back {
+  position: absolute; top: 16px; left: 16px; z-index: 30;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 50%;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  opacity: 0.75;
+  outline: none;
+  cursor: pointer;
+}
+.lb-back:focus { outline: none; }
 
 /* ── Кнопка закрыть — всегда видима ─────────────────────────── */
 .lb-close {
@@ -142,7 +160,7 @@
   gap: 8px;
   max-width: calc(100vw - 120px);
   padding: 12px 16px 20px;
-  background: linear-gradient(to top, rgba(0,0,0,0.92) 60%, transparent);
+  background: none;
   transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
 }
@@ -185,9 +203,9 @@
 .lb-tn.active { border-color: var(--accent); opacity: 1; }
 .lb-tn img    { width: 100%; height: 100%; object-fit: cover; }
 
-/* ── Тулбар снизу — только зум, снизу слева ─────────────────── */
+/* ── Тулбар снизу — только зум, над панелью навигации ───────── */
 .lb-toolbar {
-  position: absolute; bottom: 20px; left: 50%;
+  position: absolute; bottom: 108px; left: 50%;
   transform: translateX(-50%) translateY(0);
   z-index: 25;
   display: flex; align-items: center; gap: 4px;
@@ -224,9 +242,9 @@
 .lb-tool:hover { background: rgba(255,255,255,0.1); color: white; }
 
 .lb-divider {
-  width: 1px; height: 20px;
+  width: 0.1px; height: 20px;
   background: rgba(255,255,255,0.12);
-  margin: 0 2px;
+  margin: 0 10px;
 }
 
 .lb-counter {

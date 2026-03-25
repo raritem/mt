@@ -5,17 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Лот — WoT Shop</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
-  <link rel="stylesheet" href="../css/main.css">
-  <link rel="stylesheet" href="../css/gallery.css">
+  <link rel="stylesheet" href="../css/main.css?v=__CACHE_VER__">
+  <link rel="stylesheet" href="../css/gallery.css?v=__CACHE_VER__">
 </head>
 <body>
-  <div class="stars" id="stars"></div>
-
   <header class="site-header">
     <div class="header-inner">
-      <a href="../index.html" class="logo">
-        <span class="logo-icon">🎯</span>
-        <span class="logo-text">WoT<span class="logo-accent">Shop</span></span>
+      <a href="./" class="logo">
+        <span class="logo-text" id="brand-title"></span>
       </a>
       <nav class="breadcrumb" id="breadcrumb"></nav>
     </div>
@@ -37,6 +34,11 @@
       <div class="lb-tn-row" id="lb-tn-row"></div>
       <div class="lb-nav-counter" id="lb-counter">1 / 1</div>
     </div>
+
+    <!-- Назад — левый верхний угол -->
+    <button class="lb-back" id="lb-back" aria-label="Назад">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    </button>
 
     <!-- Закрыть — всегда видна -->
     <button class="lb-close" id="lb-close" aria-label="Закрыть">
@@ -91,8 +93,9 @@
     <p>Все аккаунты продаются через&nbsp;<img src="https://funpay.com/img/layout/logo-funpay.svg" alt="FunPay" class="funpay-logo-footer">&nbsp;— безопасная сделка гарантирована.</p>
   </footer>
 
-  <script src="../js/main.js"></script>
-  <script src="../js/gallery.js"></script>
+  <script src="../js/resources.js?v=__CACHE_VER__"></script>
+  <script src="../js/main.js?v=__CACHE_VER__"></script>
+  <script src="../js/gallery.js?v=__CACHE_VER__"></script>
   <script>loadLot();</script>
 </body>
 </html>
