@@ -120,6 +120,7 @@
       "title": "✦  TYPE 63  ✦ \n𝟏𝟎 𝐲𝐩 (x2), 8 𝙋𝙍𝙀𝙈'ов",
       "funpay": "https://funpay.com/lots/offer?id=32464196",
       "images": [
+        "images/xmode/lot_1773309773805/009.webp",
         "images/xmode/lot_1773309773805/008.webp",
         "images/xmode/lot_1773309773805/004.webp",
         "images/xmode/lot_1773309773805/007.webp",
@@ -127,8 +128,7 @@
         "images/xmode/lot_1773309773805/005.webp",
         "images/xmode/lot_1773309773805/001.webp",
         "images/xmode/lot_1773309773805/002.webp",
-        "images/xmode/lot_1773309773805/003.webp",
-        "images/xmode/lot_1773309773805/009.webp"
+        "images/xmode/lot_1773309773805/003.webp"
       ],
       "thumb": "images/xmode/lot_1773309773805/thumb.webp",
       "onFunpay": true,
