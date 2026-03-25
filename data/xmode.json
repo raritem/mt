@@ -186,7 +186,7 @@
     },
     {
       "id": "lot_1773761393864",
-      "title": "Turtle I, СУ-130ПM, Doppel\n𝟏𝟎𝐲𝐩 (x3) | 12 𝙋𝙍𝙀𝙈 танков | 7k бoн",
+      "title": "Turtle I, СУ-130ПM, Doppel\n𝟏𝟎𝐲𝐩 (x3), 12 𝙋𝙍𝙀𝙈 танков",
       "funpay": "https://funpay.com/users/2854472/",
       "onFunpay": false,
       "images": [
@@ -197,7 +197,11 @@
         "images/xmode/lot_1773761393864/001.webp",
         "images/xmode/lot_1773761393864/004.webp"
       ],
-      "thumb": "images/xmode/lot_1773761393864/thumb.webp"
+      "thumb": "images/xmode/lot_1773761393864/thumb.webp",
+      "resources": {
+        "bonds": "7845",
+        "silver": "7932491"
+      }
     }
   ]
 }
