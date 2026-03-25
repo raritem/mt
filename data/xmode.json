@@ -32,7 +32,13 @@
         "images/xmode/lot_1773309676444/005.webp",
         "images/xmode/lot_1773309676444/012.webp"
       ],
-      "thumb": "images/xmode/lot_1773309676444/thumb.webp"
+      "thumb": "images/xmode/lot_1773309676444/thumb.webp",
+      "onFunpay": true,
+      "resources": {
+        "bonds": "11200",
+        "gold": "4560",
+        "silver": "8568945"
+      }
     },
     {
       "id": "lot_1773309692187",
