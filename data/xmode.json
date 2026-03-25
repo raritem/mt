@@ -178,7 +178,11 @@
         "images/xmode/lot_1773739012044/003.webp",
         "images/xmode/lot_1773739012044/002.webp"
       ],
-      "thumb": "images/xmode/lot_1773739012044/thumb.webp"
+      "thumb": "images/xmode/lot_1773739012044/thumb.webp",
+      "resources": {
+        "bonds": "7845",
+        "silver": "15004284"
+      }
     },
     {
       "id": "lot_1773761393864",
