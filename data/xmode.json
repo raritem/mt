@@ -132,7 +132,12 @@
         "images/xmode/lot_1773738565427/002.webp",
         "images/xmode/lot_1773738565427/004.webp"
       ],
-      "thumb": "images/xmode/lot_1773738565427/thumb.webp"
+      "thumb": "images/xmode/lot_1773738565427/thumb.webp",
+      "resources": {
+        "bonds": "10654",
+        "gold": "5789",
+        "silver": "6345699"
+      }
     },
     {
       "id": "lot_1773739012044",
