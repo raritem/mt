@@ -89,7 +89,6 @@
       "onFunpay": true,
       "resources": {
         "bonds": "11492",
-        "gold": "6004",
         "silver": "4034783"
       }
     },
