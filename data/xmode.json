@@ -101,7 +101,7 @@
     },
     {
       "id": "lot_1773309726201",
-      "title": "Дуплeт, Зaщитник\nType 5 H, AMX 50 B, AMX 30 B",
+      "title": "Дуплeт, Зaщитник",
       "funpay": "https://funpay.com/lots/offer?id=33494200",
       "images": [
         "images/xmode/lot_1773309726201/008.webp",
@@ -119,7 +119,8 @@
         "bonds": "19923",
         "gold": "19443",
         "silver": "29532491"
-      }
+      },
+      "tanks10": "Type 5 H, AMX 50 B, AMX 30 B"
     },
     {
       "id": "lot_1773309773805",
