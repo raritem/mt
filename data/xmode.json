@@ -39,8 +39,7 @@
         "bonds": "19200",
         "gold": "19560",
         "silver": "29568945"
-      },
-      "tanks10": "AMX 50 B, AMX 30 B, Type 5 H"
+      }
     },
     {
       "id": "lot_1773309692187",
@@ -68,8 +67,7 @@
         "bonds": "19345",
         "gold": "19465",
         "silver": "29504284"
-      },
-      "tanks10": "Type 5 H, AMX 50 B, AMX 30 B"
+      }
     },
     {
       "id": "lot_1773309712036",
@@ -96,8 +94,7 @@
         "bonds": "19492",
         "gold": "19230",
         "silver": "29334783"
-      },
-      "tanks10": "AMX 30 B, Type 5 H, AMX 50 B"
+      }
     },
     {
       "id": "lot_1773309726201",
@@ -119,8 +116,7 @@
         "bonds": "19923",
         "gold": "19443",
         "silver": "29532491"
-      },
-      "tanks10": "Type 5 H, AMX 50 B, AMX 30 B"
+      }
     },
     {
       "id": "lot_1773309773805",
@@ -143,12 +139,11 @@
         "bonds": "19548",
         "gold": "19546",
         "silver": "29439222"
-      },
-      "tanks10": "AMX 50 B, AMX 30 B"
+      }
     },
     {
       "id": "lot_1773738565427",
-      "title": "TYPE 63",
+      "title": "TYPE 63, 10  ур (х2), 11 PREM танков",
       "funpay": "https://funpay.com/users/2854472/",
       "onFunpay": false,
       "images": [
@@ -171,8 +166,7 @@
         "bonds": "19654",
         "gold": "19789",
         "silver": "29634569"
-      },
-      "tanks10": "AMX 50 B, AMX 30 B"
+      }
     },
     {
       "id": "lot_1773739012044",
