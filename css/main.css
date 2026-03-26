@@ -307,7 +307,7 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-card-body {
-  padding: 5px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -321,7 +321,7 @@ input, textarea { font-family: var(--font-body); }
   line-height: 1.4;
   overflow-wrap: break-word;
   word-break: break-word;
-  background: linear-gradient(90deg, #242730, transparent 60%);
+  background: linear-gradient(90deg, #242730, transparent 70%);
   padding: 2px 6px;
   border-radius: 6px;
 }
@@ -1050,7 +1050,6 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .lot-card-resources .resource-icons {
   gap: 4px;
   flex-wrap: wrap;
-  padding: 3px;
 }
 
 .lot-card-resources .resource-item {
