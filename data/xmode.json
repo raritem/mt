@@ -148,7 +148,7 @@
     },
     {
       "id": "lot_1773738565427",
-      "title": "TYPE 63, 10  ур (х2), 11 PREM танков",
+      "title": "TYPE 63",
       "funpay": "https://funpay.com/users/2854472/",
       "onFunpay": false,
       "images": [
@@ -171,7 +171,8 @@
         "bonds": "19654",
         "gold": "19789",
         "silver": "29634569"
-      }
+      },
+      "tanks10": "AMX 50 B, AMX 30 B"
     },
     {
       "id": "lot_1773739012044",
