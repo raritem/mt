@@ -319,6 +319,8 @@ input, textarea { font-family: var(--font-body); }
   font-weight: 600;
   color: var(--text);
   line-height: 1.4;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .lot-card-images-count {
@@ -994,9 +996,9 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .resource-value {
   position: relative;
   z-index: 1;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text);
+  color: #a5a5a5;
   /*letter-spacing: 0.02em;*/
   white-space: nowrap;
   line-height: 1;
@@ -1016,10 +1018,10 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   margin-top: auto;
 }
 
-/* В больших карточках — компактнее, чтобы влезали в одну строку */
+/* В больших карточках — компактнее, ресурсы переносятся если не влезают */
 .lot-card-resources .resource-icons {
   gap: 4px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .lot-card-resources .resource-item {
@@ -1050,38 +1052,38 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 /* Планшет / небольшой десктоп */
 @media (max-width: 900px) {
   /* Таблица: ресурсы в lot-row-tags чуть компактнее */
-  .lot-row-tags .resource-icons { gap: 3px; }
+  .lot-row-tags .resource-icons { gap: 8px; }
   .lot-row-tags .resource-item  { padding: 2px 5px 2px 4px; gap: 3px; }
-  .lot-row-tags .resource-icon-img { width: 17px; height: 17px; }
+  .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 30px; height: 30px;
-    margin-top: -7px; margin-bottom: -7px;
-    margin-right: -6px; margin-left: -6px;
+    width: 36px; height: 36px;
+    margin-top: -8px; margin-bottom: -8px;
+    margin-right: -8px; margin-left: -9px;
   }
-  .lot-row-tags .resource-value { font-size: 11px; }
+  .lot-row-tags .resource-value { font-size: 13px; }
 
   /* Карточки: ресурсы чуть мельче */
   .lot-card-resources .resource-item { padding: 2px 5px 2px 4px; gap: 2px; }
-  .lot-card-resources .resource-icon-img { width: 17px; height: 17px; }
+  .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 30px; height: 30px;
-    margin-top: -7px; margin-bottom: -7px;
-    margin-right: -6px; margin-left: -6px;
+    width: 36px; height: 36px;
+    margin-top: -8px; margin-bottom: -8px;
+    margin-right: -8px; margin-left: -9px;
   }
-  .lot-card-resources .resource-value { font-size: 10px; }
+  .lot-card-resources .resource-value { font-size: 13px; }
 }
 
 /* Мобайл — row становится колонкой, ресурсы в таблице могут быть крупнее */
 @media (max-width: 640px) {
-  .lot-row-tags .resource-icons { gap: 8px; flex-wrap: wrap; }
+  .lot-row-tags .resource-icons { gap: 6px; flex-wrap: wrap; }
   .lot-row-tags .resource-item  { padding: 2px 5px 2px 4px; gap: 3px; }
-  .lot-row-tags .resource-icon-img { width: 16px; height: 16px; }
+  .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 28px; height: 28px;
-    margin-top: -6px; margin-bottom: -6px;
-    margin-right: -5px; margin-left: -5px;
+    width: 36px; height: 36px;
+    margin-top: -8px; margin-bottom: -8px;
+    margin-right: -8px; margin-left: -9px;
   }
-  .lot-row-tags .resource-value { font-size: 11px; }
+  .lot-row-tags .resource-value { font-size: 13px; }
 }
 
 /* Мелкий мобайл */
@@ -1089,11 +1091,11 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources { padding: 0; }
   .lot-card-resources .resource-icons { gap: 2px; }
   .lot-card-resources .resource-item  { padding: 1px 4px 1px 4px; gap: 2px; }
-  .lot-card-resources .resource-icon-img { width: 16px; height: 16px; }
+  .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 30px; height: 30px;
-    margin-top: -6px; margin-bottom: -6px;
-    margin-right: -6px; margin-left: -6px;
+    width: 36px; height: 36px;
+    margin-top: -8px; margin-bottom: -8px;
+    margin-right: -8px; margin-left: -9px;
   }
   .lot-card-resources .resource-value { font-size: 12px; }
 
@@ -1102,9 +1104,9 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-row-tags .resource-icon-img--bonds {
     width: 36px; height: 36px;
     margin-top: -8px; margin-bottom: -8px;
-    margin-right: -8px; margin-left: -8px;
+    margin-right: -8px; margin-left: -9px;
   }
-  .lot-row-tags .resource-value { font-size: 12px; }
+  .lot-row-tags .resource-value { font-size: 13px; }
 }
 
 /* iPhone 12 Pro (390px) */
@@ -1112,20 +1114,20 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources { padding: 0; }
   .lot-card-resources .resource-icons { gap: 2px; }
   .lot-card-resources .resource-item  { padding: 1px 4px 1px 3px; gap: 2px; }
-  .lot-card-resources .resource-icon-img { width: 14px; height: 14px; }
+  .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 26px; height: 26px;
-    margin-top: -6px; margin-bottom: -6px;
-    margin-right: -6px; margin-left: -7px;
+    width: 36px; height: 36px;
+    margin-top: -8px; margin-bottom: -8px;
+    margin-right: -8px; margin-left: -9px;
   }
-  .lot-card-resources .resource-value { font-size: 11px; }
+  .lot-card-resources .resource-value { font-size: 12px; }
 
-  .lot-row-tags .resource-item  { padding: 1px 4px 1px 5px; gap: 3px; }
+  .lot-row-tags .resource-item  { padding: 1px 4px 1px 4px; gap: 2px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
     width: 36px; height: 36px;
     margin-top: -8px; margin-bottom: -8px;
-    margin-right: -8px; margin-left: -8px;
+    margin-right: -8px; margin-left: -9px;
   }
-  .lot-row-tags .resource-value { font-size: 12px; }
+  .lot-row-tags .resource-value { font-size: 13px; }
 }
