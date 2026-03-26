@@ -44,7 +44,7 @@
     },
     {
       "id": "lot_1773309692187",
-      "title": "Turtle I, СУ-130ПM, Doppel\nType 5 H, AMX 50 B, AMX 30 B",
+      "title": "Turtle I, СУ-130ПM, Doppel",
       "funpay": "https://funpay.com/lots/offer?id=34781165",
       "images": [
         "images/xmode/lot_1773309692187/014.webp",
@@ -68,7 +68,8 @@
         "bonds": "19345",
         "gold": "19465",
         "silver": "29504284"
-      }
+      },
+      "tanks10": "Type 5 H, AMX 50 B, AMX 30 B"
     },
     {
       "id": "lot_1773309712036",
