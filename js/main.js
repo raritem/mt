@@ -385,6 +385,7 @@ async function loadShop() {
       const count  = (lot.images || []).length;
       const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
       const title  = normalizeLotTitle(lot.title);
+      const tanks10Html = lot.tanks10 ? `<div class="lot-card-tanks10">${esc(lot.tanks10)}</div>` : '';
 
       const resHtml = (typeof renderResourceIcons === 'function')
         ? renderResourceIcons(lot.resources, 'short')
@@ -394,6 +395,7 @@ async function loadShop() {
         ${thumbHtml}
         <div class="lot-card-body">
           <div class="lot-card-title">${escWithBr(title)}</div>
+          ${tanks10Html}
           <div class="lot-card-images-count">📸 ${count} ${plural(count, 'скриншот', 'скриншота', 'скриншотов')}</div>
           ${resHtml ? `<div class="lot-card-resources">${resHtml}</div>` : ''}
         </div>
@@ -443,6 +445,7 @@ async function loadShop() {
               : `<div class="lot-row-thumb-placeholder">🎯</div>`;
 
             const title = normalizeLotTitle(lot.title);
+            const tanks10RowHtml = lot.tanks10 ? `<div class="lot-row-tanks10">${esc(lot.tanks10)}</div>` : '';
             // Ресурсы: мобайл → short, десктоп → full
             const isMobile = window.innerWidth < 640;
             const resIconsHtml = (typeof renderResourceIcons === 'function')
@@ -458,6 +461,7 @@ async function loadShop() {
                 ${thumbHtml}
                 <div class="lot-row-mid">
                   <div class="lot-row-title">${escWithBr(title)}</div>
+                  ${tanks10RowHtml}
                   <div class="lot-row-tags">${tagsHtml}</div>
                 </div>
               </div>
@@ -556,6 +560,7 @@ async function loadLot() {
           ${fp}
         </div>
         <h1 class="lot-title">${escWithBr(title)}</h1>
+        ${lot.tanks10 ? `<p class="lot-tanks10-detail">🔟 ${esc(lot.tanks10)}</p>` : ''}
         <p style="color:var(--text-muted);font-size:13px;margin-top:4px">📸 ${(lot.images||[]).length} скриншотов</p>
       `;
     }

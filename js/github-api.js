@@ -117,9 +117,12 @@ window.GH = (() => {
   async function putFile(path, content, message, sha) {
     const cfg   = getConfig();
     const bytes = new TextEncoder().encode(content);
-    // Безопасный btoa для больших массивов (избегает stack overflow)
+    // Конвертируем Uint8Array → base64 без разрезания многобайтовых символов.
+    // btoa(String.fromCharCode(...bytes)) падает на больших файлах (stack overflow),
+    // поэтому используем чанкование по готовым байтам кратно 3
+    // (каждые 3 байта дают ровно 4 base64-символа, без padding внутри строки).
+    const CHUNK = 8190; // кратно 3, чтобы не было '=' в середине
     let b64 = '';
-    const CHUNK = 8192;
     for (let i = 0; i < bytes.length; i += CHUNK) {
       b64 += btoa(String.fromCharCode(...bytes.subarray(i, i + CHUNK)));
     }

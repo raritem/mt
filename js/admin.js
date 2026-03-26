@@ -63,6 +63,7 @@ const dom = {
   lotModal:        $('lot-modal'),
   lotModalTitle:   $('lot-modal-title'),
   lotTitleInput:   $('lot-title-input'),
+  lotTanks10Input: $('lot-tanks10-input'),
   lotFunpayInput:  $('lot-funpay-input'),
   lotOnFunpayInput:$('lot-onfunpay-input'),
   lotModalStatus:  $('lot-modal-status'),
@@ -433,6 +434,9 @@ function openLotModal(editLotId) {
   state.editingLot = editLotId;
   dom.lotModalTitle.textContent = lot ? 'Редактировать лот' : 'Новый лот';
   dom.lotTitleInput.value       = lot ? lot.title          : '';
+  if (dom.lotTanks10Input) {
+    dom.lotTanks10Input.value   = lot ? (lot.tanks10 || '') : '';
+  }
   dom.lotFunpayInput.value      = lot ? (lot.funpay || '') : '';
   if (dom.lotOnFunpayInput) {
     dom.lotOnFunpayInput.checked = lot ? (lot.onFunpay !== false) : false;
@@ -463,6 +467,7 @@ function openLotModal(editLotId) {
 
 async function onLotSave() {
   const title  = dom.lotTitleInput.value.trim();
+  const tanks10 = (dom.lotTanks10Input ? dom.lotTanks10Input.value.trim() : '');
   const funpay = dom.lotFunpayInput.value.trim();
   const onFunpay = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked : false;
   if (!title) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
@@ -483,10 +488,12 @@ async function onLotSave() {
       const lot = state.activeLots.find(l => l.id === state.editingLot);
       if (lot) {
         lot.title = title; lot.funpay = funpay; lot.onFunpay = onFunpay;
+        lot.tanks10 = tanks10 || undefined;
         lot.resources = Object.keys(resources).length ? resources : undefined;
       }
     } else {
       const newLot = { id: 'lot_' + Date.now(), title, funpay, onFunpay, images: [] };
+      if (tanks10) newLot.tanks10 = tanks10;
       if (Object.keys(resources).length) newLot.resources = resources;
       state.activeLots.push(newLot);
     }
