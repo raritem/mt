@@ -382,7 +382,6 @@ async function loadShop() {
         ? `<img class="lot-card-thumb" src="${assetUrl(previewSrc)}" alt="${esc(lot.title)}" loading="lazy">`
         : `<div class="lot-card-thumb-placeholder">🎯</div>`;
 
-      const count  = (lot.images || []).length;
       const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
       const title  = normalizeLotTitle(lot.title);
       const tanks10Html = lot.tanks10 ? `<div class="lot-card-tanks10">${esc(lot.tanks10)}</div>` : '';
@@ -396,7 +395,6 @@ async function loadShop() {
         <div class="lot-card-body">
           <div class="lot-card-title">${escWithBr(title)}</div>
           ${tanks10Html}
-          <div class="lot-card-images-count">📸 ${count} ${plural(count, 'скриншот', 'скриншота', 'скриншотов')}</div>
           ${resHtml ? `<div class="lot-card-resources">${resHtml}</div>` : ''}
         </div>
       `;

@@ -336,10 +336,6 @@ input, textarea { font-family: var(--font-body); }
   word-break: break-word;
 }
 
-.lot-card-images-count {
-  font-size: 12px;
-  color: var(--text-muted);
-}
 
 .lot-card-funpay { display: none; } /* старый класс — не используется */
 
