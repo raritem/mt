@@ -36,9 +36,9 @@
       "thumb": "images/xmode/lot_1773309676444/thumb.webp",
       "onFunpay": true,
       "resources": {
-        "bonds": "19999",
-        "gold": "19999",
-        "silver": "29999999"
+        "bonds": "11200",
+        "gold": "4560",
+        "silver": "8568945"
       }
     },
     {
@@ -64,9 +64,8 @@
       "thumb": "images/xmode/lot_1773309692187/thumb.webp",
       "onFunpay": true,
       "resources": {
-        "bonds": "19999",
-        "gold": "19999",
-        "silver": "29999999"
+        "bonds": "11345",
+        "silver": "15004284"
       }
     },
     {
@@ -91,9 +90,8 @@
       "thumb": "images/xmode/lot_1773309712036/thumb.webp",
       "onFunpay": true,
       "resources": {
-        "bonds": "19999",
-        "gold": "19999",
-        "silver": "29999999"
+        "bonds": "11492",
+        "silver": "4034783"
       }
     },
     {
@@ -113,9 +111,9 @@
       "thumb": "images/xmode/lot_1773309726201/thumb.webp",
       "onFunpay": true,
       "resources": {
-        "bonds": "19999",
-        "gold": "19999",
-        "silver": "29999999"
+        "bonds": "11923",
+        "gold": "4463",
+        "silver": "7932491"
       }
     },
     {
@@ -136,9 +134,8 @@
       "thumb": "images/xmode/lot_1773309773805/thumb.webp",
       "onFunpay": true,
       "resources": {
-        "bonds": "19999",
-        "gold": "19999",
-        "silver": "29999999"
+        "bonds": "10548",
+        "silver": "9039222"
       }
     },
     {
@@ -163,9 +160,9 @@
       ],
       "thumb": "images/xmode/lot_1773738565427/thumb.webp",
       "resources": {
-        "bonds": "19999",
-        "gold": "19999",
-        "silver": "29999999"
+        "bonds": "10654",
+        "gold": "5789",
+        "silver": "6345699"
       }
     },
     {
@@ -185,9 +182,8 @@
       ],
       "thumb": "images/xmode/lot_1773739012044/thumb.webp",
       "resources": {
-        "bonds": "19999",
-        "gold": "19999",
-        "silver": "29999999"
+        "bonds": "7845",
+        "silver": "15004284"
       }
     },
     {
@@ -206,9 +202,8 @@
       ],
       "thumb": "images/xmode/lot_1773761393864/thumb.webp",
       "resources": {
-        "bonds": "19999",
-        "gold": "19999",
-        "silver": "29999999"
+        "bonds": "7845",
+        "silver": "7932491"
       }
     }
   ]
