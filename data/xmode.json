@@ -136,8 +136,9 @@
       "thumb": "images/xmode/lot_1773309773805/thumb.webp",
       "onFunpay": true,
       "resources": {
-        "bonds": "10548",
-        "silver": "9039222"
+        "bonds": "19548",
+        "gold": "19546",
+        "silver": "29439222"
       }
     },
     {
