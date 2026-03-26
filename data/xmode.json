@@ -124,7 +124,7 @@
     },
     {
       "id": "lot_1773309773805",
-      "title": "TYPE 63\nAMX 50 B, AMX 30 B",
+      "title": "TYPE 63",
       "funpay": "https://funpay.com/lots/offer?id=32464196",
       "images": [
         "images/xmode/lot_1773309773805/009.webp",
@@ -143,7 +143,8 @@
         "bonds": "19548",
         "gold": "19546",
         "silver": "29439222"
-      }
+      },
+      "tanks10": "AMX 50 B, AMX 30 B"
     },
     {
       "id": "lot_1773738565427",
