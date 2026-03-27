@@ -500,7 +500,7 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-row-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   line-height: 1.35;
