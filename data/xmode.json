@@ -176,7 +176,7 @@
     },
     {
       "id": "lot_1773739012044",
-      "title": "СУ-130ПM, TST\n10 ур (х3), 11 PREM танков",
+      "title": "СУ-130ПM, TST",
       "funpay": "https://funpay.com/users/2854472/",
       "onFunpay": false,
       "images": [
@@ -194,7 +194,8 @@
         "bonds": "19845",
         "gold": "19578",
         "silver": "29504284"
-      }
+      },
+      "tanks10": "T57 Heavy, Об. 268, Т-62А"
     },
     {
       "id": "lot_1773761393864",
