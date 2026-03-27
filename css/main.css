@@ -1088,9 +1088,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-row-tags .resource-item  { padding: 2px 5px 2px 4px; gap: 3px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 36px; height: 36px;
-    margin-top: -8px; margin-bottom: -8px;
-    margin-right: -8px; margin-left: -9px;
+    width: 32px;
+    height: 32px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -6px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 
@@ -1098,9 +1101,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources .resource-item { padding: 2px 5px 2px 4px; gap: 2px; }
   .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 36px; height: 36px;
-    margin-top: -8px; margin-bottom: -8px;
-    margin-right: -8px; margin-left: -9px;
+    width: 30px;
+    height: 30px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -5px;
+    margin-left: -6px;
   }
   .lot-card-resources .resource-value { font-size: 13px; }
 }
@@ -1111,9 +1117,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-row-tags .resource-item  { padding: 2px 5px 2px 4px; gap: 3px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 36px; height: 36px;
-    margin-top: -8px; margin-bottom: -8px;
-    margin-right: -8px; margin-left: -9px;
+    width: 32px;
+    height: 32px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -6px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 }
@@ -1125,18 +1134,24 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources .resource-item  { padding: 1px 4px 1px 4px; gap: 2px; }
   .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 36px; height: 36px;
-    margin-top: -8px; margin-bottom: -8px;
-    margin-right: -8px; margin-left: -9px;
+    width: 30px;
+    height: 30px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -5px;
+    margin-left: -6px;
   }
   .lot-card-resources .resource-value { font-size: 12px; }
 
   .lot-row-tags .resource-item  { padding: 1px 4px 1px 4px; gap: 3px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 36px; height: 36px;
-    margin-top: -8px; margin-bottom: -8px;
-    margin-right: -8px; margin-left: -9px;
+    width: 32px;
+    height: 32px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -6px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 }
@@ -1148,18 +1163,24 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources .resource-item  { padding: 1px 4px 1px 3px; gap: 2px; }
   .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 36px; height: 36px;
-    margin-top: -8px; margin-bottom: -8px;
-    margin-right: -8px; margin-left: -9px;
+    width: 30px;
+    height: 30px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -5px;
+    margin-left: -6px;
   }
   .lot-card-resources .resource-value { font-size: 12px; }
 
   .lot-row-tags .resource-item  { padding: 1px 4px 1px 4px; gap: 2px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 36px; height: 36px;
-    margin-top: -8px; margin-bottom: -8px;
-    margin-right: -8px; margin-left: -9px;
+    width: 32px;
+    height: 32px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -6px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 }
