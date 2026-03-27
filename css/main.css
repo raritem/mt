@@ -321,7 +321,7 @@ input, textarea { font-family: var(--font-body); }
   line-height: 1.4;
   overflow-wrap: break-word;
   word-break: break-word;
-  background: linear-gradient(90deg, #242730, transparent 70%);
+  background: linear-gradient(90deg, #32353d, transparent 70%);
   padding: 2px 6px;
   border-radius: 6px;
 }
@@ -508,6 +508,9 @@ input, textarea { font-family: var(--font-body); }
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  background: linear-gradient(90deg, #32353d, transparent 70%);
+  padding: 2px 6px;
+  border-radius: 6px;
 }
 
 .lot-row-tanks10 {
@@ -520,6 +523,7 @@ input, textarea { font-family: var(--font-body); }
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  padding: 0px 4px;
 }
 
 .lot-tanks10-detail {
@@ -534,7 +538,7 @@ input, textarea { font-family: var(--font-body); }
   align-items: center;
   flex-wrap: wrap;
   min-height: 22px;
-  margin-top: auto;
+  /*margin-top: auto;*/
 }
 
 .lot-row-tag {
