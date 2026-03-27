@@ -1069,8 +1069,8 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .lot-card-resources .resource-icon-img--bonds {
   width: 30px;
   height: 30px;
-  margin-top: -6px;
-  margin-bottom: -6px;
+  margin-top: -5px;
+  margin-bottom: -5px;
   margin-right: -5px;
   margin-left: -6px;
 }
@@ -1103,8 +1103,8 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources .resource-icon-img--bonds {
     width: 30px;
     height: 30px;
-    margin-top: -6px;
-    margin-bottom: -6px;
+    margin-top: -5px;
+    margin-bottom: -5px;
     margin-right: -5px;
     margin-left: -6px;
   }
@@ -1136,8 +1136,8 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources .resource-icon-img--bonds {
     width: 30px;
     height: 30px;
-    margin-top: -6px;
-    margin-bottom: -6px;
+    margin-top: -5px;
+    margin-bottom: -5px;
     margin-right: -5px;
     margin-left: -6px;
   }
@@ -1165,8 +1165,8 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources .resource-icon-img--bonds {
     width: 30px;
     height: 30px;
-    margin-top: -6px;
-    margin-bottom: -6px;
+    margin-top: -5px;
+    margin-bottom: -5px;
     margin-right: -5px;
     margin-left: -6px;
   }
