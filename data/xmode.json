@@ -199,7 +199,7 @@
     },
     {
       "id": "lot_1773761393864",
-      "title": "Turtle I, СУ-130ПM, Doppel\n𝟏𝟎𝐲𝐩 (x3), 12 𝙋𝙍𝙀𝙈 танков",
+      "title": "Turtle I, СУ-130ПM, Doppel",
       "funpay": "https://funpay.com/users/2854472/",
       "onFunpay": false,
       "images": [
@@ -216,7 +216,8 @@
         "bonds": "19845",
         "gold": "19466",
         "silver": "29532491"
-      }
+      },
+      "tanks10": "T57 Heavy, Об. 268, Т-62А"
     }
   ]
 }
