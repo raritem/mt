@@ -514,7 +514,7 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-row-tanks10 {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
   line-height: 1.35;
