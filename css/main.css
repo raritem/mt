@@ -1017,12 +1017,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
 /* Боны — ×1.5, но не раздувают плашку по высоте */
 .resource-icon-img--bonds {
-  width: 32px;
-  height: 32px;
-  margin-top: -6px;
-  margin-bottom: -6px;
-  margin-right: -6px;
-  margin-left: -7px;
+  width: 28px;
+  height: 28px;
+  margin-top: -4px;
+  margin-bottom: -4px;
+  margin-right: -4px;
+  margin-left: -5px;
 }
 
 .resource-value {
@@ -1067,12 +1067,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 }
 
 .lot-card-resources .resource-icon-img--bonds {
-  width: 30px;
-  height: 30px;
-  margin-top: -5px;
-  margin-bottom: -5px;
-  margin-right: -5px;
-  margin-left: -6px;
+  width: 28px;
+  height: 28px;
+  margin-top: -4px;
+  margin-bottom: -4px;
+  margin-right: -4px;
+  margin-left: -5px;
 }
 
 .lot-card-resources .resource-value {
@@ -1088,12 +1088,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-row-tags .resource-item  { padding: 2px 5px 2px 4px; gap: 3px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 32px;
-    height: 32px;
-    margin-top: -6px;
-    margin-bottom: -6px;
-    margin-right: -6px;
-    margin-left: -6px;
+    width: 28px;
+    height: 28px;
+    margin-top: -4px;
+    margin-bottom: -4px;
+    margin-right: -4px;
+    margin-left: -5px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 
@@ -1101,12 +1101,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources .resource-item { padding: 2px 5px 2px 4px; gap: 2px; }
   .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 30px;
-    height: 30px;
-    margin-top: -5px;
-    margin-bottom: -5px;
-    margin-right: -5px;
-    margin-left: -6px;
+    width: 28px;
+    height: 28px;
+    margin-top: -4px;
+    margin-bottom: -4px;
+    margin-right: -4px;
+    margin-left: -5px;
   }
   .lot-card-resources .resource-value { font-size: 13px; }
 }
@@ -1117,12 +1117,12 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-row-tags .resource-item  { padding: 2px 5px 2px 4px; gap: 3px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 32px;
-    height: 32px;
-    margin-top: -6px;
-    margin-bottom: -6px;
-    margin-right: -6px;
-    margin-left: -6px;
+    width: 28px;
+    height: 28px;
+    margin-top: -4px;
+    margin-bottom: -4px;
+    margin-right: -4px;
+    margin-left: -5px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 }
@@ -1134,24 +1134,24 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources .resource-item  { padding: 1px 4px 1px 4px; gap: 2px; }
   .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 30px;
-    height: 30px;
-    margin-top: -5px;
-    margin-bottom: -5px;
-    margin-right: -5px;
-    margin-left: -6px;
+    width: 28px;
+    height: 28px;
+    margin-top: -4px;
+    margin-bottom: -4px;
+    margin-right: -4px;
+    margin-left: -5px;
   }
   .lot-card-resources .resource-value { font-size: 12px; }
 
   .lot-row-tags .resource-item  { padding: 1px 4px 1px 4px; gap: 3px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 32px;
-    height: 32px;
-    margin-top: -6px;
-    margin-bottom: -6px;
-    margin-right: -6px;
-    margin-left: -6px;
+    width: 28px;
+    height: 28px;
+    margin-top: -4px;
+    margin-bottom: -4px;
+    margin-right: -4px;
+    margin-left: -5px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 }
@@ -1163,24 +1163,24 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources .resource-item  { padding: 1px 4px 1px 3px; gap: 2px; }
   .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 30px;
-    height: 30px;
-    margin-top: -5px;
-    margin-bottom: -5px;
-    margin-right: -5px;
-    margin-left: -6px;
+    width: 28px;
+    height: 28px;
+    margin-top: -4px;
+    margin-bottom: -4px;
+    margin-right: -4px;
+    margin-left: -5px;
   }
   .lot-card-resources .resource-value { font-size: 12px; }
 
   .lot-row-tags .resource-item  { padding: 1px 4px 1px 4px; gap: 2px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 32px;
-    height: 32px;
-    margin-top: -6px;
-    margin-bottom: -6px;
-    margin-right: -6px;
-    margin-left: -6px;
+    width: 28px;
+    height: 28px;
+    margin-top: -4px;
+    margin-bottom: -4px;
+    margin-right: -4px;
+    margin-left: -5px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 }
