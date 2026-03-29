@@ -293,6 +293,7 @@ input, textarea { font-family: var(--font-body); }
   display: block;
   margin: 5px;
   border-radius: 12px;
+  -webkit-mask-image: linear-gradient(180deg, black 60%, transparent);
 }
 
 /* Wrapper around the thumbnail image to allow badge positioning */
