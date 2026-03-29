@@ -312,11 +312,11 @@ input, textarea { font-family: var(--font-body); }
   align-items: center;
   gap: 8px;
   pointer-events: none;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgb(255 255 255 / 9%);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border-radius: 0px 12px 0px 12px;
-  padding: 0px 6px;
+  padding: 0px 6px 0px 11px;
 }
 
 /* Single badge item: [number] [icon] — no own background */
@@ -353,7 +353,8 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-row-thumb-wrap .lot-card-vbadges {
-  top: 4px;
+  top: unset;
+  bottom: 4px;
   right: 4px;
   gap: 5px;
   padding: 2px 4px;
