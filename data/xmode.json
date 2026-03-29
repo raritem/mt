@@ -9,8 +9,8 @@
       "title": "СУ-130ПM, TST",
       "funpay": "https://funpay.com/lots/offer?id=34782431",
       "images": [
-        "images/xmode/lot_1773309676444/022.webp",
         "images/xmode/lot_1773309676444/023.webp",
+        "images/xmode/lot_1773309676444/022.webp",
         "images/xmode/lot_1773309676444/013.webp",
         "images/xmode/lot_1773309676444/016.webp",
         "images/xmode/lot_1773309676444/021.webp",
@@ -31,9 +31,10 @@
         "images/xmode/lot_1773309676444/003.webp",
         "images/xmode/lot_1773309676444/002.webp",
         "images/xmode/lot_1773309676444/005.webp",
-        "images/xmode/lot_1773309676444/012.webp"
+        "images/xmode/lot_1773309676444/012.webp",
+        "images/xmode/lot_1773309676444/024.webp"
       ],
-      "thumb": "images/xmode/lot_1773309676444/thumb.jpg",
+      "thumb": "images/xmode/lot_1773309676444/thumb.webp",
       "onFunpay": true,
       "resources": {
         "bonds": "19200",
@@ -49,8 +50,8 @@
       "title": "Turtle I, СУ-130ПM, Doppel",
       "funpay": "https://funpay.com/lots/offer?id=34781165",
       "images": [
-        "images/xmode/lot_1773309692187/013.webp",
         "images/xmode/lot_1773309692187/014.webp",
+        "images/xmode/lot_1773309692187/013.webp",
         "images/xmode/lot_1773309692187/012.webp",
         "images/xmode/lot_1773309692187/006.webp",
         "images/xmode/lot_1773309692187/011.webp",
@@ -64,7 +65,7 @@
         "images/xmode/lot_1773309692187/003.webp",
         "images/xmode/lot_1773309692187/004.webp"
       ],
-      "thumb": "images/xmode/lot_1773309692187/thumb.jpg",
+      "thumb": "images/xmode/lot_1773309692187/thumb.webp",
       "onFunpay": true,
       "resources": {
         "bonds": "19345",
@@ -80,8 +81,8 @@
       "title": "Skorpian, 703 II (100)",
       "funpay": "https://funpay.com/lots/offer?id=33494261",
       "images": [
-        "images/xmode/lot_1773309712036/011.webp",
         "images/xmode/lot_1773309712036/013.webp",
+        "images/xmode/lot_1773309712036/011.webp",
         "images/xmode/lot_1773309712036/005.webp",
         "images/xmode/lot_1773309712036/012.webp",
         "images/xmode/lot_1773309712036/010.webp",
@@ -94,7 +95,7 @@
         "images/xmode/lot_1773309712036/002.webp",
         "images/xmode/lot_1773309712036/003.webp"
       ],
-      "thumb": "images/xmode/lot_1773309712036/thumb.jpg",
+      "thumb": "images/xmode/lot_1773309712036/thumb.webp",
       "onFunpay": true,
       "resources": {
         "bonds": "19492",
@@ -110,8 +111,8 @@
       "title": "Дуплeт, Зaщитник",
       "funpay": "https://funpay.com/lots/offer?id=33494200",
       "images": [
-        "images/xmode/lot_1773309726201/007.webp",
         "images/xmode/lot_1773309726201/008.webp",
+        "images/xmode/lot_1773309726201/007.webp",
         "images/xmode/lot_1773309726201/004.webp",
         "images/xmode/lot_1773309726201/006.webp",
         "images/xmode/lot_1773309726201/005.webp",
@@ -119,7 +120,7 @@
         "images/xmode/lot_1773309726201/002.webp",
         "images/xmode/lot_1773309726201/003.webp"
       ],
-      "thumb": "images/xmode/lot_1773309726201/thumb.jpg",
+      "thumb": "images/xmode/lot_1773309726201/thumb.webp",
       "onFunpay": true,
       "resources": {
         "bonds": "19923",
@@ -135,8 +136,8 @@
       "title": "TYPE 63",
       "funpay": "https://funpay.com/lots/offer?id=32464196",
       "images": [
-        "images/xmode/lot_1773309773805/008.webp",
         "images/xmode/lot_1773309773805/009.webp",
+        "images/xmode/lot_1773309773805/008.webp",
         "images/xmode/lot_1773309773805/004.webp",
         "images/xmode/lot_1773309773805/007.webp",
         "images/xmode/lot_1773309773805/006.webp",
@@ -145,7 +146,7 @@
         "images/xmode/lot_1773309773805/002.webp",
         "images/xmode/lot_1773309773805/003.webp"
       ],
-      "thumb": "images/xmode/lot_1773309773805/thumb.jpg",
+      "thumb": "images/xmode/lot_1773309773805/thumb.webp",
       "onFunpay": true,
       "resources": {
         "bonds": "19548",
@@ -182,9 +183,7 @@
         "gold": "19789",
         "silver": "29634569"
       },
-      "tanks10": "AMX 50 B, AMX 30 B",
-      "t10count": "3",
-      "premcount": "11"
+      "tanks10": "AMX 50 B, AMX 30 B"
     },
     {
       "id": "lot_1773739012044",
@@ -207,9 +206,7 @@
         "gold": "19578",
         "silver": "29504284"
       },
-      "tanks10": "T57 Heavy, Об. 268, Т-62А",
-      "t10count": "3",
-      "premcount": "14"
+      "tanks10": "T57 Heavy, Об. 268, Т-62А"
     },
     {
       "id": "lot_1773761393864",
@@ -231,9 +228,7 @@
         "gold": "19466",
         "silver": "29532491"
       },
-      "tanks10": "T57 Heavy, Об. 268, Т-62А",
-      "t10count": "4",
-      "premcount": "12"
+      "tanks10": "T57 Heavy, Об. 268, Т-62А"
     }
   ]
 }
