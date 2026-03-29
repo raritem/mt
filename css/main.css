@@ -302,28 +302,28 @@ input, textarea { font-family: var(--font-body); }
   line-height: 0;
 }
 
-/* Badges container — top-right corner of the image */
+/* Badges container — top-right corner of the image, single pill */
 .lot-card-vbadges {
   position: absolute;
-  top: 8px;
-  right: 14px;
+  top: 5px;
+  right: 5px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   pointer-events: none;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 0px 6px 0px 12px;
+  padding: 0px 6px;
 }
 
-/* Single badge: [number] [icon] */
+/* Single badge item: [number] [icon] — no own background */
 .vbadge {
   display: flex;
   align-items: center;
   gap: 3px;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border-radius: 6px;
-  padding: 2px 5px 2px 4px;
 }
 
 .vbadge__num {
@@ -335,8 +335,8 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .vbadge__icon {
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
   display: block;
 }
@@ -354,12 +354,9 @@ input, textarea { font-family: var(--font-body); }
 
 .lot-row-thumb-wrap .lot-card-vbadges {
   top: 4px;
-  right: 5px;
-  gap: 2px;
-}
-
-.lot-row-thumb-wrap .vbadge {
-  padding: 1px 3px 1px 2px;
+  right: 4px;
+  gap: 5px;
+  padding: 2px 4px;
 }
 
 .lot-row-thumb-wrap .vbadge__num {
@@ -367,8 +364,8 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-row-thumb-wrap .vbadge__icon {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
 }
 
 .lot-card-thumb-placeholder {
