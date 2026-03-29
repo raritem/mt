@@ -295,6 +295,82 @@ input, textarea { font-family: var(--font-body); }
   border-radius: 12px;
 }
 
+/* Wrapper around the thumbnail image to allow badge positioning */
+.lot-card-thumb-wrap {
+  position: relative;
+  display: block;
+  line-height: 0;
+}
+
+/* Badges container — top-right corner of the image */
+.lot-card-vbadges {
+  position: absolute;
+  top: 8px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  pointer-events: none;
+}
+
+/* Single badge: [number] [icon] */
+.vbadge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 6px;
+  padding: 2px 5px 2px 4px;
+}
+
+.vbadge__num {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.vbadge__icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Row card thumb wrapper (hidden lots table) */
+.lot-row-thumb-wrap {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  width: 120px;
+  height: 80px;
+  line-height: 0;
+  align-self: center;
+}
+
+.lot-row-thumb-wrap .lot-card-vbadges {
+  top: 4px;
+  right: 5px;
+  gap: 2px;
+}
+
+.lot-row-thumb-wrap .vbadge {
+  padding: 1px 3px 1px 2px;
+}
+
+.lot-row-thumb-wrap .vbadge__num {
+  font-size: 10px;
+}
+
+.lot-row-thumb-wrap .vbadge__icon {
+  width: 15px;
+  height: 15px;
+}
+
 .lot-card-thumb-placeholder {
   width: 100%;
   aspect-ratio: 16/12;

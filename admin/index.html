@@ -136,6 +136,20 @@
         <label>Танки 10 уровня (строка 2)</label>
         <textarea id="lot-tanks10-input" placeholder="140, 430U, Obj. 279e" rows="2"></textarea>
       </div>
+      <div class="form-group" id="vehicles-form-group">
+        <label>Количество техники</label>
+        <div class="resource-fields">
+          <div class="resource-field-row">
+            <img id="veh-icon-t10" class="resource-field-icon" alt="Т10">
+            <input type="text" id="lot-t10count-input" placeholder="Танков X уровня (напр. 15)" inputmode="numeric">
+          </div>
+          <div class="resource-field-row">
+            <img id="veh-icon-prem" class="resource-field-icon" alt="Прем">
+            <input type="text" id="lot-premcount-input" placeholder="Премиум танков (напр. 8)" inputmode="numeric">
+          </div>
+        </div>
+        <p class="form-hint">Оставьте поле пустым — иконка не будет показана</p>
+      </div>
       <div class="form-group">
         <label>Ссылка на FunPay</label>
         <input type="url" id="lot-funpay-input" placeholder="https://funpay.com/lots/...">

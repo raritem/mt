@@ -64,6 +64,8 @@ const dom = {
   lotModalTitle:   $('lot-modal-title'),
   lotTitleInput:   $('lot-title-input'),
   lotTanks10Input: $('lot-tanks10-input'),
+  lotT10CountInput:$('lot-t10count-input'),
+  lotPremCountInput:$('lot-premcount-input'),
   lotFunpayInput:  $('lot-funpay-input'),
   lotOnFunpayInput:$('lot-onfunpay-input'),
   lotModalStatus:  $('lot-modal-status'),
@@ -437,6 +439,12 @@ function openLotModal(editLotId) {
   if (dom.lotTanks10Input) {
     dom.lotTanks10Input.value   = lot ? (lot.tanks10 || '') : '';
   }
+  if (dom.lotT10CountInput) {
+    dom.lotT10CountInput.value  = lot ? (lot.t10count !== undefined && lot.t10count !== null ? lot.t10count : '') : '';
+  }
+  if (dom.lotPremCountInput) {
+    dom.lotPremCountInput.value = lot ? (lot.premcount !== undefined && lot.premcount !== null ? lot.premcount : '') : '';
+  }
   dom.lotFunpayInput.value      = lot ? (lot.funpay || '') : '';
   if (dom.lotOnFunpayInput) {
     dom.lotOnFunpayInput.checked = lot ? (lot.onFunpay !== false) : false;
@@ -461,6 +469,14 @@ function openLotModal(editLotId) {
     if (iconSilver) iconSilver.src = RESOURCE_ICONS.silver;
   }
 
+  // Вставляем иконки техники
+  if (typeof VEHICLE_ICONS !== 'undefined') {
+    const iconT10  = $('veh-icon-t10');
+    const iconPrem = $('veh-icon-prem');
+    if (iconT10)  iconT10.src  = VEHICLE_ICONS.t10;
+    if (iconPrem) iconPrem.src = VEHICLE_ICONS.prem;
+  }
+
   dom.lotModalStatus.className  = 'status-msg';
   openModal('lotModal');
 }
@@ -468,6 +484,8 @@ function openLotModal(editLotId) {
 async function onLotSave() {
   const title  = dom.lotTitleInput.value.trim();
   const tanks10 = (dom.lotTanks10Input ? dom.lotTanks10Input.value.trim() : '');
+  const t10countRaw = (dom.lotT10CountInput ? dom.lotT10CountInput.value.trim() : '');
+  const premcountRaw = (dom.lotPremCountInput ? dom.lotPremCountInput.value.trim() : '');
   const funpay = dom.lotFunpayInput.value.trim();
   const onFunpay = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked : false;
   if (!title) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
@@ -489,11 +507,15 @@ async function onLotSave() {
       if (lot) {
         lot.title = title; lot.funpay = funpay; lot.onFunpay = onFunpay;
         lot.tanks10 = tanks10 || undefined;
+        lot.t10count = t10countRaw !== '' ? t10countRaw : undefined;
+        lot.premcount = premcountRaw !== '' ? premcountRaw : undefined;
         lot.resources = Object.keys(resources).length ? resources : undefined;
       }
     } else {
       const newLot = { id: 'lot_' + Date.now(), title, funpay, onFunpay, images: [] };
       if (tanks10) newLot.tanks10 = tanks10;
+      if (t10countRaw !== '') newLot.t10count = t10countRaw;
+      if (premcountRaw !== '') newLot.premcount = premcountRaw;
       if (Object.keys(resources).length) newLot.resources = resources;
       state.activeLots.push(newLot);
     }
