@@ -132,7 +132,9 @@
         "gold": "19443",
         "silver": "29532491"
       },
-      "tanks10": "Type 5 H, AMX 50 B..."
+      "tanks10": "Type 5 H, AMX 50 B...",
+      "t10count": "4",
+      "premcount": "14"
     },
     {
       "id": "lot_1773309773805",
