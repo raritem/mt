@@ -804,7 +804,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px;
+  padding: 6px 10px 6px 6px;
   border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 500;
