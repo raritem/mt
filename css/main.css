@@ -399,6 +399,7 @@ input, textarea { font-family: var(--font-body); }
   background: linear-gradient(90deg, #32353d, transparent 70%);
   padding: 2px 6px;
   border-radius: 6px;
+  clip-path: inset(-1px 5px -1px -1px);
 }
 
 .lot-card-tanks10 {
@@ -417,14 +418,10 @@ input, textarea { font-family: var(--font-body); }
   display: inline-flex;
   flex-direction: column;
   gap: 0px;
-  background: linear-gradient(90deg, #a8ff00 35%, rgb(255 255 255 / 29%) 55%, rgba(168, 224, 99, 0.0) 70%, rgba(168, 224, 99, 0.0) 100%);
+  background: linear-gradient(90deg, #a8ff00 30%, rgb(255 255 255 / 21%) 55%, rgba(168, 224, 99, 0.0) 70%, rgba(168, 224, 99, 0.0) 100%);
   border-radius: 6px;
   padding: 2px 8px;
   margin-top: 2px;
-  /* align-self: flex-start; */
-  isolation: isolate;
-  -webkit-background-clip: padding-box;
-  background-clip: padding-box;
   clip-path: inset(-1px 5px -1px -1px);
 }
 
@@ -1113,6 +1110,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   border-radius: 6px;
       background: linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 50%, transparent 85%);
   pointer-events: none;
+  clip-path: inset(-1px 5px -1px -1px);
 }
 
 .resource-icon-img {
