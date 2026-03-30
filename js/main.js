@@ -382,8 +382,6 @@ async function loadShop() {
         ? `<img class="lot-card-thumb" src="${assetUrl(previewSrc)}" alt="${esc(lot.title)}" loading="lazy">`
         : `<div class="lot-card-thumb-placeholder">🎯</div>`;
 
-      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}</div>`;
-
       const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
       const title  = normalizeLotTitle(lot.title);
       const tanks10Html = lot.tanks10 ? `<div class="lot-card-tanks10">${esc(lot.tanks10)}</div>` : '';
@@ -399,6 +397,8 @@ async function loadShop() {
         return `<div class="lot-card-vstats">${lines}</div>`;
       })();
 
+      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}${vehicleStatsHtml}</div>`;
+
       const resHtml = (typeof renderResourceIcons === 'function')
         ? renderResourceIcons(lot.resources, 'short')
         : '';
@@ -407,7 +407,6 @@ async function loadShop() {
         ${thumbHtml}
         <div class="lot-card-body">
           <div class="lot-card-title">${escWithBr(title)}</div>
-          ${vehicleStatsHtml}
           ${tanks10Html}
           ${resHtml ? `<div class="lot-card-resources">${resHtml}</div>` : ''}
         </div>
@@ -456,8 +455,6 @@ async function loadShop() {
               ? `<img class="lot-row-thumb" src="${assetUrl(previewSrc)}" alt="${esc(lot.title)}" loading="lazy">`
               : `<div class="lot-row-thumb-placeholder">🎯</div>`;
 
-            const thumbHtml = `<div class="lot-row-thumb-wrap">${thumbRowImg}</div>`;
-
             const title = normalizeLotTitle(lot.title);
             const tanks10RowHtml = lot.tanks10 ? `<div class="lot-row-tanks10">${esc(lot.tanks10)}</div>` : '';
 
@@ -471,6 +468,8 @@ async function loadShop() {
               if (t10count) lines += `<span class="vstats__line">${esc(t10count)} топа</span>`;
               return `<div class="lot-card-vstats lot-card-vstats--row">${lines}</div>`;
             })();
+
+            const thumbHtml = `<div class="lot-row-thumb-wrap">${thumbRowImg}${rowVehicleStatsHtml}</div>`;
             // Ресурсы: мобайл → short, десктоп → full
             const isMobile = window.innerWidth < 640;
             const resIconsHtml = (typeof renderResourceIcons === 'function')
@@ -486,7 +485,6 @@ async function loadShop() {
                 ${thumbHtml}
                 <div class="lot-row-mid">
                   <div class="lot-row-title">${escWithBr(title)}</div>
-                  ${rowVehicleStatsHtml}
                   ${tanks10RowHtml}
                   <div class="lot-row-tags">${tagsHtml}</div>
                 </div>

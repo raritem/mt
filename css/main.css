@@ -270,7 +270,7 @@ input, textarea { font-family: var(--font-body); }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   transition: background var(--transition), border-color var(--transition), box-shadow var(--transition), transform 0.28s var(--ease-smooth);
@@ -413,16 +413,20 @@ input, textarea { font-family: var(--font-body); }
   padding: 0px 4px;
 }
 
-/* Vehicle stats block — column layout, green gradient background */
+/* Vehicle stats block — absolute, sits on the border between preview and card body */
 .lot-card-vstats {
+  position: absolute;
+  bottom: 2px;
+  left: 8px;
   display: inline-flex;
   flex-direction: column;
   gap: 0px;
-  background: linear-gradient(90deg, #a8ff00 30%, rgb(255 255 255 / 21%) 55%, rgba(168, 224, 99, 0.0) 70%, rgba(168, 224, 99, 0.0) 100%);
+  background: linear-gradient(90deg, #7fffc6 28%, rgb(255 255 255 / 20%) 55%, rgba(168, 224, 99, 0.0) 70%, rgba(168, 224, 99, 0.0) 100%);
   border-radius: 6px;
-  padding: 2px 8px;
-  margin-top: 2px;
+  padding: 2px 120px 2px 8px;
   clip-path: inset(-1px 5px -1px -1px);
+  z-index: 2;
+  pointer-events: none;
 }
 
 .vstats__line {
@@ -435,14 +439,17 @@ input, textarea { font-family: var(--font-body); }
   letter-spacing: 0.01em;
 }
 
-/* Row variant — slightly more compact */
+/* Row variant — absolute, sits at bottom of thumb-wrap crossing into row body */
 .lot-card-vstats--row {
-  padding: 2px 7px;
-  margin-top: 1px;
+  bottom: -1px;
+  left: 0;
+  border-radius: 0 4px 0 0;
+  padding: 1px 10px 1px 6px;
+  margin-top: 0;
 }
 
 .lot-card-vstats--row .vstats__line {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 
