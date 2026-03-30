@@ -425,6 +425,7 @@ input, textarea { font-family: var(--font-body); }
   isolation: isolate;
   -webkit-background-clip: padding-box;
   background-clip: padding-box;
+  clip-path: inset(-1px 5px -1px -1px);
 }
 
 .vstats__line {
