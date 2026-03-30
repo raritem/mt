@@ -417,7 +417,7 @@ input, textarea { font-family: var(--font-body); }
   display: inline-flex;
   flex-direction: column;
   gap: 0px;
-  background: linear-gradient(90deg, #a8ff00 25%, rgb(255 255 255 / 16%) 55%, rgb(0 0 0 / 0%) 68%, rgba(168, 224, 99, 0.0) 70%);
+  background: linear-gradient(90deg, #a8ff00 10%, rgb(255 255 255 / 16%) 50%, rgb(0 0 0 / 0%) 68%, rgba(168, 224, 99, 0.0) 70%);
   border-radius: 6px;
   padding: 2px 8px;
   margin-top: 2px;
