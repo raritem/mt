@@ -424,9 +424,11 @@ input, textarea { font-family: var(--font-body); }
   background: linear-gradient(90deg, #b2ff00 26%, rgb(255 255 255 / 20%) 60%, rgba(168, 224, 99, 0.0) 70%, rgba(168, 224, 99, 0.0) 100%);
   border-radius: 6px;
   padding: 2px 120px 2px 8px;
-  clip-path: inset(-1px 5px -1px -1px);
+  /*clip-path: inset(-1px 5px -1px -1px);*/
   z-index: 2;
   pointer-events: none;
+  background: #b2ff00;
+  padding: 2px 8px 2px 8px;
 }
 
 .vstats__line {
