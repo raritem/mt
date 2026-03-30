@@ -1,0 +1,19 @@
+{
+  "shops": [
+    {
+      "id": "xmode",
+      "name": "XMODE",
+      "description": ""
+    },
+    {
+      "id": "universe",
+      "name": "UNIVERSE",
+      "description": ""
+    },
+    {
+      "id": "mrachniy",
+      "name": "MRACHNIY",
+      "description": ""
+    }
+  ]
+}
