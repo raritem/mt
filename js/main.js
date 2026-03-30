@@ -382,22 +382,22 @@ async function loadShop() {
         ? `<img class="lot-card-thumb" src="${assetUrl(previewSrc)}" alt="${esc(lot.title)}" loading="lazy">`
         : `<div class="lot-card-thumb-placeholder">🎯</div>`;
 
-      // Vehicle badges (top-right of thumbnail)
-      const vehicleBadges = (typeof VEHICLE_ICONS !== 'undefined') ? (() => {
-        const t10count = lot.t10count !== undefined && lot.t10count !== null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
-        const premcount = lot.premcount !== undefined && lot.premcount !== null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
-        if (!t10count && !premcount) return '';
-        let badges = '';
-        if (t10count) badges += `<span class="vbadge vbadge--t10"><span class="vbadge__num">${esc(t10count)}</span><img src="${VEHICLE_ICONS.t10}" alt="Т10" class="vbadge__icon"></span>`;
-        if (premcount) badges += `<span class="vbadge vbadge--prem"><span class="vbadge__num">${esc(premcount)}</span><img src="${VEHICLE_ICONS.prem}" alt="Прем" class="vbadge__icon"></span>`;
-        return `<div class="lot-card-vbadges">${badges}</div>`;
-      })() : '';
-
-      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}${vehicleBadges}</div>`;
+      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}</div>`;
 
       const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
       const title  = normalizeLotTitle(lot.title);
       const tanks10Html = lot.tanks10 ? `<div class="lot-card-tanks10">${esc(lot.tanks10)}</div>` : '';
+
+      // Vehicle stats block (under title, column layout, green gradient)
+      const vehicleStatsHtml = (() => {
+        const t10count = lot.t10count !== undefined && lot.t10count !== null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
+        const premcount = lot.premcount !== undefined && lot.premcount !== null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
+        if (!t10count && !premcount) return '';
+        let lines = '';
+        if (premcount) lines += `<span class="vstats__line">${esc(premcount)} PREM'ов</span>`;
+        if (t10count) lines += `<span class="vstats__line">${esc(t10count)} топа</span>`;
+        return `<div class="lot-card-vstats">${lines}</div>`;
+      })();
 
       const resHtml = (typeof renderResourceIcons === 'function')
         ? renderResourceIcons(lot.resources, 'short')
@@ -407,6 +407,7 @@ async function loadShop() {
         ${thumbHtml}
         <div class="lot-card-body">
           <div class="lot-card-title">${escWithBr(title)}</div>
+          ${vehicleStatsHtml}
           ${tanks10Html}
           ${resHtml ? `<div class="lot-card-resources">${resHtml}</div>` : ''}
         </div>
@@ -455,21 +456,21 @@ async function loadShop() {
               ? `<img class="lot-row-thumb" src="${assetUrl(previewSrc)}" alt="${esc(lot.title)}" loading="lazy">`
               : `<div class="lot-row-thumb-placeholder">🎯</div>`;
 
-            // Vehicle badges for row card
-            const rowVehicleBadges = (typeof VEHICLE_ICONS !== 'undefined') ? (() => {
-              const t10count = lot.t10count !== undefined && lot.t10count !== null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
-              const premcount = lot.premcount !== undefined && lot.premcount !== null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
-              if (!t10count && !premcount) return '';
-              let badges = '';
-              if (t10count) badges += `<span class="vbadge vbadge--t10"><span class="vbadge__num">${esc(t10count)}</span><img src="${VEHICLE_ICONS.t10}" alt="Т10" class="vbadge__icon"></span>`;
-              if (premcount) badges += `<span class="vbadge vbadge--prem"><span class="vbadge__num">${esc(premcount)}</span><img src="${VEHICLE_ICONS.prem}" alt="Прем" class="vbadge__icon"></span>`;
-              return `<div class="lot-card-vbadges">${badges}</div>`;
-            })() : '';
-
-            const thumbHtml = `<div class="lot-row-thumb-wrap">${thumbRowImg}${rowVehicleBadges}</div>`;
+            const thumbHtml = `<div class="lot-row-thumb-wrap">${thumbRowImg}</div>`;
 
             const title = normalizeLotTitle(lot.title);
             const tanks10RowHtml = lot.tanks10 ? `<div class="lot-row-tanks10">${esc(lot.tanks10)}</div>` : '';
+
+            // Vehicle stats block for row card (column layout, green gradient)
+            const rowVehicleStatsHtml = (() => {
+              const t10count = lot.t10count !== undefined && lot.t10count !== null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
+              const premcount = lot.premcount !== undefined && lot.premcount !== null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
+              if (!t10count && !premcount) return '';
+              let lines = '';
+              if (premcount) lines += `<span class="vstats__line">${esc(premcount)} PREM'ов</span>`;
+              if (t10count) lines += `<span class="vstats__line">${esc(t10count)} топа</span>`;
+              return `<div class="lot-card-vstats lot-card-vstats--row">${lines}</div>`;
+            })();
             // Ресурсы: мобайл → short, десктоп → full
             const isMobile = window.innerWidth < 640;
             const resIconsHtml = (typeof renderResourceIcons === 'function')
@@ -485,6 +486,7 @@ async function loadShop() {
                 ${thumbHtml}
                 <div class="lot-row-mid">
                   <div class="lot-row-title">${escWithBr(title)}</div>
+                  ${rowVehicleStatsHtml}
                   ${tanks10RowHtml}
                   <div class="lot-row-tags">${tagsHtml}</div>
                 </div>
