@@ -287,11 +287,11 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-card-thumb {
-  width: calc(100% - 10px);
+  width: calc(100% - 0px);
   aspect-ratio: 16/12;
   object-fit: cover;
   display: block;
-  margin: 5px;
+  margin: 0px;
   border-radius: 12px;
   -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
 }
