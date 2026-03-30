@@ -419,7 +419,7 @@ input, textarea { font-family: var(--font-body); }
   gap: 0px;
   width: 100%;
   background: linear-gradient(90deg, #b2ff00 20%, rgba(178, 255, 0, 0) 70%);
-  border-radius: 6px;
+  border-radius: 0px;
   padding: 2px 8px;
   margin-top: 2px;
 }
