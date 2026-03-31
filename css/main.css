@@ -263,7 +263,7 @@ input, textarea { font-family: var(--font-body); }
   .lots-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
 }
 @media (max-width: 480px) {
-  .lots-grid { grid-template-columns: 1fr 1fr; gap: 5px; }
+  .lots-grid { grid-template-columns: 1fr; gap: 24px; }
 }
 
 .lot-card {
