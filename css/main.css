@@ -432,17 +432,17 @@ input, textarea { font-family: var(--font-body); }
   gap: 0;
   border-radius: 34px;
   padding: 2px 15px 2px 5px;
-  clip-path: inset(-1px 5px -1px -1px);
+  /*clip-path: inset(-1px 5px -1px -1px);*/
 }
 
 /* Premium badge — gold */
 .vstats__badge--prem {
-      background: linear-gradient(90deg, #b2ff00 30%, #b3ff0000 95%);
+      background: linear-gradient(90deg, #b2ff00 30%, #b3ff0000 105%);
 }
 
 /* Top (tier X) badge — green */
 .vstats__badge--top {
-  background: linear-gradient(90deg, #b2ff00 30%, #b3ff0000 95%);
+  background: linear-gradient(90deg, #b2ff00 30%, #b3ff0000 105%);
 }
 
 .vstats__line {
