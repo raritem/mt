@@ -448,7 +448,7 @@ input, textarea { font-family: var(--font-body); }
 .vstats__line {
   font-family: 'Inter', sans-serif;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: #000000;
   line-height: 1.35;
   white-space: nowrap;
