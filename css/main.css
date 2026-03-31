@@ -387,6 +387,9 @@ input, textarea { font-family: var(--font-body); }
   flex-direction: column;
   gap: 6px;
   flex: 1;
+  margin-top: -30px;
+  position: relative;
+  z-index: 3;
 }
 
 .lot-card-title {
@@ -396,7 +399,7 @@ input, textarea { font-family: var(--font-body); }
   line-height: 1.4;
   overflow-wrap: break-word;
   word-break: break-word;
-  background: linear-gradient(90deg, #37455d, transparent 70%);
+  background: linear-gradient(90deg, #40516d, transparent 70%);
   padding: 2px 6px;
   border-radius: 6px;
   clip-path: inset(-1px 5px -1px -1px);
@@ -413,16 +416,13 @@ input, textarea { font-family: var(--font-body); }
   padding: 0px 4px;
 }
 
-/* Vehicle stats — wrapper: absolute, sits at bottom of preview */
+/* Vehicle stats — wrapper: normal flow, sits below tanks10 */
 .lot-card-vstats {
-  position: absolute;
-  bottom: 2px;
-  left: 8px;
   display: inline-flex;
   flex-direction: row;
   gap: 6px;
+  pointer-events: auto;
   z-index: 2;
-  pointer-events: none;
 }
 
 /* Shared badge base */
@@ -431,7 +431,7 @@ input, textarea { font-family: var(--font-body); }
   flex-direction: column;
   gap: 0;
   border-radius: 6px;
-  padding: 2px 7px 2px 7px;
+  padding: 2px 6px 2px 6px;
   /*clip-path: inset(-1px 5px -1px -1px);*/
 }
 
@@ -454,10 +454,8 @@ input, textarea { font-family: var(--font-body); }
   white-space: nowrap;
 }
 
-/* Row variant — absolute, sits at bottom of thumb-wrap */
+/* Row variant — normal flow, sits below tanks10 in row */
 .lot-card-vstats--row {
-  bottom: 0px;
-  left: 0;
   gap: 3px;
 }
 

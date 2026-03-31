@@ -397,7 +397,7 @@ async function loadShop() {
         return `<div class="lot-card-vstats">${badges}</div>`;
       })();
 
-      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}${vehicleStatsHtml}</div>`;
+      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}</div>`;
 
       const resHtml = (typeof renderResourceIcons === 'function')
         ? renderResourceIcons(lot.resources, 'short')
@@ -408,6 +408,7 @@ async function loadShop() {
         <div class="lot-card-body">
           <div class="lot-card-title">${escWithBr(title)}</div>
           ${tanks10Html}
+          ${vehicleStatsHtml}
           ${resHtml ? `<div class="lot-card-resources">${resHtml}</div>` : ''}
         </div>
       `;
@@ -469,7 +470,7 @@ async function loadShop() {
               return `<div class="lot-card-vstats lot-card-vstats--row">${badges}</div>`;
             })();
 
-            const thumbHtml = `<div class="lot-row-thumb-wrap">${thumbRowImg}${rowVehicleStatsHtml}</div>`;
+            const thumbHtml = `<div class="lot-row-thumb-wrap">${thumbRowImg}</div>`;
             // Ресурсы: мобайл → short, десктоп → full
             const isMobile = window.innerWidth < 640;
             const resIconsHtml = (typeof renderResourceIcons === 'function')
@@ -486,6 +487,7 @@ async function loadShop() {
                 <div class="lot-row-mid">
                   <div class="lot-row-title">${escWithBr(title)}</div>
                   ${tanks10RowHtml}
+                  ${rowVehicleStatsHtml}
                   <div class="lot-row-tags">${tagsHtml}</div>
                 </div>
               </div>
