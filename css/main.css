@@ -431,22 +431,22 @@ input, textarea { font-family: var(--font-body); }
   flex-direction: column;
   gap: 0;
   border-radius: 4px;
-  padding: 2px 5px;
+  padding: 2px 30px 2px 5px;
 }
 
 /* Premium badge — gold */
 .vstats__badge--prem {
-  background: linear-gradient(135deg, #b2ff00 0%, #b2ff00 100%);
+  background: linear-gradient(90deg, #b2ff00 0%, #b3ff0000 95%);
 }
 
 /* Top (tier X) badge — green */
 .vstats__badge--top {
-  background: linear-gradient(135deg, #b2ff00 0%, #b2ff00 100%);
+  background: linear-gradient(90deg, #b2ff00 0%, #b3ff0000 69%);
 }
 
 .vstats__line {
   font-family: 'Unbounded', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #000000;
   line-height: 1.35;
