@@ -391,10 +391,10 @@ async function loadShop() {
         const t10count = lot.t10count !== undefined && lot.t10count !== null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
         const premcount = lot.premcount !== undefined && lot.premcount !== null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
         if (!t10count && !premcount) return '';
-        let lines = '';
-        if (premcount) lines += `<span class="vstats__line">${esc(premcount)} PREM'ов</span>`;
-        if (t10count) lines += `<span class="vstats__line">${esc(t10count)} топа</span>`;
-        return `<div class="lot-card-vstats">${lines}</div>`;
+        let badges = '';
+        if (premcount) badges += `<span class="vstats__badge vstats__badge--prem"><span class="vstats__line">${esc(premcount)} PREM'ов</span></span>`;
+        if (t10count) badges += `<span class="vstats__badge vstats__badge--top"><span class="vstats__line">${esc(t10count)} топа</span></span>`;
+        return `<div class="lot-card-vstats">${badges}</div>`;
       })();
 
       const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}${vehicleStatsHtml}</div>`;
@@ -463,10 +463,10 @@ async function loadShop() {
               const t10count = lot.t10count !== undefined && lot.t10count !== null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
               const premcount = lot.premcount !== undefined && lot.premcount !== null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
               if (!t10count && !premcount) return '';
-              let lines = '';
-              if (premcount) lines += `<span class="vstats__line">${esc(premcount)} PREM'ов</span>`;
-              if (t10count) lines += `<span class="vstats__line">${esc(t10count)} топа</span>`;
-              return `<div class="lot-card-vstats lot-card-vstats--row">${lines}</div>`;
+              let badges = '';
+              if (premcount) badges += `<span class="vstats__badge vstats__badge--prem"><span class="vstats__line">${esc(premcount)} PREM'ов</span></span>`;
+              if (t10count) badges += `<span class="vstats__badge vstats__badge--top"><span class="vstats__line">${esc(t10count)} топа</span></span>`;
+              return `<div class="lot-card-vstats lot-card-vstats--row">${badges}</div>`;
             })();
 
             const thumbHtml = `<div class="lot-row-thumb-wrap">${thumbRowImg}${rowVehicleStatsHtml}</div>`;
