@@ -396,7 +396,7 @@ input, textarea { font-family: var(--font-body); }
   line-height: 1.4;
   overflow-wrap: break-word;
   word-break: break-word;
-  background: linear-gradient(90deg, #32353d, transparent 70%);
+  background: linear-gradient(90deg, #4a4f5b, transparent 70%);
   padding: 2px 6px;
   border-radius: 6px;
   clip-path: inset(-1px 5px -1px -1px);
@@ -1180,17 +1180,32 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .rv-int { display: none; }
 .rv-frac { display: inline; }
 
+/* Карточки аккаунтов (.lot-card-resources) */
 @media (max-width: 504px) {
-  .rv-int--silver  { display: inline; }
-  .rv-frac--silver { display: none; }
+  .lot-card-resources .rv-int--silver  { display: inline; }
+  .lot-card-resources .rv-frac--silver { display: none; }
 }
 @media (max-width: 441px) {
-  .rv-int--gold  { display: inline; }
-  .rv-frac--gold { display: none; }
+  .lot-card-resources .rv-int--gold  { display: inline; }
+  .lot-card-resources .rv-frac--gold { display: none; }
 }
 @media (max-width: 417px) {
-  .rv-int--bonds  { display: inline; }
-  .rv-frac--bonds { display: none; }
+  .lot-card-resources .rv-int--bonds  { display: inline; }
+  .lot-card-resources .rv-frac--bonds { display: none; }
+}
+
+/* Таблица (.lot-row-tags) */
+@media (max-width: 391px) {
+  .lot-row-tags .rv-int--silver  { display: inline; }
+  .lot-row-tags .rv-frac--silver { display: none; }
+}
+@media (max-width: 378px) {
+  .lot-row-tags .rv-int--gold  { display: inline; }
+  .lot-row-tags .rv-frac--gold { display: none; }
+}
+@media (max-width: 365px) {
+  .lot-row-tags .rv-int--bonds  { display: inline; }
+  .lot-row-tags .rv-frac--bonds { display: none; }
 }
 
 /* В lot-row-tags */
@@ -1288,7 +1303,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 @media (max-width: 480px) {
   .lot-card-resources { padding: 0; }
   .lot-card-resources .resource-icons { gap: 2px; }
-  .lot-card-resources .resource-item  { padding: 1px 4px 1px 4px; gap: 2px; }
+  .lot-card-resources .resource-item  { padding: 1px 4px 1px 3px; gap: 2px; }
   .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
   .lot-card-resources .resource-icon-img--bonds {
     width: 28px;
