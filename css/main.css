@@ -447,7 +447,7 @@ input, textarea { font-family: var(--font-body); }
 
 .vstats__line {
   font-family: 'Inter', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #000000;
   line-height: 1.35;
@@ -460,12 +460,12 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-card-vstats--row .vstats__badge {
-  border-radius: 0px 8px 0px 8px;
+  border-radius: 4px;
   padding: 1px 7px 1px 5px;
 }
 
 .lot-card-vstats--row .vstats__line {
-  font-size: 10px;
+  font-size: 11px;
 }
 
 
