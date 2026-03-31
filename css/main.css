@@ -430,8 +430,8 @@ input, textarea { font-family: var(--font-body); }
   display: inline-flex;
   flex-direction: column;
   gap: 0;
-  border-radius: 34px;
-  padding: 2px 15px 2px 5px;
+  border-radius: 6px;
+  padding: 4px 7px 4px 7px;
   /*clip-path: inset(-1px 5px -1px -1px);*/
 }
 
