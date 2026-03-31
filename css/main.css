@@ -1170,6 +1170,29 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   line-height: 1;
 }
 
+/* ── Адаптивный формат чисел в карточках аккаунтов ──────────────
+   По умолчанию показываем вариант с дробью (.rv-frac),
+   скрываем вариант без дроби (.rv-int).
+   При сужении экрана CSS переключает их:
+     < 505px → серебро без дробной части
+     < 442px → серебро + золото без дробной части
+     < 418px → все три ресурса без дробной части              */
+.rv-int { display: none; }
+.rv-frac { display: inline; }
+
+@media (max-width: 504px) {
+  .rv-int--silver  { display: inline; }
+  .rv-frac--silver { display: none; }
+}
+@media (max-width: 441px) {
+  .rv-int--gold  { display: inline; }
+  .rv-frac--gold { display: none; }
+}
+@media (max-width: 417px) {
+  .rv-int--bonds  { display: inline; }
+  .rv-frac--bonds { display: none; }
+}
+
 /* В lot-row-tags */
 .lot-row-tags .resource-icons {
   gap: 4px;

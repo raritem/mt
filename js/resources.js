@@ -25,7 +25,7 @@ function formatResourceFull(n) {
 
 /**
  * Сокращённый формат (всегда в меньшую сторону):
- * 12945 → "12.9К", 4560 → "4.5К", 8568930 → "8.5 млн"
+ * 12945 → "12.9К", 4560 → "4.5К", 8568930 → "8.5М"
  */
 function formatResourceShort(n) {
   if (n >= 1_000_000) {
@@ -40,9 +40,20 @@ function formatResourceShort(n) {
 }
 
 /**
+ * То же, но без дробной части:
+ * 12945 → "12К", 8568930 → "8М"
+ */
+function formatResourceShortInt(n) {
+  if (n >= 1_000_000) return Math.floor(n / 1_000_000) + 'М';
+  if (n >= 1_000)     return Math.floor(n / 1_000) + 'К';
+  return String(n);
+}
+
+/**
  * Рендерит блок с иконками ресурсов.
- * mode: 'full' — полное число (десктоп таблица)
- *        'short' — сокращённое (мобайл таблица и большие карточки)
+ * mode: 'full'  — полное число (десктоп таблица)
+ *       'short' — сокращённое; в карточках аккаунтов переключение дробной
+ *                 части происходит через CSS media queries (классы rv-frac / rv-int).
  * Возвращает HTML-строку.
  */
 function renderResourceIcons(resources, mode) {
@@ -56,10 +67,21 @@ function renderResourceIcons(resources, mode) {
     .map(({ key, icon, label, mod }) => {
       const n = parseResource(resources[key]);
       if (n === null) return '';
-      const displayVal = mode === 'full' ? formatResourceFull(n) : formatResourceShort(n);
+      let valueHtml;
+      if (mode === 'full') {
+        valueHtml = `<span class="resource-value">${formatResourceFull(n)}</span>`;
+      } else {
+        // Два варианта числа: с дробью и без — CSS переключает нужный.
+        // .rv-frac — с дробной частью (видно по умолчанию)
+        // .rv-int  — без дробной части (видно при малой ширине экрана)
+        // Брейкпоинты в CSS: silver < 505px, gold < 442px, bonds < 418px
+        valueHtml =
+          `<span class="resource-value rv-frac rv-frac--${mod}">${formatResourceShort(n)}</span>` +
+          `<span class="resource-value rv-int  rv-int--${mod}">${formatResourceShortInt(n)}</span>`;
+      }
       return `<span class="resource-item">` +
         `<img src="${icon}" alt="${label}" class="resource-icon-img resource-icon-img--${mod}">` +
-        `<span class="resource-value">${displayVal}</span>` +
+        valueHtml +
         `</span>`;
     })
     .filter(Boolean);
