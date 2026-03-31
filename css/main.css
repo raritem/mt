@@ -396,7 +396,7 @@ input, textarea { font-family: var(--font-body); }
   line-height: 1.4;
   overflow-wrap: break-word;
   word-break: break-word;
-  background: linear-gradient(90deg, #4a4f5b, transparent 70%);
+  background: linear-gradient(90deg, #37455d, transparent 70%);
   padding: 2px 6px;
   border-radius: 6px;
   clip-path: inset(-1px 5px -1px -1px);
@@ -431,7 +431,7 @@ input, textarea { font-family: var(--font-body); }
   flex-direction: column;
   gap: 0;
   border-radius: 6px;
-  padding: 4px 7px 4px 7px;
+  padding: 2px 7px 2px 7px;
   /*clip-path: inset(-1px 5px -1px -1px);*/
 }
 
@@ -446,8 +446,8 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .vstats__line {
-  font-family: 'Unbounded', sans-serif;
-  font-size: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
   font-weight: 700;
   color: #000000;
   line-height: 1.35;
