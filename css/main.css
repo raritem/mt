@@ -430,8 +430,8 @@ input, textarea { font-family: var(--font-body); }
   display: inline-flex;
   flex-direction: column;
   gap: 0;
-  border-radius: 6px;
-  padding: 2px 6px 2px 6px;
+  border-radius: 4px;
+  padding: 1px 4px 1px 4px;
   /*clip-path: inset(-1px 5px -1px -1px);*/
 }
 
@@ -447,8 +447,8 @@ input, textarea { font-family: var(--font-body); }
 
 .vstats__line {
   font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   color: #000000;
   line-height: 1.35;
   white-space: nowrap;
