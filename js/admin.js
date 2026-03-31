@@ -153,6 +153,24 @@ function bindAllEvents() {
   $('confirm-cancel').addEventListener('click',    () => closeModal('confirm'));
   dom.confirmOverlay.addEventListener('click',     () => closeModal('confirm'));
 
+  // Burger sidebar (mobile)
+  const burgerBtn     = $('sidebar-burger');
+  const sidebarEl     = document.querySelector('.admin-sidebar');
+  const sidebarOvl    = $('sidebar-overlay');
+
+  function openSidebar()  { sidebarEl.classList.add('open'); sidebarOvl.classList.add('open'); }
+  function closeSidebar() { sidebarEl.classList.remove('open'); sidebarOvl.classList.remove('open'); }
+
+  if (burgerBtn)  burgerBtn.addEventListener('click', () => sidebarEl.classList.contains('open') ? closeSidebar() : openSidebar());
+  if (sidebarOvl) sidebarOvl.addEventListener('click', closeSidebar);
+
+  // Close sidebar on shop item click (mobile)
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768 && e.target.closest('.shop-list-item')) {
+      closeSidebar();
+    }
+  });
+
   // ESC
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
