@@ -402,7 +402,7 @@ input, textarea { font-family: var(--font-body); }
 
 .lot-card-price {
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -846,7 +846,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 
 .price-rub {
   opacity: 0.55;
-  margin-left: 2px;
+  margin-left: 1px;
   font-weight: 600;
 }
 
