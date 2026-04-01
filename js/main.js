@@ -403,10 +403,17 @@ async function loadShop() {
         ? renderResourceIcons(lot.resources, 'short')
         : '';
 
+      const priceHtml = lot.price
+        ? `<div class="lot-card-price">${esc(lot.price)}</div>`
+        : '';
+
       card.innerHTML = `
         ${thumbHtml}
         <div class="lot-card-body">
-          <div class="lot-card-title">${escWithBr(title)}</div>
+          <div class="lot-card-title-row">
+            <div class="lot-card-title">${escWithBr(title)}</div>
+            ${priceHtml}
+          </div>
           ${tanks10Html}
           ${vehicleStatsHtml}
           ${resHtml ? `<div class="lot-card-resources">${resHtml}</div>` : ''}
@@ -485,7 +492,10 @@ async function loadShop() {
               <div class="lot-row-left">
                 ${thumbHtml}
                 <div class="lot-row-mid">
-                  <div class="lot-row-title">${escWithBr(title)}</div>
+                  <div class="lot-row-title-row">
+                    <div class="lot-row-title">${escWithBr(title)}</div>
+                    ${lot.price ? `<div class="lot-card-price lot-card-price--row">${esc(lot.price)}</div>` : ''}
+                  </div>
                   ${tanks10RowHtml}
                   ${rowVehicleStatsHtml}
                   <div class="lot-row-tags">${tagsHtml}</div>
@@ -585,7 +595,10 @@ async function loadLot() {
           </a>
           ${fp}
         </div>
-        <h1 class="lot-title">${escWithBr(title)}</h1>
+        <div class="lot-title-row">
+          <h1 class="lot-title">${escWithBr(title)}</h1>
+          ${lot.price ? `<div class="lot-price-badge">${esc(lot.price)}</div>` : ''}
+        </div>
         ${lot.tanks10 ? `<p class="lot-tanks10-detail">🔟 ${esc(lot.tanks10)}</p>` : ''}
         <p style="color:var(--text-muted);font-size:13px;margin-top:4px">📸 ${(lot.images||[]).length} скриншотов</p>
       `;

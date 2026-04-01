@@ -67,6 +67,7 @@ const dom = {
   lotT10CountInput:$('lot-t10count-input'),
   lotPremCountInput:$('lot-premcount-input'),
   lotFunpayInput:  $('lot-funpay-input'),
+  lotPriceInput:   $('lot-price-input'),
   lotOnFunpayInput:$('lot-onfunpay-input'),
   lotModalStatus:  $('lot-modal-status'),
 
@@ -464,6 +465,9 @@ function openLotModal(editLotId) {
     dom.lotPremCountInput.value = lot ? (lot.premcount !== undefined && lot.premcount !== null ? lot.premcount : '') : '';
   }
   dom.lotFunpayInput.value      = lot ? (lot.funpay || '') : '';
+  if (dom.lotPriceInput) {
+    dom.lotPriceInput.value     = lot ? (lot.price || '') : '';
+  }
   if (dom.lotOnFunpayInput) {
     dom.lotOnFunpayInput.checked = lot ? (lot.onFunpay !== false) : false;
   }
@@ -505,6 +509,7 @@ async function onLotSave() {
   const t10countRaw = (dom.lotT10CountInput ? dom.lotT10CountInput.value.trim() : '');
   const premcountRaw = (dom.lotPremCountInput ? dom.lotPremCountInput.value.trim() : '');
   const funpay = dom.lotFunpayInput.value.trim();
+  const price  = dom.lotPriceInput ? dom.lotPriceInput.value.trim() : '';
   const onFunpay = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked : false;
   if (!title) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
 
@@ -524,6 +529,7 @@ async function onLotSave() {
       const lot = state.activeLots.find(l => l.id === state.editingLot);
       if (lot) {
         lot.title = title; lot.funpay = funpay; lot.onFunpay = onFunpay;
+        lot.price = price || undefined;
         lot.tanks10 = tanks10 || undefined;
         lot.t10count = t10countRaw !== '' ? t10countRaw : undefined;
         lot.premcount = premcountRaw !== '' ? premcountRaw : undefined;
@@ -531,6 +537,7 @@ async function onLotSave() {
       }
     } else {
       const newLot = { id: 'lot_' + Date.now(), title, funpay, onFunpay, images: [] };
+      if (price) newLot.price = price;
       if (tanks10) newLot.tanks10 = tanks10;
       if (t10countRaw !== '') newLot.t10count = t10countRaw;
       if (premcountRaw !== '') newLot.premcount = premcountRaw;
