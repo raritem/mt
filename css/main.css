@@ -304,44 +304,6 @@ input, textarea { font-family: var(--font-body); }
 }
 
 /* Badges container — top-right corner of the image, single pill */
-.lot-card-vbadges {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  pointer-events: none;
-  background: rgb(255 255 255 / 9%);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border-radius: 0px 12px 0px 12px;
-  padding: 0px 6px 0px 11px;
-}
-
-/* Single badge item: [number] [icon] — no own background */
-.vbadge {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.vbadge__num {
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1;
-  letter-spacing: 0.02em;
-}
-
-.vbadge__icon {
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
-  display: block;
-}
-
 /* Row card thumb wrapper (hidden lots table) */
 .lot-row-thumb-wrap {
   position: relative;
@@ -351,23 +313,6 @@ input, textarea { font-family: var(--font-body); }
   height: 80px;
   line-height: 0;
   align-self: center;
-}
-
-.lot-row-thumb-wrap .lot-card-vbadges {
-  top: unset;
-  bottom: 4px;
-  right: 4px;
-  gap: 5px;
-  padding: 2px 4px;
-}
-
-.lot-row-thumb-wrap .vbadge__num {
-  font-size: 10px;
-}
-
-.lot-row-thumb-wrap .vbadge__icon {
-  width: 14px;
-  height: 14px;
 }
 
 .lot-card-thumb-placeholder {
@@ -402,7 +347,7 @@ input, textarea { font-family: var(--font-body); }
 
 .lot-card-price {
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
@@ -416,16 +361,30 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-card-title {
+  position: relative;
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
   line-height: 1.4;
   overflow-wrap: break-word;
   word-break: break-word;
-  background: linear-gradient(90deg, #4f5460, transparent 70%);
   padding: 2px 6px;
   border-radius: 6px;
-  clip-path: inset(-1px 5px -1px -1px);
+  z-index: 0;
+}
+
+.lot-card-title::before {
+  content: '';
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  /*right: -80px; /* тянем вправо — меняй это значение */
+  width: 180px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #4f5460, transparent 70%);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .lot-card-tanks10 {
@@ -459,13 +418,20 @@ input, textarea { font-family: var(--font-body); }
 }
 
 /* Premium badge — gold */
-.vstats__badge--prem {
+/*.vstats__badge--prem {
   background: linear-gradient(127deg, #3200ff 15%, #f300ff 105%);
-}
+}*/
 
 /* Top (tier X) badge — green */
 .vstats__badge--top {
   background: linear-gradient(90deg, #2c2f36, transparent 90%);
+  background: #191d27;
+}
+
+@keyframes vstats-prem-shimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .vstats__line {
@@ -475,6 +441,35 @@ input, textarea { font-family: var(--font-body); }
   color: #e6e6e6;
   line-height: 1.35;
   white-space: nowrap;
+  background: linear-gradient(90deg, #ffea52, #ff4675 70%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --prem: animated shimmer gradient on text */
+.vstats__badge--prem .vstats__line {
+  background: linear-gradient(
+    90deg,
+    #ffea52 0%,
+    #ff8c42 25%,
+    #ff4675 50%,
+    #c844ff 75%,
+    #ffea52 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: vstats-prem-shimmer 5s ease-in-out infinite;
+}
+
+/* --top: independent text color, separate from --prem */
+.vstats__badge--top .vstats__line {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  color: var(--text-muted);
 }
 
 /* Row variant — normal flow, sits below tanks10 in row */
