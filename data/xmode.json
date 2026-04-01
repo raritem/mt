@@ -129,8 +129,7 @@
       "onFunpay": true,
       "resources": {
         "bonds": "19923",
-        "gold": "19443",
-        "silver": "29532491"
+        "gold": "19443"
       },
       "tanks10": "Type 5 H, AMX 50 B...",
       "premcount": "11",
