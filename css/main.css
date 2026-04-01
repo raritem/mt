@@ -379,8 +379,7 @@ input, textarea { font-family: var(--font-body); }
   top: 0px;
   bottom: 0px;
   left: 0px;
-  /*right: -80px; /* тянем вправо — меняй это значение */
-  width: 180px;
+  right: -70px; /* тянем вправо — меняй это значение */
   border-radius: 6px;
   background: linear-gradient(90deg, #4f5460, transparent 70%);
   z-index: -1;
@@ -425,7 +424,8 @@ input, textarea { font-family: var(--font-body); }
 /* Top (tier X) badge — green */
 .vstats__badge--top {
   background: linear-gradient(90deg, #2c2f36, transparent 90%);
-  background: #191d27;
+  background: #191b20;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 50%, transparent 85%);
 }
 
 @keyframes vstats-prem-shimmer {
