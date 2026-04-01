@@ -114,6 +114,7 @@
       "title": "Дуплeт, Зaщитник",
       "funpay": "https://funpay.com/lots/offer?id=33494200",
       "images": [
+        "images/xmode/lot_1773309726201/013.webp",
         "images/xmode/lot_1773309726201/012.webp",
         "images/xmode/lot_1773309726201/011.webp",
         "images/xmode/lot_1773309726201/008.webp",
@@ -125,8 +126,7 @@
         "images/xmode/lot_1773309726201/005.webp",
         "images/xmode/lot_1773309726201/001.webp",
         "images/xmode/lot_1773309726201/002.webp",
-        "images/xmode/lot_1773309726201/003.webp",
-        "images/xmode/lot_1773309726201/013.webp"
+        "images/xmode/lot_1773309726201/003.webp"
       ],
       "thumb": "images/xmode/lot_1773309726201/thumb.webp",
       "onFunpay": true,
