@@ -504,8 +504,8 @@ input, textarea { font-family: var(--font-body); }
   -webkit-background-clip: unset;
   -webkit-text-fill-color: unset;
   background-clip: unset;
-  color: var(--text-muted);
-  font-weight: 500;
+  color: #c0c0c0;
+  font-weight: 400;
 }
 
 /* Тонкий вертикальный разделитель перед топом, если он идёт после према */
