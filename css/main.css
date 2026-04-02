@@ -287,11 +287,11 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-card-thumb {
-  width: calc(100% - 10px);
+  width: calc(100% - 0px);
   aspect-ratio: 16/12;
   object-fit: cover;
   display: block;
-  margin: 5px;
+  margin: 0px;
   border-radius: 12px;
   -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
 }
@@ -308,7 +308,7 @@ input, textarea { font-family: var(--font-body); }
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #00000038;
+  background: #0000007d;
   color: #e6e6e6;
   font-size: 12px;
   font-weight: 600;
@@ -1382,7 +1382,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   width: 33px;
   height: 33px;
   margin-top: -6px;
-  margin-bottom: -6px;
+  margin-bottom: -5px;
   margin-right: -6px;
   margin-left: -7px;
 }
@@ -1403,7 +1403,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     width: 33px;
     height: 33px;
     margin-top: -6px;
-    margin-bottom: -6px;
+    margin-bottom: -5px;
     margin-right: -6px;
     margin-left: -7px;
   }
@@ -1416,7 +1416,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     width: 33px;
     height: 33px;
     margin-top: -6px;
-    margin-bottom: -6px;
+    margin-bottom: -5px;
     margin-right: -6px;
     margin-left: -7px;
   }
@@ -1432,7 +1432,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     width: 33px;
     height: 33px;
     margin-top: -6px;
-    margin-bottom: -6px;
+    margin-bottom: -5px;
     margin-right: -6px;
     margin-left: -7px;
   }
@@ -1449,7 +1449,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     width: 33px;
     height: 33px;
     margin-top: -6px;
-    margin-bottom: -6px;
+    margin-bottom: -5px;
     margin-right: -6px;
     margin-left: -7px;
   }
@@ -1461,7 +1461,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     width: 33px;
     height: 33px;
     margin-top: -6px;
-    margin-bottom: -6px;
+    margin-bottom: -5px;
     margin-right: -6px;
     margin-left: -7px;
   }
@@ -1478,7 +1478,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     width: 33px;
     height: 33px;
     margin-top: -6px;
-    margin-bottom: -6px;
+    margin-bottom: -5px;
     margin-right: -6px;
     margin-left: -7px;
   }
@@ -1490,7 +1490,7 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     width: 33px;
     height: 33px;
     margin-top: -6px;
-    margin-bottom: -6px;
+    margin-bottom: -5px;
     margin-right: -6px;
     margin-left: -7px;
   }
