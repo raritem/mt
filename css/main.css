@@ -308,7 +308,7 @@ input, textarea { font-family: var(--font-body); }
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #0a0c0f6b;
+  background: #00000038;
   color: #e6e6e6;
   font-size: 12px;
   font-weight: 600;
@@ -387,6 +387,7 @@ input, textarea { font-family: var(--font-body); }
   padding: 2px 6px;
   border-radius: 6px;
   z-index: 0;
+  clip-path: inset(-1px 2px -1px -1px);
 }
 
 .lot-card-title::before {
