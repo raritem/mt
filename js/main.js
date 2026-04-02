@@ -98,6 +98,31 @@ function setBrandHref(href) {
   if (a && href) a.setAttribute('href', href);
 }
 
+/** Один раз добавляет иконку избранного в .header-inner (если ещё нет) */
+function ensureHeaderFavBtn() {
+  if (document.getElementById('header-fav-btn')) return;
+  const inner = document.querySelector('.header-inner');
+  if (!inner) return;
+  const btn = document.createElement('button');
+  btn.id = 'header-fav-btn';
+  btn.className = 'header-fav-btn';
+  btn.setAttribute('aria-label', 'Избранное');
+  btn.setAttribute('type', 'button');
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4.45067 13.9082L11.4033 20.4395C11.6428 20.6644 11.7625 20.7769 11.9037 20.8046C11.9673 20.8171 12.0327 20.8171 12.0963 20.8046C12.2375 20.7769 12.3572 20.6644 12.5967 20.4395L19.5493 13.9082C21.5055 12.0706 21.743 9.0466 20.0978 6.92607L19.7885 6.52734C17.8203 3.99058 13.8696 4.41601 12.4867 7.31365C12.2913 7.72296 11.7087 7.72296 11.5133 7.31365C10.1304 4.41601 6.17972 3.99058 4.21154 6.52735L3.90219 6.92607C2.25695 9.0466 2.4945 12.0706 4.45067 13.9082Z" stroke-width="2"/>
+    </svg>
+  `;
+  btn.addEventListener('click', () => {
+    // Сохраняем shopId для возврата обратно
+    const shopId = getParam('id') || getParam('shop');
+    const favUrl = ROOT + 'favourites/' + (shopId ? '?shop=' + encodeURIComponent(shopId) : '');
+    window.location.href = favUrl;
+  });
+  inner.appendChild(btn);
+  updateHeaderFavIcon();
+}
+
 // ── Fade helpers ────────────────────────────────────────────────
 function applyFadeUpStagger(parent, selector, stepSec) {
   if (!parent) return;
@@ -216,6 +241,42 @@ function normalizeLotTitle(str) {
     .replace(/YP/g,  'УР');
 
   return result;
+}
+
+// ── Избранное (Favourites) ───────────────────────────────────────
+const FAV_KEY = 'wot_shop_favourites';
+
+function favGetAll() {
+  try {
+    return JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+  } catch { return []; }
+}
+
+function favSaveAll(ids) {
+  try { localStorage.setItem(FAV_KEY, JSON.stringify(ids)); } catch {}
+}
+
+/** Переключает лот в избранном. Возвращает true если добавлен, false если удалён. */
+function favToggle(lotId) {
+  const ids = favGetAll();
+  const idx = ids.indexOf(String(lotId));
+  if (idx === -1) {
+    ids.push(String(lotId));
+    favSaveAll(ids);
+    return true;
+  } else {
+    ids.splice(idx, 1);
+    favSaveAll(ids);
+    return false;
+  }
+}
+
+/** Обновляет иконку избранного в шапке */
+function updateHeaderFavIcon() {
+  const btn = document.getElementById('header-fav-btn');
+  if (!btn) return;
+  const count = favGetAll().length;
+  btn.classList.toggle('visible', count > 0);
 }
 
 /** Логотип FunPay как inline img с классом */
@@ -351,6 +412,7 @@ async function loadShop() {
     // Заголовок витрины
     setBrandTitle(data.name || shopId);
     setBrandHref('./?id=' + encodeURIComponent(shopId));
+    ensureHeaderFavBtn();
 
     // Устанавливаем title
     document.title = (data.name || shopId);
@@ -403,7 +465,24 @@ async function loadShop() {
         ? `<div class="lot-card-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>`
         : '';
 
-      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}${priceBadge}</div>`;
+      // ── Hover-overlay icons (desktop only via CSS hover:hover) ──
+      const isFav = favGetAll().includes(String(lot.id));
+      const overlayHtml = `
+        <div class="lot-card-overlay">
+          <button class="card-action-btn btn-fav${isFav ? ' fav-active' : ''}" data-lot-id="${esc(String(lot.id))}" type="button" aria-label="В избранное">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.45067 13.9082L11.4033 20.4395C11.6428 20.6644 11.7625 20.7769 11.9037 20.8046C11.9673 20.8171 12.0327 20.8171 12.0963 20.8046C12.2375 20.7769 12.3572 20.6644 12.5967 20.4395L19.5493 13.9082C21.5055 12.0706 21.743 9.0466 20.0978 6.92607L19.7885 6.52734C17.8203 3.99058 13.8696 4.41601 12.4867 7.31365C12.2913 7.72296 11.7087 7.72296 11.5133 7.31365C10.1304 4.41601 6.17972 3.99058 4.21154 6.52735L3.90219 6.92607C2.25695 9.0466 2.4945 12.0706 4.45067 13.9082Z" stroke-width="2"/></svg>
+          </button>
+          <div class="lot-card-overlay-center">
+            <button class="card-action-btn btn-quickview" type="button" aria-label="Быстрый просмотр">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.821 12.43c-.083-.119-2.062-2.944-4.793-4.875-1.416-1.003-3.202-1.555-5.028-1.555-1.825 0-3.611.552-5.03 1.555-2.731 1.931-4.708 4.756-4.791 4.875-.238.343-.238.798 0 1.141.083.119 2.06 2.944 4.791 4.875 1.419 1.002 3.205 1.554 5.03 1.554 1.826 0 3.612-.552 5.028-1.555 2.731-1.931 4.71-4.756 4.793-4.875.239-.342.239-.798 0-1.14zm-9.821 4.07c-1.934 0-3.5-1.57-3.5-3.5 0-1.934 1.566-3.5 3.5-3.5 1.93 0 3.5 1.566 3.5 3.5 0 1.93-1.57 3.5-3.5 3.5zM14 13c0 1.102-.898 2-2 2-1.105 0-2-.898-2-2 0-1.105.895-2 2-2 1.102 0 2 .895 2 2z"/></svg>
+            </button>
+            ${lot.funpay ? `<a class="card-action-btn btn-buy" href="${esc(lot.funpay)}" target="_blank" rel="noopener" aria-label="Купить на FunPay">
+              <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6.283.001h5.434l1.401.03c.395.031.759.098 1.106.264a3 3 0 0 1 1.295 1.191c.194.332.291.689.354 1.08.062.375.1.836.147 1.394l.53 6.361.098 1.619c0 .45-.047.868-.221 1.264a3 3 0 0 1-1.319 1.434c-.381.206-.793.287-1.242.325-.433.037-.97.037-1.621.037H5.755c-.651 0-1.188 0-1.621-.037-.449-.038-.861-.119-1.242-.325a3 3 0 0 1-1.319-1.434c-.174-.396-.22-.814-.221-1.264 0-.436.044-.969.098-1.619L1.98 4.96l.147-1.394c.063-.391.16-.748.354-1.08A3 3 0 0 1 3.776.295C4.123.13 4.487.063 4.882.032 5.254.001 5.69.001 6.283.001zm.468 4.5a.75.75 0 1 0-1.5 0 3.75 3.75 0 0 0 3.75 3.75 3.75 3.75 0 0 0 3.75-3.75.75.75 0 1 0-1.5 0 2.25 2.25 0 0 1-2.25 2.25 2.25 2.25 0 0 1-2.25-2.25z"/></svg>
+            </a>` : ''}
+          </div>
+        </div>`;
+
+      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}${priceBadge}${overlayHtml}</div>`;
 
       const resHtml = (typeof renderResourceIcons === 'function')
         ? renderResourceIcons(lot.resources, 'short')
@@ -421,8 +500,28 @@ async function loadShop() {
         </div>
       `;
 
-      // Клик по карточке → переход на лот
+      // Быстрый просмотр → переход на лот
+      card.querySelector('.btn-quickview')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.location.href = lotUrl;
+      });
+
+      // Добавить / убрать из избранного
+      const favBtn = card.querySelector('.btn-fav');
+      if (favBtn) {
+        favBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = String(lot.id);
+          const active = favToggle(id);
+          favBtn.classList.toggle('fav-active', active);
+          favBtn.dataset.tip = active ? 'Убрать из избранного' : 'В избранное';
+          updateHeaderFavIcon();
+        });
+      }
+
+      // Клик по карточке (не по кнопкам) → переход на лот
       card.addEventListener('click', (e) => {
+        if (e.target.closest('.card-action-btn')) return;
         window.location.href = lotUrl;
       });
 
@@ -664,4 +763,154 @@ function plural(n, one, few, many) {
   if (mod10 === 1 && mod100 !== 11) return one;
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
   return many;
+}
+
+// ── FAVOURITES: Страница избранных лотов ─────────────────────────
+async function loadFavourites() {
+  bindFadeCleanup();
+  const shopId = getParam('shop');
+  const gridEl = document.getElementById('lots-grid');
+  const bcEl   = document.getElementById('breadcrumb');
+
+  // Показываем иконку избранного (она уже активна, раз мы здесь)
+  ensureHeaderFavBtn();
+
+  // Настраиваем логотип/ссылку
+  if (shopId) {
+    setBrandHref(ROOT + 'shop/?id=' + encodeURIComponent(shopId));
+  }
+
+  const favIds = favGetAll();
+
+  if (favIds.length === 0) {
+    if (gridEl) {
+      gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🤍</div><h2>Избранное пусто</h2><p>Наведи на карточку и нажми на сердечко, чтобы сохранить лот.</p></div>';
+    }
+    return;
+  }
+
+  if (!shopId || !gridEl) return;
+
+  try {
+    const rawBase = getGhRawBase();
+    const data = rawBase
+      ? await fetchJSON(rawBase + 'data/' + shopId + '.json')
+      : await fetchJSON(ROOT + 'data/' + shopId + '.json');
+
+    setBrandTitle(data.name || shopId);
+    document.title = 'Избранное — ' + (data.name || shopId);
+
+    if (bcEl) {
+      bcEl.innerHTML = `
+        <a href="${ROOT}shop/?id=${encodeURIComponent(shopId)}" class="bc-shop">${esc(data.name || shopId)}</a>
+        <span class="sep">›</span>
+        <span class="current">Избранное</span>`;
+    }
+
+    const allLots = Array.isArray(data.lots) ? data.lots : [];
+    const favLots = allLots.filter(l => l && favIds.includes(String(l.id)));
+
+    if (favLots.length === 0) {
+      gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🤍</div><h2>Нет совпадений</h2><p>Сохранённые лоты не найдены в этой витрине.</p></div>';
+      return;
+    }
+
+    gridEl.innerHTML = '';
+
+    favLots.forEach((lot) => {
+      const card = document.createElement('div');
+      card.className = 'lot-card';
+
+      const firstImg = lot.images && lot.images[0];
+      const previewSrc = lot.thumb || firstImg;
+      const thumbImg = previewSrc
+        ? `<img class="lot-card-thumb" src="${assetUrl(previewSrc)}" alt="${esc(lot.title)}" loading="lazy">`
+        : `<div class="lot-card-thumb-placeholder">🎯</div>`;
+
+      const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
+      const title = normalizeLotTitle(lot.title);
+      const titleClass = lot.titleWrap ? 'lot-card-title lot-card-title--wrap' : 'lot-card-title';
+
+      const priceBadge = lot.price
+        ? `<div class="lot-card-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>`
+        : '';
+
+      // Fav overlay — heart always active (we're on fav page)
+      const overlayHtml = `
+        <div class="lot-card-overlay">
+          <button class="card-action-btn btn-fav fav-active" data-lot-id="${esc(String(lot.id))}" type="button" aria-label="Убрать из избранного">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.45067 13.9082L11.4033 20.4395C11.6428 20.6644 11.7625 20.7769 11.9037 20.8046C11.9673 20.8171 12.0327 20.8171 12.0963 20.8046C12.2375 20.7769 12.3572 20.6644 12.5967 20.4395L19.5493 13.9082C21.5055 12.0706 21.743 9.0466 20.0978 6.92607L19.7885 6.52734C17.8203 3.99058 13.8696 4.41601 12.4867 7.31365C12.2913 7.72296 11.7087 7.72296 11.5133 7.31365C10.1304 4.41601 6.17972 3.99058 4.21154 6.52735L3.90219 6.92607C2.25695 9.0466 2.4945 12.0706 4.45067 13.9082Z" stroke-width="2"/></svg>
+          </button>
+          <div class="lot-card-overlay-center">
+            <button class="card-action-btn btn-quickview" type="button" aria-label="Быстрый просмотр">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.821 12.43c-.083-.119-2.062-2.944-4.793-4.875-1.416-1.003-3.202-1.555-5.028-1.555-1.825 0-3.611.552-5.03 1.555-2.731 1.931-4.708 4.756-4.791 4.875-.238.343-.238.798 0 1.141.083.119 2.06 2.944 4.791 4.875 1.419 1.002 3.205 1.554 5.03 1.554 1.826 0 3.612-.552 5.028-1.555 2.731-1.931 4.71-4.756 4.793-4.875.239-.342.239-.798 0-1.14zm-9.821 4.07c-1.934 0-3.5-1.57-3.5-3.5 0-1.934 1.566-3.5 3.5-3.5 1.93 0 3.5 1.566 3.5 3.5 0 1.93-1.57 3.5-3.5 3.5zM14 13c0 1.102-.898 2-2 2-1.105 0-2-.898-2-2 0-1.105.895-2 2-2 1.102 0 2 .895 2 2z"/></svg>
+            </button>
+            ${lot.funpay ? `<a class="card-action-btn btn-buy" href="${esc(lot.funpay)}" target="_blank" rel="noopener" aria-label="Купить на FunPay">
+              <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6.283.001h5.434l1.401.03c.395.031.759.098 1.106.264a3 3 0 0 1 1.295 1.191c.194.332.291.689.354 1.08.062.375.1.836.147 1.394l.53 6.361.098 1.619c0 .45-.047.868-.221 1.264a3 3 0 0 1-1.319 1.434c-.381.206-.793.287-1.242.325-.433.037-.97.037-1.621.037H5.755c-.651 0-1.188 0-1.621-.037-.449-.038-.861-.119-1.242-.325a3 3 0 0 1-1.319-1.434c-.174-.396-.22-.814-.221-1.264 0-.436.044-.969.098-1.619L1.98 4.96l.147-1.394c.063-.391.16-.748.354-1.08A3 3 0 0 1 3.776.295C4.123.13 4.487.063 4.882.032 5.254.001 5.69.001 6.283.001zm.468 4.5a.75.75 0 1 0-1.5 0 3.75 3.75 0 0 0 3.75 3.75 3.75 3.75 0 0 0 3.75-3.75.75.75 0 1 0-1.5 0 2.25 2.25 0 0 1-2.25 2.25 2.25 2.25 0 0 1-2.25-2.25z"/></svg>
+            </a>` : ''}
+          </div>
+        </div>`;
+
+      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}${priceBadge}${overlayHtml}</div>`;
+      const resHtml = (typeof renderResourceIcons === 'function')
+        ? renderResourceIcons(lot.resources, 'short') : '';
+      const tanks10Html = lot.tanks10 ? `<div class="${lot.tanks10Wrap ? 'lot-card-tanks10 lot-card-tanks10--wrap' : 'lot-card-tanks10'}">${esc(lot.tanks10)}</div>` : '';
+      const vehicleStatsHtml = (() => {
+        const t10 = lot.t10count != null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
+        const prem = lot.premcount != null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
+        if (!t10 && !prem) return '';
+        let b = '';
+        if (prem) b += `<span class="vstats__badge vstats__badge--prem"><span class="vstats__line">${esc(prem)} PREM'ов</span></span>`;
+        if (t10)  b += `<span class="vstats__badge vstats__badge--top"><span class="vstats__line">${esc(t10)} топа</span></span>`;
+        return `<div class="lot-card-vstats">${b}</div>`;
+      })();
+
+      card.innerHTML = `
+        ${thumbHtml}
+        <div class="lot-card-body">
+          <div class="lot-card-title-row">
+            <div class="${titleClass}">${lot.titleWrap ? escWithBr(title) : esc(title)}</div>
+          </div>
+          ${tanks10Html}
+          ${vehicleStatsHtml}
+          ${resHtml ? `<div class="lot-card-resources">${resHtml}</div>` : ''}
+        </div>`;
+
+      card.querySelector('.btn-quickview')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.location.href = lotUrl;
+      });
+
+      const favBtn = card.querySelector('.btn-fav');
+      if (favBtn) {
+        favBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          favToggle(String(lot.id));
+          // Remove card from page with animation
+          card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.93)';
+          setTimeout(() => {
+            card.remove();
+            updateHeaderFavIcon();
+            if (gridEl.querySelectorAll('.lot-card').length === 0) {
+              gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🤍</div><h2>Избранное пусто</h2><p>Наведи на карточку и нажми на сердечко, чтобы сохранить лот.</p></div>';
+            }
+          }, 280);
+        });
+      }
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.card-action-btn')) return;
+        window.location.href = lotUrl;
+      });
+
+      gridEl.appendChild(card);
+    });
+
+    applyFadeUpStagger(gridEl, '.lot-card', 0.06);
+
+  } catch (e) {
+    if (gridEl) gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><h2>Ошибка загрузки</h2><p>' + esc(e.message) + '</p></div>';
+  }
 }

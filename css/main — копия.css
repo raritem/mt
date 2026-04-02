@@ -292,9 +292,8 @@ input, textarea { font-family: var(--font-body); }
   object-fit: cover;
   display: block;
   margin: 0px;
-  border-radius: 12px;
-  -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
-  clip-path: inset(-1px -1px 3px -1px);
+  border-radius: 0px;
+  /*-webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);*/
 }
 
 /* Wrapper around the thumbnail image to allow badge positioning */
@@ -304,157 +303,12 @@ input, textarea { font-family: var(--font-body); }
   line-height: 0;
 }
 
-/* ── Card hover overlay with action icons ─────────────────────── */
-.lot-card-overlay {
-  position: absolute;
-  inset: 0;
-  background: transparent;
-  -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
-  mask-image: linear-gradient(180deg, black 60%, transparent 95%);
-  transition: background 0.25s ease;
-  border-radius: 12px;
-  z-index: 5;
-  pointer-events: none;
-}
-@media (hover: hover) {
-  .lot-card-thumb-wrap:hover .lot-card-overlay {
-    background: rgb(22 27 33 / 79%);
-    pointer-events: auto;
-  }
-  .lot-card-thumb-wrap:hover .lot-card-overlay .card-action-btn {
-    opacity: 1;
-  }
-}
-
-/* Fav button — top-left corner, always absolute inside overlay */
-.card-action-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-  opacity: 0;
-  text-decoration: none;
-  padding: 0;
-  line-height: 0;
-}
-
-.card-action-btn:hover {
-  background: none;
-}
-
-/* Fav button — top-left corner, absolutely positioned inside overlay */
-.card-action-btn.btn-fav {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-}
-
-/* Centred pair of icons (quickview + buy) */
-.lot-card-overlay-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-/* ── Per-icon SVG size controls — adjust to taste ── */
-.btn-quickview svg {
-  width: 38px;
-  height: 38px;
-  fill: rgba(200, 200, 200, 0.8);
-  flex-shrink: 0;
-  transition: fill 0.18s ease;
-  display: block;
-}
-.btn-fav svg {
-  width: 28px;
-  height: 28px;
-  fill: none;
-  stroke: rgba(210, 210, 210, 0.9);
-  flex-shrink: 0;
-  transition: fill 0.18s ease, stroke 0.18s ease;
-  display: block;
-}
-.btn-buy svg {
-  width: 28px;
-  height: 28px;
-  fill: rgba(200, 200, 200, 0.8);
-  flex-shrink: 0;
-  transition: fill 0.18s ease;
-  display: block;
-  margin: 0px 0px -7px 0px;
-}
-
-.card-action-btn:not(.btn-fav):hover svg {
-  fill: #ffffff;
-}
-
-.card-action-btn.btn-fav:hover svg {
-  fill: none;
-  stroke: #ffffff;
-}
-
-/* Favourite active state — red heart */
-.card-action-btn.btn-fav.fav-active svg {
-  fill: #ff1515;
-  stroke: #ff1515;
-}
-
-/* Favourite active hover */
-.card-action-btn.btn-fav.fav-active:hover svg {
-  fill: #e51212;
-  stroke: #e51212;
-}
-
-/* ── Favourite icon in header ─────────────────────────────────── */
-.header-fav-btn {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 40px;
-  height: 40px;
-  margin-left: auto;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  flex-shrink: 0;
-  text-decoration: none;
-}
-
-.header-fav-btn.visible {
-  display: flex;
-}
-
-.header-fav-btn svg {
-  width: 31px;
-  height: 32px;
-  fill: rgb(160, 160, 160);
-  /*stroke: rgba(160, 160, 160, 0.75);*/
-  transition: fill 0.18s ease, stroke 0.18s ease;
-}
-
-.header-fav-btn:hover svg {
-  fill: rgba(255, 255, 255, 0.918);
-  /*stroke: #ffffff;*/
-}
-
 /* Price badge — top-right corner of preview image */
 .lot-card-price-badge {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #0000007d;
+  background: #00000038;
   color: #e6e6e6;
   font-size: 12px;
   font-weight: 600;
@@ -603,11 +457,11 @@ input, textarea { font-family: var(--font-body); }
 }*/
 
 /* Top (tier X) badge — green */
-/*.vstats__badge--top {
+.vstats__badge--top {
   background: linear-gradient(90deg, #2c2f36, transparent 90%);
   background: #191b20;
   background: linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 50%, transparent 85%);
-}*/
+}
 
 @keyframes vstats-prem-shimmer {
   0%   { background-position: 0% 50%; }
@@ -650,25 +504,7 @@ input, textarea { font-family: var(--font-body); }
   -webkit-background-clip: unset;
   -webkit-text-fill-color: unset;
   background-clip: unset;
-  color: #c0c0c0;
-  font-weight: 400;
-}
-
-/* Тонкий вертикальный разделитель перед топом, если он идёт после према */
-.vstats__badge--prem + .vstats__badge--top {
-  position: relative;
-  margin-left: 4px;
-}
-
-.vstats__badge--prem + .vstats__badge--top::before {
-  content: '';
-  position: absolute;
-  left: -4px;
-  top: 20%;
-  height: 60%;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.15);
-  rotate: 15deg;
+  color: var(--text-muted);
 }
 
 /* Row variant — normal flow, sits below tanks10 in row */
@@ -1441,8 +1277,8 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 /* Боны — ×1.5, но не раздувают плашку по высоте */
