@@ -391,7 +391,7 @@ input, textarea { font-family: var(--font-body); }
   flex-shrink: 0;
   transition: fill 0.18s ease;
   display: block;
-  margin: 0px 0px -7px 0px;
+  margin: 0px 0px -4px 0px;
 }
 
 .card-action-btn:not(.btn-fav):hover svg {
@@ -405,14 +405,14 @@ input, textarea { font-family: var(--font-body); }
 
 /* Favourite active state — red heart */
 .card-action-btn.btn-fav.fav-active svg {
-  fill: #ff1515;
-  stroke: #ff1515;
+  fill: #e53e3e;
+  stroke: #e53e3e;
 }
 
 /* Favourite active hover */
 .card-action-btn.btn-fav.fav-active:hover svg {
-  fill: #e51212;
-  stroke: #e51212;
+  fill: #ff5555;
+  stroke: #ff5555;
 }
 
 /* ── Favourite icon in header ─────────────────────────────────── */
@@ -439,14 +439,14 @@ input, textarea { font-family: var(--font-body); }
 .header-fav-btn svg {
   width: 31px;
   height: 32px;
-  fill: rgb(160, 160, 160);
-  /*stroke: rgba(160, 160, 160, 0.75);*/
+  fill: rgba(160, 160, 160, 0.4);
+  stroke: rgba(160, 160, 160, 0.75);
   transition: fill 0.18s ease, stroke 0.18s ease;
 }
 
 .header-fav-btn:hover svg {
-  fill: rgba(255, 255, 255, 0.918);
-  /*stroke: #ffffff;*/
+  fill: rgba(255, 255, 255, 0.15);
+  stroke: #ffffff;
 }
 
 /* Price badge — top-right corner of preview image */

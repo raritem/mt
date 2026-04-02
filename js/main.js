@@ -39,7 +39,7 @@ function getRoot() {
   const parts = window.location.pathname.split('/').filter(Boolean);
   const last  = parts[parts.length - 1] || '';
   // Если последний сегмент — одна из подстраниц, мы внутри неё
-  if (['admin', 'shop', 'lot'].includes(last)) return '../';
+  if (['admin', 'shop', 'lot', 'favourites'].includes(last)) return '../';
   // Иначе мы в корне (или в корне репозитория на GitHub Pages)
   return './';
 }
