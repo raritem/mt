@@ -6,7 +6,7 @@
   "lots": [
     {
       "id": "lot_1773309676444",
-      "title": "СУ-130ПM, TST",
+      "title": "СУ-130ПM, TST, КОНТШТУГМЕГАМАУС",
       "funpay": "https://funpay.com/lots/offer?id=34782431",
       "images": [
         "images/xmode/lot_1773309676444/023.webp",
@@ -42,7 +42,8 @@
       },
       "tanks10": "AMX 50 B, AMX 30 B...",
       "premcount": "12",
-      "price": "4679"
+      "price": "4679",
+      "titleWrap": true
     },
     {
       "id": "lot_1773309692187",
