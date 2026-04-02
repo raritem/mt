@@ -303,6 +303,23 @@ input, textarea { font-family: var(--font-body); }
   line-height: 0;
 }
 
+/* Price badge — top-right corner of preview image */
+.lot-card-price-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #0a0c0f6b;
+  color: #e6e6e6;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  padding: 2px 6px;
+  border-radius: 66px;
+  white-space: nowrap;
+  z-index: 4;
+  backdrop-filter: blur(4px);
+}
+
 /* Badges container — top-right corner of the image, single pill */
 /* Row card thumb wrapper (hidden lots table) */
 .lot-row-thumb-wrap {
@@ -339,16 +356,14 @@ input, textarea { font-family: var(--font-body); }
 
 /* Title row: label left, price right */
 .lot-card-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 6px;
+  display: block;
+  min-width: 0;
 }
 
 .lot-card-price {
   flex-shrink: 0;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text);
   white-space: nowrap;
   line-height: 1.5;
@@ -366,8 +381,9 @@ input, textarea { font-family: var(--font-body); }
   font-weight: 600;
   color: var(--text);
   line-height: 1.4;
-  overflow-wrap: break-word;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   padding: 2px 6px;
   border-radius: 6px;
   z-index: 0;
@@ -379,7 +395,7 @@ input, textarea { font-family: var(--font-body); }
   top: 0px;
   bottom: 0px;
   left: 0px;
-  right: -70px; /* тянем вправо — меняй это значение */
+  right: 0px; /* тянем вправо — меняй это значение */
   border-radius: 6px;
   background: linear-gradient(90deg, #4f5460, transparent 70%);
   z-index: -1;
@@ -392,9 +408,27 @@ input, textarea { font-family: var(--font-body); }
   color: var(--text-muted);
   line-height: 1.4;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0px 4px;
+}
+
+/* Allow wrapping when explicitly enabled via admin toggle */
+.lot-card-title--wrap {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
   overflow-wrap: break-word;
   word-break: break-word;
-  padding: 0px 4px;
+}
+
+.lot-card-tanks10--wrap {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Vehicle stats — wrapper: normal flow, sits below tanks10 */
@@ -483,7 +517,7 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-card-vstats--row .vstats__line {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 
@@ -589,7 +623,7 @@ input, textarea { font-family: var(--font-body); }
 
 .lot-row-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 0px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 5px;
   display: flex;
@@ -840,8 +874,8 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 }
 
 .price-rub {
-  opacity: 0.55;
-  margin-left: 1px;
+  /*opacity: 0.55;
+  margin-left: 1px;*/
   font-weight: 600;
 }
 
@@ -1080,6 +1114,55 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   color: var(--text-dim);
 }
 
+/* Header row: label left, wrap-toggle button right */
+.form-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.form-group-header label {
+  margin: 0;
+}
+
+.wrap-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity 0.18s, background 0.18s, color 0.18s, border-color 0.18s;
+  flex-shrink: 0;
+}
+
+.wrap-toggle-btn:not([disabled]):hover {
+  opacity: 1;
+  background: rgba(255,255,255,0.07);
+  color: var(--text);
+  border-color: rgba(255,255,255,0.22);
+}
+
+.wrap-toggle-btn[disabled] {
+  cursor: default;
+  pointer-events: none;
+}
+
+.wrap-toggle-btn.is-active {
+  opacity: 1;
+  background: rgba(79,84,96,0.5);
+  color: var(--text);
+  border-color: rgba(255,255,255,0.22);
+}
+
+
 .form-hint {
   font-size: 12px;
   color: var(--text-muted);
@@ -1222,24 +1305,14 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
    По умолчанию показываем вариант с дробью (.rv-frac),
    скрываем вариант без дроби (.rv-int).
    При сужении экрана CSS переключает их:
-     < 505px → серебро без дробной части
-     < 442px → серебро + золото без дробной части
-     < 418px → все три ресурса без дробной части              */
+     < 505px → все ресурсы без дробной части                     */
 .rv-int { display: none; }
 .rv-frac { display: inline; }
 
 /* Карточки аккаунтов (.lot-card-resources) */
 @media (max-width: 504px) {
-  .lot-card-resources .rv-int--silver  { display: inline; }
-  .lot-card-resources .rv-frac--silver { display: none; }
-}
-@media (max-width: 441px) {
-  .lot-card-resources .rv-int--gold  { display: inline; }
-  .lot-card-resources .rv-frac--gold { display: none; }
-}
-@media (max-width: 417px) {
-  .lot-card-resources .rv-int--bonds  { display: inline; }
-  .lot-card-resources .rv-frac--bonds { display: none; }
+  .lot-card-resources .rv-int  { display: inline; }
+  .lot-card-resources .rv-frac { display: none; }
 }
 
 /* Таблица (.lot-row-tags) */

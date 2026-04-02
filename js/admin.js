@@ -150,6 +150,14 @@ function bindAllEvents() {
   dom.lotModalOvl.addEventListener('click',        () => closeModal('lotModal'));
   $('lot-modal-save').addEventListener('click',    onLotSave);
 
+  // Wrap-toggle buttons (enable wrap for title/tanks10 on the card)
+  document.querySelectorAll('.wrap-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('is-active');
+      btn.title = btn.classList.contains('is-active') ? 'Перенос разрешён' : 'Разрешить перенос строки';
+    });
+  });
+
   // Confirm
   $('confirm-cancel').addEventListener('click',    () => closeModal('confirm'));
   dom.confirmOverlay.addEventListener('click',     () => closeModal('confirm'));
@@ -472,6 +480,17 @@ function openLotModal(editLotId) {
     dom.lotOnFunpayInput.checked = lot ? (lot.onFunpay !== false) : false;
   }
 
+  // Восстанавливаем состояние кнопок переноса строки
+  document.querySelectorAll('.wrap-toggle-btn').forEach(btn => {
+    const target = btn.dataset.target;
+    const active = target === 'lot-title-input'  ? !!(lot && lot.titleWrap)
+                 : target === 'lot-tanks10-input' ? !!(lot && lot.tanks10Wrap)
+                 : false;
+    btn.disabled = false;
+    btn.classList.toggle('is-active', active);
+    btn.title = active ? 'Перенос разрешён' : 'Разрешить перенос строки';
+  });
+
   // Заполняем поля ресурсов
   const res = (lot && lot.resources) ? lot.resources : {};
   const bondsEl  = $('lot-bonds-input');
@@ -511,6 +530,8 @@ async function onLotSave() {
   const funpay = dom.lotFunpayInput.value.trim();
   const price  = dom.lotPriceInput ? dom.lotPriceInput.value.trim() : '';
   const onFunpay = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked : false;
+  const titleWrap   = !!document.querySelector('.wrap-toggle-btn[data-target="lot-title-input"]')?.classList.contains('is-active');
+  const tanks10Wrap = !!document.querySelector('.wrap-toggle-btn[data-target="lot-tanks10-input"]')?.classList.contains('is-active');
   if (!title) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
 
   // Читаем ресурсы, очищаем пробелы
@@ -534,6 +555,8 @@ async function onLotSave() {
         lot.t10count = t10countRaw !== '' ? t10countRaw : undefined;
         lot.premcount = premcountRaw !== '' ? premcountRaw : undefined;
         lot.resources = Object.keys(resources).length ? resources : undefined;
+        lot.titleWrap   = titleWrap   || undefined;
+        lot.tanks10Wrap = tanks10Wrap || undefined;
       }
     } else {
       const newLot = { id: 'lot_' + Date.now(), title, funpay, onFunpay, images: [] };
@@ -542,6 +565,8 @@ async function onLotSave() {
       if (t10countRaw !== '') newLot.t10count = t10countRaw;
       if (premcountRaw !== '') newLot.premcount = premcountRaw;
       if (Object.keys(resources).length) newLot.resources = resources;
+      if (titleWrap)   newLot.titleWrap   = titleWrap;
+      if (tanks10Wrap) newLot.tanks10Wrap = tanks10Wrap;
       state.activeLots.push(newLot);
     }
     await saveLotsJSON();

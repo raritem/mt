@@ -384,7 +384,9 @@ async function loadShop() {
 
       const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lot.id);
       const title  = normalizeLotTitle(lot.title);
-      const tanks10Html = lot.tanks10 ? `<div class="lot-card-tanks10">${esc(lot.tanks10)}</div>` : '';
+      const titleClass  = lot.titleWrap   ? 'lot-card-title lot-card-title--wrap'   : 'lot-card-title';
+      const tanks10Class = lot.tanks10Wrap ? 'lot-card-tanks10 lot-card-tanks10--wrap' : 'lot-card-tanks10';
+      const tanks10Html = lot.tanks10 ? `<div class="${tanks10Class}">${esc(lot.tanks10)}</div>` : '';
 
       // Vehicle stats block (under title, column layout, green gradient)
       const vehicleStatsHtml = (() => {
@@ -397,22 +399,21 @@ async function loadShop() {
         return `<div class="lot-card-vstats">${badges}</div>`;
       })();
 
-      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}</div>`;
+      const priceBadge = lot.price
+        ? `<div class="lot-card-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>`
+        : '';
+
+      const thumbHtml = `<div class="lot-card-thumb-wrap">${thumbImg}${priceBadge}</div>`;
 
       const resHtml = (typeof renderResourceIcons === 'function')
         ? renderResourceIcons(lot.resources, 'short')
-        : '';
-
-      const priceHtml = lot.price
-        ? `<div class="lot-card-price">${esc(lot.price)}<span class="price-rub"> ₽</span></div>`
         : '';
 
       card.innerHTML = `
         ${thumbHtml}
         <div class="lot-card-body">
           <div class="lot-card-title-row">
-            <div class="lot-card-title">${escWithBr(title)}</div>
-            ${priceHtml}
+            <div class="${titleClass}">${lot.titleWrap ? escWithBr(title) : esc(title)}</div>
           </div>
           ${tanks10Html}
           ${vehicleStatsHtml}
