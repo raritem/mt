@@ -162,7 +162,8 @@
       },
       "tanks10": "AMX 50 B, AMX 30 B",
       "price": "3789",
-      "premcount": "13"
+      "premcount": "13",
+      "t10count": "4"
     },
     {
       "id": "lot_1773738565427",
