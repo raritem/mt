@@ -268,7 +268,7 @@ input, textarea { font-family: var(--font-body); }
 
 .lot-card {
   background: var(--bg-card);
-  border: 0px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
@@ -287,13 +287,13 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-card-thumb {
-  width: calc(100% - 0px);
+  width: calc(100% - 10px);
   aspect-ratio: 16/12;
   object-fit: cover;
   display: block;
-  margin: 0px;
-  border-radius: 0px;
-  /*-webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);*/
+  margin: 5px;
+  border-radius: 12px;
+  -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
 }
 
 /* Wrapper around the thumbnail image to allow badge positioning */
@@ -457,11 +457,11 @@ input, textarea { font-family: var(--font-body); }
 }*/
 
 /* Top (tier X) badge — green */
-.vstats__badge--top {
+/*.vstats__badge--top {
   background: linear-gradient(90deg, #2c2f36, transparent 90%);
   background: #191b20;
   background: linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 50%, transparent 85%);
-}
+}*/
 
 @keyframes vstats-prem-shimmer {
   0%   { background-position: 0% 50%; }
@@ -505,6 +505,24 @@ input, textarea { font-family: var(--font-body); }
   -webkit-text-fill-color: unset;
   background-clip: unset;
   color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Тонкий вертикальный разделитель перед топом, если он идёт после према */
+.vstats__badge--prem + .vstats__badge--top {
+  position: relative;
+  margin-left: 4px;
+}
+
+.vstats__badge--prem + .vstats__badge--top::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  rotate: 15deg;
 }
 
 /* Row variant — normal flow, sits below tanks10 in row */
@@ -1277,18 +1295,18 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 /* Боны — ×1.5, но не раздувают плашку по высоте */
 .resource-icon-img--bonds {
-  width: 28px;
-  height: 28px;
-  margin-top: -4px;
-  margin-bottom: -4px;
-  margin-right: -4px;
-  margin-left: -5px;
+  width: 33px;
+  height: 33px;
+  margin-top: -6px;
+  margin-bottom: -6px;
+  margin-right: -6px;
+  margin-left: -7px;
 }
 
 .resource-value {
@@ -1356,17 +1374,17 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 }
 
 .lot-card-resources .resource-icon-img {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 .lot-card-resources .resource-icon-img--bonds {
-  width: 28px;
-  height: 28px;
-  margin-top: -4px;
-  margin-bottom: -4px;
-  margin-right: -4px;
-  margin-left: -5px;
+  width: 33px;
+  height: 33px;
+  margin-top: -6px;
+  margin-bottom: -6px;
+  margin-right: -6px;
+  margin-left: -7px;
 }
 
 .lot-card-resources .resource-value {
@@ -1380,27 +1398,27 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   /* Таблица: ресурсы в lot-row-tags чуть компактнее */
   .lot-row-tags .resource-icons { gap: 8px; }
   .lot-row-tags .resource-item  { padding: 2px 5px 2px 4px; gap: 3px; }
-  .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
+  .lot-row-tags .resource-icon-img { width: 22px; height: 22px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 28px;
-    height: 28px;
-    margin-top: -4px;
-    margin-bottom: -4px;
-    margin-right: -4px;
-    margin-left: -5px;
+    width: 33px;
+    height: 33px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -7px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 
   /* Карточки: ресурсы чуть мельче */
   .lot-card-resources .resource-item { padding: 2px 5px 2px 4px; gap: 2px; }
-  .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
+  .lot-card-resources .resource-icon-img { width: 22px; height: 22px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 28px;
-    height: 28px;
-    margin-top: -4px;
-    margin-bottom: -4px;
-    margin-right: -4px;
-    margin-left: -5px;
+    width: 33px;
+    height: 33px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -7px;
   }
   .lot-card-resources .resource-value { font-size: 13px; }
 }
@@ -1409,14 +1427,14 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 @media (max-width: 640px) {
   .lot-row-tags .resource-icons { gap: 6px; flex-wrap: wrap; }
   .lot-row-tags .resource-item  { padding: 2px 5px 2px 4px; gap: 3px; }
-  .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
+  .lot-row-tags .resource-icon-img { width: 22px; height: 22px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 28px;
-    height: 28px;
-    margin-top: -4px;
-    margin-bottom: -4px;
-    margin-right: -4px;
-    margin-left: -5px;
+    width: 33px;
+    height: 33px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -7px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 }
@@ -1426,26 +1444,26 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources { padding: 0; }
   .lot-card-resources .resource-icons { gap: 2px; }
   .lot-card-resources .resource-item  { padding: 1px 4px 1px 3px; gap: 2px; }
-  .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
+  .lot-card-resources .resource-icon-img { width: 22px; height: 22px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 28px;
-    height: 28px;
-    margin-top: -4px;
-    margin-bottom: -4px;
-    margin-right: -4px;
-    margin-left: -5px;
+    width: 33px;
+    height: 33px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -7px;
   }
   .lot-card-resources .resource-value { font-size: 12px; }
 
   .lot-row-tags .resource-item  { padding: 1px 4px 1px 4px; gap: 3px; }
-  .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
+  .lot-row-tags .resource-icon-img { width: 22px; height: 22px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 28px;
-    height: 28px;
-    margin-top: -4px;
-    margin-bottom: -4px;
-    margin-right: -4px;
-    margin-left: -5px;
+    width: 33px;
+    height: 33px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -7px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 }
@@ -1455,26 +1473,26 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
   .lot-card-resources { padding: 0; }
   .lot-card-resources .resource-icons { gap: 2px; }
   .lot-card-resources .resource-item  { padding: 1px 4px 1px 3px; gap: 2px; }
-  .lot-card-resources .resource-icon-img { width: 20px; height: 20px; }
+  .lot-card-resources .resource-icon-img { width: 22px; height: 22px; }
   .lot-card-resources .resource-icon-img--bonds {
-    width: 28px;
-    height: 28px;
-    margin-top: -4px;
-    margin-bottom: -4px;
-    margin-right: -4px;
-    margin-left: -5px;
+    width: 33px;
+    height: 33px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -7px;
   }
   .lot-card-resources .resource-value { font-size: 12px; }
 
   .lot-row-tags .resource-item  { padding: 1px 4px 1px 4px; gap: 2px; }
-  .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
+  .lot-row-tags .resource-icon-img { width: 22px; height: 22px; }
   .lot-row-tags .resource-icon-img--bonds {
-    width: 28px;
-    height: 28px;
-    margin-top: -4px;
-    margin-bottom: -4px;
-    margin-right: -4px;
-    margin-left: -5px;
+    width: 33px;
+    height: 33px;
+    margin-top: -6px;
+    margin-bottom: -6px;
+    margin-right: -6px;
+    margin-left: -7px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
 }
