@@ -303,9 +303,9 @@ input, textarea { font-family: var(--font-body); }
   object-fit: cover;
   display: block;
   margin: 0px;
-  border-radius: 12px;
-  -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
-  clip-path: inset(-1px -1px 3px -1px);
+  border-radius: 12px 12px 0px 0px;
+  /*-webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
+  clip-path: inset(-1px -1px 3px -1px);*/
 }
 
 /* Wrapper around the thumbnail image to allow badge positioning */
