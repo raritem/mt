@@ -150,19 +150,91 @@ window.LightBox = (() => {
     applyTransform();
   });
 
-  // ── Touch swipe ───────────────────────────────────────────────
+  // ── Touch swipe + swipe-down-to-close ────────────────────────
+  let touchDir = null; // 'h' | 'v' | null — определяется по первым 10px движения
+  let swipeCloseActive = false;
+  let swipeTouchId = null;
+
+  // Применяем визуальный сдвиг к картинке при вертикальном свайпе
+  function _applySwipeTransform(dy) {
+    const opacity = Math.max(0, 1 - Math.abs(dy) / 300);
+    lbImg.style.transition = 'none';
+    lbImg.style.transform  = `translateY(${dy}px) scale(${1 - Math.abs(dy) * 0.0003})`;
+    lb.style.background    = `rgba(0,0,0,${0.92 * opacity})`;
+  }
+
+  function _resetSwipeTransform(animate) {
+    lbImg.style.transition = animate ? 'transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.28s' : 'none';
+    lbImg.style.transform  = '';
+    lb.style.transition    = animate ? 'background 0.28s' : 'none';
+    lb.style.background    = '';
+    setTimeout(() => { lbImg.style.transition = ''; lb.style.transition = ''; }, 300);
+  }
+
   lb.addEventListener('touchstart', (e) => {
-    touchStartX = e.changedTouches[0].clientX;
-    touchStartY = e.changedTouches[0].clientY;
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    touchStartX  = t.clientX;
+    touchStartY  = t.clientY;
+    touchDir     = null;
+    swipeCloseActive = false;
+    swipeTouchId = t.identifier;
   }, { passive: true });
 
+  lb.addEventListener('touchmove', (e) => {
+    if (scale > 1) return; // при зуме не мешаем
+    const t = Array.from(e.touches).find(x => x.identifier === swipeTouchId);
+    if (!t) return;
+
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+
+    // Определяем направление по первым 10px
+    if (!touchDir && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+      touchDir = Math.abs(dy) > Math.abs(dx) ? 'v' : 'h';
+    }
+
+    if (touchDir === 'v' && dy > 0) {
+      // Вертикальный свайп вниз — тянем картинку
+      swipeCloseActive = true;
+      e.preventDefault();
+      _applySwipeTransform(dy);
+    }
+  }, { passive: false });
+
   lb.addEventListener('touchend', (e) => {
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-    if (Math.abs(dx) > 50 && dy < 80 && scale <= 1) {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+
+    if (swipeCloseActive) {
+      // Вертикальный свайп: закрываем если > 120px или быстро (velocity)
+      const elapsed = e.timeStamp - (lb._touchStartTime || e.timeStamp);
+      const velocity = Math.abs(dy) / Math.max(elapsed, 1) * 1000; // px/s
+      if (dy > 120 || velocity > 500) {
+        // Анимация вылета вниз → закрытие
+        lbImg.style.transition = 'transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94)';
+        lbImg.style.transform  = `translateY(${window.innerHeight}px)`;
+        lb.style.transition    = 'background 0.28s';
+        lb.style.background    = 'rgba(0,0,0,0)';
+        setTimeout(() => { _resetSwipeTransform(false); close(); }, 280);
+      } else {
+        // Пружина назад
+        _resetSwipeTransform(true);
+      }
+      swipeCloseActive = false;
+      return;
+    }
+
+    // Горизонтальный свайп — навигация
+    const absDy = Math.abs(dy);
+    if (Math.abs(dx) > 50 && absDy < 80 && scale <= 1 && touchDir === 'h') {
       if (dx < 0) next(); else prev();
     }
   });
+
+  // Сохраняем время начала касания для расчёта velocity
+  lb.addEventListener('touchstart', (e) => { lb._touchStartTime = e.timeStamp; }, { passive: true });
 
   // ── Рендер ────────────────────────────────────────────────────
   function render(dir, fromThumbs) {

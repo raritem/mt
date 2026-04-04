@@ -171,6 +171,7 @@ window.QuickView = (() => {
     // Клавиатура
     document.addEventListener('keydown', _onKeyDown);
 
+    _initSwipeClose(el);
     return el;
   }
 
@@ -213,6 +214,76 @@ window.QuickView = (() => {
     if (e.key === 'Escape') { close(); return; }
     if (e.key === 'ArrowLeft')  { _navigate(-1); return; }
     if (e.key === 'ArrowRight') { _navigate(1);  return; }
+  }
+
+  // ── Swipe-down-to-close на главном изображении в QV ─────────
+  // (инициализируется один раз после _buildModal)
+  function _initSwipeClose(modal) {
+    const stage   = modal.querySelector('#qv-img-stage');
+    const imgEl   = modal.querySelector('#qv-img');
+    const overlay = modal.querySelector('#qv-zoom-overlay');
+    if (!stage) return;
+
+    let _tsX = 0, _tsY = 0, _tsTime = 0;
+    let _dir = null, _active = false;
+
+    function _applyDrag(dy) {
+      const op = Math.max(0, 1 - Math.abs(dy) / 280);
+      imgEl.style.transition = 'none';
+      imgEl.style.transform  = `translateY(${dy}px) scale(${1 - Math.abs(dy) * 0.0004})`;
+      overlay.style.opacity  = '0';
+      modal.querySelector('#qv-dialog').style.background =
+        `rgba(13,15,20,${0.96 * op})`;
+    }
+
+    function _resetDrag(animate) {
+      const tr = animate ? 'transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none';
+      imgEl.style.transition = tr;
+      imgEl.style.transform  = '';
+      overlay.style.opacity  = '';
+      modal.querySelector('#qv-dialog').style.background = '';
+      setTimeout(() => { imgEl.style.transition = ''; }, 300);
+    }
+
+    stage.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      _tsX = e.touches[0].clientX;
+      _tsY = e.touches[0].clientY;
+      _tsTime = e.timeStamp;
+      _dir = null; _active = false;
+    }, { passive: true });
+
+    stage.addEventListener('touchmove', (e) => {
+      if (e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - _tsX;
+      const dy = e.touches[0].clientY - _tsY;
+      if (!_dir && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
+        _dir = Math.abs(dy) > Math.abs(dx) ? 'v' : 'h';
+      }
+      if (_dir === 'v' && dy > 0) {
+        _active = true;
+        e.preventDefault();
+        e.stopPropagation();
+        _applyDrag(dy);
+      }
+    }, { passive: false });
+
+    stage.addEventListener('touchend', (e) => {
+      const dy = e.changedTouches[0].clientY - _tsY;
+      if (_active) {
+        const velocity = Math.abs(dy) / Math.max(e.timeStamp - _tsTime, 1) * 1000;
+        if (dy > 110 || velocity > 480) {
+          imgEl.style.transition = 'transform 0.26s cubic-bezier(0.25,0.46,0.45,0.94)';
+          imgEl.style.transform  = `translateY(${window.innerHeight}px)`;
+          modal.querySelector('#qv-dialog').style.transition = 'background 0.26s';
+          modal.querySelector('#qv-dialog').style.background = 'rgba(13,15,20,0)';
+          setTimeout(() => { _resetDrag(false); close(); }, 260);
+        } else {
+          _resetDrag(true);
+        }
+        _active = false;
+      }
+    });
   }
 
   // ── Рендер контента ──────────────────────────────────────────
