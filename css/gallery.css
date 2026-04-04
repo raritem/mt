@@ -5,7 +5,7 @@
 /* ── Сетка превью ────────────────────────────────────────────── */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(430px, 1fr));
   gap: 16px;
 }
 @media (max-width: 768px) { .gallery-grid { grid-template-columns: 1fr 1fr; gap: 10px; } }
@@ -17,11 +17,11 @@
   border-radius: var(--radius);
   overflow: hidden;
   cursor: pointer;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  /*background: var(--bg-card);
+  border: 1px solid var(--border);*/
   transition: border-color var(--transition), transform var(--transition);
 }
-.gallery-thumb:hover { /*border-color: rgba(245,197,24,0.3);*/ transform: scale(1.02); }
+/*.gallery-thumb:hover { border-color: rgba(245,197,24,0.3); transform: scale(1.02); }*/
 .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s ease; }
 .gallery-thumb img.loading { opacity: 0; }
 .gallery-thumb img.loaded  { opacity: 1; }

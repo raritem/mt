@@ -100,26 +100,16 @@ function setBrandHref(href) {
 
 /** Один раз добавляет иконку избранного в .header-inner (если ещё нет) */
 function ensureHeaderFavBtn() {
-  if (document.getElementById('header-fav-btn')) return;
-  const inner = document.querySelector('.header-inner');
-  if (!inner) return;
-  const btn = document.createElement('button');
-  btn.id = 'header-fav-btn';
-  btn.className = 'header-fav-btn';
-  btn.setAttribute('aria-label', 'Избранное');
-  btn.setAttribute('type', 'button');
-  btn.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M4.45067 13.9082L11.4033 20.4395C11.6428 20.6644 11.7625 20.7769 11.9037 20.8046C11.9673 20.8171 12.0327 20.8171 12.0963 20.8046C12.2375 20.7769 12.3572 20.6644 12.5967 20.4395L19.5493 13.9082C21.5055 12.0706 21.743 9.0466 20.0978 6.92607L19.7885 6.52734C17.8203 3.99058 13.8696 4.41601 12.4867 7.31365C12.2913 7.72296 11.7087 7.72296 11.5133 7.31365C10.1304 4.41601 6.17972 3.99058 4.21154 6.52735L3.90219 6.92607C2.25695 9.0466 2.4945 12.0706 4.45067 13.9082Z" stroke-width="2"/>
-    </svg>
-  `;
+  const btn = document.getElementById('header-fav-btn');
+  if (!btn) return;
+  // Wire up click only once
+  if (btn.dataset.wired) return;
+  btn.dataset.wired = '1';
   btn.addEventListener('click', () => {
-    // Сохраняем shopId для возврата обратно
-    const shopId = getParam('id') || getParam('shop');
+    const shopId = getParam('shop') || getParam('id');
     const favUrl = ROOT + 'favourites/' + (shopId ? '?shop=' + encodeURIComponent(shopId) : '');
     window.location.href = favUrl;
   });
-  inner.appendChild(btn);
   updateHeaderFavIcon();
 }
 
@@ -672,6 +662,7 @@ async function loadLot() {
     document.title = title;
     setBrandTitle(data.name || shopId);
     setBrandHref(ROOT + 'shop/?id=' + encodeURIComponent(shopId));
+    ensureHeaderFavBtn();
 
     // Хлебные крошки: "Витрина / Лот" (без "Главная")
     if (bcEl) {
@@ -684,16 +675,26 @@ async function loadLot() {
 
     // Заголовок лота
     if (headerEl) {
+      const isFav = favGetAll().includes(String(lotId));
       const fp = lot.funpay
         ? `<a href="${lot.funpay}" target="_blank" rel="noopener" class="lot-header-funpay-btn">Купить на ${funpayLogo(14)}</a>`
         : '';
+      const favBtnHtml = `
+        <button class="lot-header-fav-btn${isFav ? ' fav-active' : ''}" id="lot-fav-btn" type="button" aria-label="${isFav ? 'Убрать из избранного' : 'В избранное'}">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.45067 13.9082L11.4033 20.4395C11.6428 20.6644 11.7625 20.7769 11.9037 20.8046C11.9673 20.8171 12.0327 20.8171 12.0963 20.8046C12.2375 20.7769 12.3572 20.6644 12.5967 20.4395L19.5493 13.9082C21.5055 12.0706 21.743 9.0466 20.0978 6.92607L19.7885 6.52734C17.8203 3.99058 13.8696 4.41601 12.4867 7.31365C12.2913 7.72296 11.7087 7.72296 11.5133 7.31365C10.1304 4.41601 6.17972 3.99058 4.21154 6.52735L3.90219 6.92607C2.25695 9.0466 2.4945 12.0706 4.45067 13.9082Z" stroke-width="2"/>
+          </svg>
+        </button>`;
       headerEl.innerHTML = `
         <div class="lot-header-top">
           <a href="${ROOT}shop/?id=${encodeURIComponent(shopId)}" class="btn btn-ghost back-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
             Назад
           </a>
-          ${fp}
+          <div style="display:flex;align-items:center;gap:18px;">
+            ${favBtnHtml}
+            ${fp}
+          </div>
         </div>
         <div class="lot-title-row">
           <h1 class="lot-title">${escWithBr(title)}</h1>
@@ -702,6 +703,17 @@ async function loadLot() {
         ${lot.tanks10 ? `<p class="lot-tanks10-detail">🔟 ${esc(lot.tanks10)}</p>` : ''}
         <p style="color:var(--text-muted);font-size:13px;margin-top:4px">📸 ${(lot.images||[]).length} скриншотов</p>
       `;
+
+      // Обработчик кнопки избранного
+      const lotFavBtn = headerEl.querySelector('#lot-fav-btn');
+      if (lotFavBtn) {
+        lotFavBtn.addEventListener('click', () => {
+          const active = favToggle(String(lotId));
+          lotFavBtn.classList.toggle('fav-active', active);
+          lotFavBtn.setAttribute('aria-label', active ? 'Убрать из избранного' : 'В избранное');
+          updateHeaderFavIcon();
+        });
+      }
     }
 
     if (!gridEl) return;
