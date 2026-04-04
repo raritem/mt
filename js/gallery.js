@@ -194,63 +194,105 @@ window.LightBox = (() => {
     return { minX: -mx, maxX: mx, minY: -my, maxY: my };
   }
 
-  // Spring-анимация через rAF (damped spring)
+  // ── Critically-damped spring (нет осцилляций, 1 плавный приход) ──
+  // Используем экспоненциальную интерполяцию — как CSS ease-out,
+  // но прерываемую и с корректным velocity при старте.
+  // factor ≈ 0.72 даёт ~300ms до settlment при 60fps, без перелёта.
   function _springTo(targetSc, targetTx, targetTy, onDone) {
     let cancelled = false;
-    const stiff = 0.22, damp = 0.72;
-    let vSc = 0, vx = 0, vy = 0;
+    // Critically damped: позиция = target + (start-target)*exp(-k*t)
+    // Реализуем через per-frame lerp с фиксированным коэффициентом.
+    // factor 0.78 = ~критическое затухание, ноль осцилляций.
+    const F = 0.78;
 
     function step() {
       if (cancelled) return;
-      vSc = vSc * damp + (targetSc - scale) * stiff;
-      vx  = vx  * damp + (targetTx - tx)   * stiff;
-      vy  = vy  * damp + (targetTy - ty)   * stiff;
-      scale += vSc; tx += vx; ty += vy;
+
+      const dSc = targetSc - scale;
+      const dTx = targetTx - tx;
+      const dTy = targetTy - ty;
+
+      scale += dSc * (1 - F);
+      tx    += dTx * (1 - F);
+      ty    += dTy * (1 - F);
+
       _applyRaw(scale, tx, ty);
 
-      const settled =
-        Math.abs(targetSc - scale) < 0.001 && Math.abs(vSc) < 0.001 &&
-        Math.abs(targetTx - tx)    < 0.3   && Math.abs(vx)   < 0.3  &&
-        Math.abs(targetTy - ty)    < 0.3   && Math.abs(vy)   < 0.3;
-
-      if (settled) {
+      // Критерий остановки
+      if (Math.abs(dSc) < 0.0008 && Math.abs(dTx) < 0.15 && Math.abs(dTy) < 0.15) {
         scale = targetSc; tx = targetTx; ty = targetTy;
         _applyRaw(scale, tx, ty);
         if (onDone) onDone();
-      } else {
-        requestAnimationFrame(step);
+        return;
       }
+      requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
     return () => { cancelled = true; };
   }
 
-  // Инерционная анимация с отскоком от стен
+  // ── Инерция — точная модель iOS ────────────────────────────────
+  // iOS использует decay функцию: p(t) = p0 + v0 * (1 - exp(-t/τ)) * τ
+  // Реализуем через per-frame: v *= decayFactor каждые 16ms.
+  // decayFactor 0.95 → τ ≈ 300ms (соответствует UIScrollView).
+  //
+  // Velocity-cutoff: если скорость при touchend < MIN_VEL — инерции нет.
+  // Это решает проблему «плывёт при медленном свайпе».
+  //
+  // За границей: inertia продолжается с rubber-band затуханием,
+  // после остановки — _springTo возвращает без осцилляций.
+  const INERTIA_MIN_VEL = 2.5; // px/frame — порог для запуска инерции
+
   function _inertia(initVx, initVy) {
     let cancelled = false;
     let vx = initVx, vy = initVy;
-    const friction = 0.94;
+
+    // iOS-style decay: быстро в начале, плавно в конце
+    // decayPerFrame для 60fps: 0.95 → τ≈300ms
+    const DECAY = 0.95;
+    // За границей скорость дополнительно гасится
+    const BOUNDARY_DAMP = 0.6;
 
     function step() {
       if (cancelled) return;
-      vx *= friction; vy *= friction;
-      tx += vx; ty += vy;
-      _applyRaw(scale, tx, ty);
+
+      vx *= DECAY;
+      vy *= DECAY;
 
       const b = _panBounds(scale);
-      const overX = tx < b.minX ? tx - b.minX : tx > b.maxX ? tx - b.maxX : 0;
-      const overY = ty < b.minY ? ty - b.minY : ty > b.maxY ? ty - b.maxY : 0;
-      if (overX !== 0) vx *= -0.35;
-      if (overY !== 0) vy *= -0.35;
 
-      if (Math.abs(vx) < 0.2 && Math.abs(vy) < 0.2) {
+      // Обновляем позицию
+      let nx = tx + vx;
+      let ny = ty + vy;
+
+      // За границей — rubber-band (позиция) + гасим скорость
+      const overX = nx < b.minX ? nx - b.minX : nx > b.maxX ? nx - b.maxX : 0;
+      const overY = ny < b.minY ? ny - b.minY : ny > b.maxY ? ny - b.maxY : 0;
+
+      if (overX !== 0) {
+        // Rubber-band: чем дальше за границу — тем сильнее сопротивление
+        nx = (nx < b.minX ? b.minX : b.maxX) + overX * 0.4;
+        vx *= BOUNDARY_DAMP; // гасим скорость у стены
+      }
+      if (overY !== 0) {
+        ny = (ny < b.minY ? b.minY : b.maxY) + overY * 0.4;
+        vy *= BOUNDARY_DAMP;
+      }
+
+      tx = nx; ty = ny;
+      _applyRaw(scale, tx, ty);
+
+      // Стоп: скорость упала до нуля
+      if (Math.abs(vx) < 0.15 && Math.abs(vy) < 0.15) {
+        // Если вышли за границу — spring обратно (без осцилляций)
         const clTx = Math.max(b.minX, Math.min(b.maxX, tx));
         const clTy = Math.max(b.minY, Math.min(b.maxY, ty));
-        if (Math.abs(tx - clTx) > 0.5 || Math.abs(ty - clTy) > 0.5) {
+        if (Math.abs(tx - clTx) > 0.3 || Math.abs(ty - clTy) > 0.3) {
           _cancelSpring = _springTo(scale, clTx, clTy);
         }
         return;
       }
+
       requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -404,16 +446,22 @@ window.LightBox = (() => {
 
     // PINCH end — spring к ближайшему допустимому масштабу
     if (_gesture === 'pinch') {
-      let tSc = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, scale));
+      const tSc = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, scale));
 
-      // Если масштаб почти 1 — сбрасываем полностью
       if (tSc <= 1.05) {
+        // Сброс к scale=1: центрируем
         _cancelSpring = _springTo(1, 0, 0, resetZoom);
       } else {
-        const b  = _panBounds(tSc);
-        const ratio = tSc / scale;
-        const tTx = Math.max(b.minX, Math.min(b.maxX, tx * ratio));
-        const tTy = Math.max(b.minY, Math.min(b.maxY, ty * ratio));
+        // Пересчёт tx/ty под целевой масштаб:
+        // Логическая точка под центром экрана остаётся на месте.
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const lx = (vw/2 - tx) / scale;  // логические координаты центра
+        const ly = (vh/2 - ty) / scale;
+        const tTxRaw = vw/2 - lx * tSc;
+        const tTyRaw = vh/2 - ly * tSc;
+        const b   = _panBounds(tSc);
+        const tTx = Math.max(b.minX, Math.min(b.maxX, tTxRaw));
+        const tTy = Math.max(b.minY, Math.min(b.maxY, tTyRaw));
         _cancelSpring = _springTo(tSc, tTx, tTy, () => applyTransform());
       }
       _gesture = 'idle';
@@ -425,16 +473,26 @@ window.LightBox = (() => {
     const dy = t.clientY - _startY;
     const dt = Math.max(e.timeStamp - _startTime, 1);
 
-    // PAN end — инерция + spring к границам
+    // PAN end — инерция только при реально быстром свайпе
     if (_gesture === 'pan') {
       const b  = _panBounds(scale);
-      const inBounds = tx >= b.minX && tx <= b.maxX && ty >= b.minY && ty <= b.maxY;
-      if (inBounds && (Math.abs(_velX) > 0.5 || Math.abs(_velY) > 0.5)) {
-        _cancelInertia = _inertia(_velX, _velY);
+
+      // Velocity-cutoff: если последнее движение было >80ms назад
+      // (палец "завис") — считаем скорость нулём. Как iOS.
+      const timeSinceLastMove = e.timeStamp - _prevTime;
+      const effectiveVx = timeSinceLastMove > 80 ? 0 : _velX;
+      const effectiveVy = timeSinceLastMove > 80 ? 0 : _velY;
+
+      const speed = Math.sqrt(effectiveVx * effectiveVx + effectiveVy * effectiveVy);
+
+      if (speed >= INERTIA_MIN_VEL) {
+        // Запускаем инерцию — она сама справится с границами
+        _cancelInertia = _inertia(effectiveVx, effectiveVy);
       } else {
+        // Нет инерции — просто spring к границам если вышли
         const clTx = Math.max(b.minX, Math.min(b.maxX, tx));
         const clTy = Math.max(b.minY, Math.min(b.maxY, ty));
-        if (Math.abs(tx - clTx) > 0.5 || Math.abs(ty - clTy) > 0.5) {
+        if (Math.abs(tx - clTx) > 0.3 || Math.abs(ty - clTy) > 0.3) {
           _cancelSpring = _springTo(scale, clTx, clTy);
         }
       }
