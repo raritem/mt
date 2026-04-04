@@ -216,74 +216,188 @@ window.QuickView = (() => {
     if (e.key === 'ArrowRight') { _navigate(1);  return; }
   }
 
-  // ── Swipe-down-to-close на главном изображении в QV ─────────
-  // (инициализируется один раз после _buildModal)
+  // ── Touch: pinch-zoom + pan + swipe-down-to-close на img-stage ─
   function _initSwipeClose(modal) {
     const stage   = modal.querySelector('#qv-img-stage');
     const imgEl   = modal.querySelector('#qv-img');
-    const overlay = modal.querySelector('#qv-zoom-overlay');
-    if (!stage) return;
+    const dialog  = modal.querySelector('#qv-dialog');
+    if (!stage || !imgEl) return;
 
-    let _tsX = 0, _tsY = 0, _tsTime = 0;
-    let _dir = null, _active = false;
+    // Состояние трансформации изображения
+    let _sc = 1, _tx = 0, _ty = 0;
+    const SC_MAX = 5, SC_MIN = 1;
 
-    function _applyDrag(dy) {
-      const op = Math.max(0, 1 - Math.abs(dy) / 280);
-      imgEl.style.transition = 'none';
-      imgEl.style.transform  = `translateY(${dy}px) scale(${1 - Math.abs(dy) * 0.0004})`;
-      overlay.style.opacity  = '0';
-      modal.querySelector('#qv-dialog').style.background =
-        `rgba(13,15,20,${0.96 * op})`;
+    function _applyImgTransform() {
+      // Clamp pan при зуме
+      if (_sc <= 1) { _tx = 0; _ty = 0; }
+      else {
+        const bw = imgEl.offsetWidth, bh = imgEl.offsetHeight;
+        const vw = stage.offsetWidth,  vh = stage.offsetHeight;
+        const mx = Math.max(0, (bw * _sc - vw)  / 2);
+        const my = Math.max(0, (bh * _sc - vh) / 2);
+        _tx = Math.max(-mx, Math.min(mx, _tx));
+        _ty = Math.max(-my, Math.min(my, _ty));
+      }
+      imgEl.style.transform = _sc > 1
+        ? `translate(${_tx}px,${_ty}px) scale(${_sc})`
+        : '';
+      stage.style.cursor = _sc > 1 ? 'grab' : '';
     }
 
-    function _resetDrag(animate) {
-      const tr = animate ? 'transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none';
-      imgEl.style.transition = tr;
-      imgEl.style.transform  = '';
-      overlay.style.opacity  = '';
-      modal.querySelector('#qv-dialog').style.background = '';
-      setTimeout(() => { imgEl.style.transition = ''; }, 300);
+    function _resetImgTransform(animate) {
+      if (animate) {
+        imgEl.style.transition = 'transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94)';
+        setTimeout(() => { imgEl.style.transition = ''; }, 320);
+      }
+      _sc = 1; _tx = 0; _ty = 0;
+      imgEl.style.transform = '';
+      stage.style.cursor = '';
     }
+
+    // Close-drag на dialog (весь wrap)
+    function _applyCloseDrag(dy) {
+      const progress = Math.min(1, Math.abs(dy) / 320);
+      const sc = 1 - progress * 0.15;
+      dialog.style.transition = 'none';
+      dialog.style.transform  = `translateY(${dy}px) scale(${sc})`;
+      dialog.style.background = `rgba(13,15,20,${1 - progress * 0.95})`;
+    }
+
+    function _resetCloseDrag(animate) {
+      dialog.style.transition = animate
+        ? 'transform 0.32s cubic-bezier(0.34,1.56,0.64,1), background 0.28s'
+        : 'none';
+      dialog.style.transform  = '';
+      dialog.style.background = '';
+      if (animate) setTimeout(() => { dialog.style.transition = ''; }, 350);
+    }
+
+    // Touch state
+    let _t1 = null, _t2 = null;
+    let _gesture = 'idle';
+    let _sx = 0, _sy = 0, _st = 0;
+    let _pinchDist0 = 0, _pinchSc0 = 1, _pinchCx = 0, _pinchCy = 0;
+    let _panTx0 = 0, _panTy0 = 0;
+
+    function _dist(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
+    function _mid(a, b)  { return { x: (a.x+b.x)/2, y: (a.y+b.y)/2 }; }
 
     stage.addEventListener('touchstart', (e) => {
-      if (e.touches.length !== 1) return;
-      _tsX = e.touches[0].clientX;
-      _tsY = e.touches[0].clientY;
-      _tsTime = e.timeStamp;
-      _dir = null; _active = false;
-    }, { passive: true });
-
-    stage.addEventListener('touchmove', (e) => {
-      if (e.touches.length !== 1) return;
-      const dx = e.touches[0].clientX - _tsX;
-      const dy = e.touches[0].clientY - _tsY;
-      if (!_dir && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
-        _dir = Math.abs(dy) > Math.abs(dx) ? 'v' : 'h';
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        const t = e.touches[0];
+        _t1 = { x: t.clientX, y: t.clientY };
+        _t2 = null;
+        _sx = t.clientX; _sy = t.clientY; _st = e.timeStamp;
+        _gesture = _sc > 1 ? 'pan' : 'deciding';
+        if (_sc > 1) { _panTx0 = _tx; _panTy0 = _ty; }
       }
-      if (_dir === 'v' && dy > 0) {
-        _active = true;
-        e.preventDefault();
-        e.stopPropagation();
-        _applyDrag(dy);
+      if (e.touches.length === 2) {
+        const a = e.touches[0], b = e.touches[1];
+        _t1 = { x: a.clientX, y: a.clientY };
+        _t2 = { x: b.clientX, y: b.clientY };
+        _pinchDist0 = _dist(_t1, _t2);
+        _pinchSc0   = _sc;
+        const m = _mid(_t1, _t2);
+        _pinchCx = m.x; _pinchCy = m.y;
+        _gesture = 'pinch';
+        if (_gesture === 'closing') _resetCloseDrag(false);
       }
     }, { passive: false });
 
-    stage.addEventListener('touchend', (e) => {
-      const dy = e.changedTouches[0].clientY - _tsY;
-      if (_active) {
-        const velocity = Math.abs(dy) / Math.max(e.timeStamp - _tsTime, 1) * 1000;
-        if (dy > 110 || velocity > 480) {
-          imgEl.style.transition = 'transform 0.26s cubic-bezier(0.25,0.46,0.45,0.94)';
-          imgEl.style.transform  = `translateY(${window.innerHeight}px)`;
-          modal.querySelector('#qv-dialog').style.transition = 'background 0.26s';
-          modal.querySelector('#qv-dialog').style.background = 'rgba(13,15,20,0)';
-          setTimeout(() => { _resetDrag(false); close(); }, 260);
-        } else {
-          _resetDrag(true);
-        }
-        _active = false;
+    stage.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+
+      // Pinch-zoom
+      if (e.touches.length === 2 && _gesture === 'pinch') {
+        const a = e.touches[0], b = e.touches[1];
+        const c1 = { x: a.clientX, y: a.clientY };
+        const c2 = { x: b.clientX, y: b.clientY };
+        const ratio = _dist(c1, c2) / _pinchDist0;
+        const newSc = Math.min(SC_MAX, Math.max(SC_MIN, _pinchSc0 * ratio));
+
+        // Зум в центр щипка
+        const bw = imgEl.offsetWidth, bh = imgEl.offsetHeight;
+        const ox = _pinchCx - stage.offsetWidth/2;
+        const oy = _pinchCy - stage.offsetHeight/2;
+        const lx = (ox - _tx) / _sc;
+        const ly = (oy - _ty) / _sc;
+        _sc = newSc;
+        _tx = ox - lx * _sc;
+        _ty = oy - ly * _sc;
+
+        // Pan центра щипка
+        const nm = _mid(c1, c2);
+        _tx += nm.x - _pinchCx;
+        _ty += nm.y - _pinchCy;
+        _pinchCx = nm.x; _pinchCy = nm.y;
+        _applyImgTransform();
+        return;
       }
+
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const dx = t.clientX - _sx, dy = t.clientY - _sy;
+
+      // Pan при зуме
+      if (_gesture === 'pan') {
+        _tx = _panTx0 + dx;
+        _ty = _panTy0 + dy;
+        _applyImgTransform();
+        return;
+      }
+
+      // Определение жеста
+      if (_gesture === 'deciding' && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        _gesture = (Math.abs(dy) > Math.abs(dx) && dy > 0) ? 'closing'
+                 : Math.abs(dx) > Math.abs(dy) ? 'nav' : 'idle';
+      }
+
+      if (_gesture === 'closing') _applyCloseDrag(Math.max(0, dy));
+    }, { passive: false });
+
+    stage.addEventListener('touchend', (e) => {
+      if (_gesture === 'pinch') {
+        if (_sc < 1.05) _resetImgTransform(true);
+        _gesture = 'idle'; return;
+      }
+
+      const t  = e.changedTouches[0];
+      const dx = t.clientX - _sx, dy = t.clientY - _sy;
+      const dt = Math.max(e.timeStamp - _st, 1);
+      const vy = dy / dt * 1000, vx = dx / dt * 1000;
+
+      if (_gesture === 'closing') {
+        if (dy > 100 || vy > 450) {
+          dialog.style.transition = 'transform 0.26s ease-in, background 0.26s';
+          dialog.style.transform  = `translateY(${window.innerHeight}px) scale(0.9)`;
+          dialog.style.background = 'rgba(13,15,20,0)';
+          setTimeout(() => {
+            dialog.style.transition = '';
+            dialog.style.transform  = '';
+            dialog.style.background = '';
+            _resetImgTransform(false);
+            close();
+          }, 260);
+        } else {
+          _resetCloseDrag(true);
+        }
+      } else if (_gesture === 'nav' && _sc <= 1) {
+        if (Math.abs(dx) > 40 || Math.abs(vx) > 280) {
+          _navigate(dx < 0 ? 1 : -1);
+        }
+      }
+
+      _gesture = 'idle'; _t1 = _t2 = null;
     });
+
+    stage.addEventListener('touchcancel', () => {
+      if (_gesture === 'closing') _resetCloseDrag(true);
+      _gesture = 'idle'; _t1 = _t2 = null;
+    });
+
+    // touch-action:none — браузер не зумирует страницу
+    stage.style.touchAction = 'none';
   }
 
   // ── Рендер контента ──────────────────────────────────────────

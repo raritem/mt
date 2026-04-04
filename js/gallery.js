@@ -150,91 +150,208 @@ window.LightBox = (() => {
     applyTransform();
   });
 
-  // ── Touch swipe + swipe-down-to-close ────────────────────────
-  let touchDir = null; // 'h' | 'v' | null — определяется по первым 10px движения
-  let swipeCloseActive = false;
-  let swipeTouchId = null;
+  // ══════════════════════════════════════════════════════════════
+  // TOUCH — pinch-zoom, pan, swipe-nav, swipe-down-to-close
+  // Архитектура как у PhotoSwipe:
+  //   1 палец, scale=1, нет жеста → определяем направление
+  //     → вертикаль вниз = close-drag
+  //     → горизонталь    = навигация (на touchend)
+  //   1 палец, scale>1  → pan (перемещение по изображению)
+  //   2 пальца           → pinch-zoom с сохранением центра
+  // touch-action:none на лайтбоксе даёт нам полный контроль
+  // ══════════════════════════════════════════════════════════════
 
-  // Применяем визуальный сдвиг к картинке при вертикальном свайпе
-  function _applySwipeTransform(dy) {
-    const opacity = Math.max(0, 1 - Math.abs(dy) / 300);
-    lbImg.style.transition = 'none';
-    lbImg.style.transform  = `translateY(${dy}px) scale(${1 - Math.abs(dy) * 0.0003})`;
-    lb.style.background    = `rgba(0,0,0,${0.92 * opacity})`;
+  // Состояние одного касания
+  let _t1 = null, _t2 = null;          // активные касания {id, x, y}
+  let _gesture = 'idle';               // 'idle'|'deciding'|'nav'|'pan'|'pinch'|'closing'
+  let _startX = 0, _startY = 0;
+  let _startTime = 0;
+  // Pinch
+  let _pinchStartDist = 0;
+  let _pinchStartScale = 1;
+  let _pinchCx = 0, _pinchCy = 0;     // центр щипка в viewport
+  // Pan (при зуме)
+  let _panStartTx = 0, _panStartTy = 0;
+  // Close-drag
+  let _closeBaseY = 0;
+
+  function _dist(a, b) {
+    return Math.hypot(b.x - a.x, b.y - a.y);
+  }
+  function _mid(a, b) {
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   }
 
-  function _resetSwipeTransform(animate) {
-    lbImg.style.transition = animate ? 'transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.28s' : 'none';
-    lbImg.style.transform  = '';
-    lb.style.transition    = animate ? 'background 0.28s' : 'none';
-    lb.style.background    = '';
-    setTimeout(() => { lbImg.style.transition = ''; lb.style.transition = ''; }, 300);
+  // Визуальный drag-to-close
+  function _applyCloseDrag(dy) {
+    const progress = Math.min(1, Math.abs(dy) / 320);
+    const sc = 1 - progress * 0.18;
+    // Не трогаем transform через zoomAt/applyTransform — работаем со wrap
+    lbWrap.style.transition = 'none';
+    lbWrap.style.transform  = `translateY(${dy}px) scale(${sc})`;
+    lb.style.background     = `rgba(0,0,0,${1 - progress * 0.92})`;
+  }
+
+  function _resetCloseDrag(animate) {
+    const dur = animate ? '0.32s' : '0s';
+    const ease = 'cubic-bezier(0.34,1.56,0.64,1)'; // spring
+    lbWrap.style.transition = animate ? `transform ${dur} ${ease}` : 'none';
+    lbWrap.style.transform  = '';
+    lb.style.transition     = animate ? `background ${dur} ease` : 'none';
+    lb.style.background     = '';
+    if (animate) setTimeout(() => {
+      lbWrap.style.transition = '';
+      lb.style.transition     = '';
+    }, 340);
+  }
+
+  function _commitClose() {
+    lbWrap.style.transition = 'transform 0.26s cubic-bezier(0.4,0,1,1)';
+    lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.88)`;
+    lb.style.transition     = 'background 0.26s ease';
+    lb.style.background     = 'rgba(0,0,0,0)';
+    setTimeout(() => {
+      lbWrap.style.transition = '';
+      lbWrap.style.transform  = '';
+      lb.style.transition     = '';
+      lb.style.background     = '';
+      close();
+    }, 260);
   }
 
   lb.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1) return;
-    const t = e.touches[0];
-    touchStartX  = t.clientX;
-    touchStartY  = t.clientY;
-    touchDir     = null;
-    swipeCloseActive = false;
-    swipeTouchId = t.identifier;
-  }, { passive: true });
+    e.preventDefault(); // предотвращаем зум страницы
 
-  lb.addEventListener('touchmove', (e) => {
-    if (scale > 1) return; // при зуме не мешаем
-    const t = Array.from(e.touches).find(x => x.identifier === swipeTouchId);
-    if (!t) return;
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      _t1 = { id: t.identifier, x: t.clientX, y: t.clientY };
+      _t2 = null;
+      _startX    = t.clientX;
+      _startY    = t.clientY;
+      _startTime = e.timeStamp;
 
-    const dx = t.clientX - touchStartX;
-    const dy = t.clientY - touchStartY;
-
-    // Определяем направление по первым 10px
-    if (!touchDir && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
-      touchDir = Math.abs(dy) > Math.abs(dx) ? 'v' : 'h';
+      if (scale > 1) {
+        // При зуме — начинаем pan
+        _gesture   = 'pan';
+        _panStartTx = tx;
+        _panStartTy = ty;
+      } else {
+        _gesture = 'deciding';
+      }
     }
 
-    if (touchDir === 'v' && dy > 0) {
-      // Вертикальный свайп вниз — тянем картинку
-      swipeCloseActive = true;
-      e.preventDefault();
-      _applySwipeTransform(dy);
+    if (e.touches.length === 2) {
+      const t1 = e.touches[0], t2 = e.touches[1];
+      _t1 = { id: t1.identifier, x: t1.clientX, y: t1.clientY };
+      _t2 = { id: t2.identifier, x: t2.clientX, y: t2.clientY };
+      _pinchStartDist  = _dist(_t1, _t2);
+      _pinchStartScale = scale;
+      const m = _mid(_t1, _t2);
+      _pinchCx = m.x; _pinchCy = m.y;
+      _gesture = 'pinch';
+
+      // Если был close-drag — сбрасываем
+      if (_gesture === 'closing') _resetCloseDrag(false);
+    }
+  }, { passive: false });
+
+  lb.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+
+    // ── Pinch ──────────────────────────────────────────────────
+    if (e.touches.length === 2 && _gesture === 'pinch') {
+      const ta = e.touches[0], tb = e.touches[1];
+      const cur1 = { x: ta.clientX, y: ta.clientY };
+      const cur2 = { x: tb.clientX, y: tb.clientY };
+      const curDist = _dist(cur1, cur2);
+      const ratio   = curDist / _pinchStartDist;
+      const newScale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, _pinchStartScale * ratio));
+
+      // Зум в центр щипка
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const lx = (_pinchCx - vw/2 - tx) / scale;
+      const ly = (_pinchCy - vh/2 - ty) / scale;
+      scale = newScale;
+      tx = _pinchCx - vw/2 - lx * scale;
+      ty = _pinchCy - vh/2 - ly * scale;
+      applyTransform();
+
+      // Pan во время pinch (смещение центра)
+      const newMid = _mid(cur1, cur2);
+      tx += newMid.x - _pinchCx;
+      ty += newMid.y - _pinchCy;
+      _pinchCx = newMid.x; _pinchCy = newMid.y;
+      applyTransform();
+      return;
+    }
+
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const dx = t.clientX - _startX;
+    const dy = t.clientY - _startY;
+
+    // ── Pan при зуме ───────────────────────────────────────────
+    if (_gesture === 'pan') {
+      tx = _panStartTx + dx;
+      ty = _panStartTy + dy;
+      applyTransform();
+      return;
+    }
+
+    // ── Определение жеста ──────────────────────────────────────
+    if (_gesture === 'deciding' && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      if (Math.abs(dy) > Math.abs(dx) && dy > 0) {
+        _gesture    = 'closing';
+        _closeBaseY = _startY;
+      } else if (Math.abs(dx) >= Math.abs(dy)) {
+        _gesture = 'nav';
+      } else {
+        _gesture = 'nav'; // вверх — тоже nav (заблокируем)
+      }
+    }
+
+    // ── Close drag ─────────────────────────────────────────────
+    if (_gesture === 'closing') {
+      _applyCloseDrag(Math.max(0, dy));
     }
   }, { passive: false });
 
   lb.addEventListener('touchend', (e) => {
-    const t = e.changedTouches[0];
-    const dx = t.clientX - touchStartX;
-    const dy = t.clientY - touchStartY;
-
-    if (swipeCloseActive) {
-      // Вертикальный свайп: закрываем если > 120px или быстро (velocity)
-      const elapsed = e.timeStamp - (lb._touchStartTime || e.timeStamp);
-      const velocity = Math.abs(dy) / Math.max(elapsed, 1) * 1000; // px/s
-      if (dy > 120 || velocity > 500) {
-        // Анимация вылета вниз → закрытие
-        lbImg.style.transition = 'transform 0.28s cubic-bezier(0.25,0.46,0.45,0.94)';
-        lbImg.style.transform  = `translateY(${window.innerHeight}px)`;
-        lb.style.transition    = 'background 0.28s';
-        lb.style.background    = 'rgba(0,0,0,0)';
-        setTimeout(() => { _resetSwipeTransform(false); close(); }, 280);
-      } else {
-        // Пружина назад
-        _resetSwipeTransform(true);
-      }
-      swipeCloseActive = false;
+    if (_gesture === 'pinch') {
+      // Если после pinch scale < 1.05 — сбрасываем в 1
+      if (scale < 1.05) resetZoom();
+      _gesture = 'idle';
       return;
     }
 
-    // Горизонтальный свайп — навигация
-    const absDy = Math.abs(dy);
-    if (Math.abs(dx) > 50 && absDy < 80 && scale <= 1 && touchDir === 'h') {
-      if (dx < 0) next(); else prev();
+    const changedT = e.changedTouches[0];
+    const dx = changedT.clientX - _startX;
+    const dy = changedT.clientY - _startY;
+    const dt = e.timeStamp - _startTime;
+    const vy = dy / Math.max(dt, 1) * 1000; // px/s вертикальная скорость
+
+    if (_gesture === 'closing') {
+      if (dy > 100 || vy > 450) {
+        _commitClose();
+      } else {
+        _resetCloseDrag(true);
+      }
+    } else if (_gesture === 'nav' && scale <= 1) {
+      const vx = dx / Math.max(dt, 1) * 1000;
+      if (Math.abs(dx) > 40 || Math.abs(vx) > 300) {
+        if (dx < 0) next(); else prev();
+      }
     }
+
+    _gesture = 'idle';
+    _t1 = _t2 = null;
   });
 
-  // Сохраняем время начала касания для расчёта velocity
-  lb.addEventListener('touchstart', (e) => { lb._touchStartTime = e.timeStamp; }, { passive: true });
+  lb.addEventListener('touchcancel', () => {
+    if (_gesture === 'closing') _resetCloseDrag(true);
+    _gesture = 'idle';
+    _t1 = _t2 = null;
+  });
 
   // ── Рендер ────────────────────────────────────────────────────
   function render(dir, fromThumbs) {
