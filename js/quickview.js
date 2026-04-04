@@ -129,6 +129,45 @@ window.QuickView = (() => {
       e.stopPropagation();
     }, { passive: true });
 
+    // ── Drag-to-scroll для полосы миниатюр ─────────────────────
+    const thumbsEl = el.querySelector('#qv-thumbs');
+    let _dragScrolling = false;
+    let _dragStartX = 0;
+    let _dragScrollLeft = 0;
+
+    thumbsEl.addEventListener('mousedown', (e) => {
+      _dragScrolling = true;
+      _dragStartX = e.pageX - thumbsEl.offsetLeft;
+      _dragScrollLeft = thumbsEl.scrollLeft;
+      thumbsEl.style.cursor = 'grabbing';
+      thumbsEl.style.userSelect = 'none';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!_dragScrolling) return;
+      _dragScrolling = false;
+      thumbsEl.style.cursor = '';
+      thumbsEl.style.userSelect = '';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!_dragScrolling) return;
+      const x = e.pageX - thumbsEl.offsetLeft;
+      const walk = x - _dragStartX;
+      thumbsEl.scrollLeft = _dragScrollLeft - walk;
+    });
+
+    // Запрет drag-ghost на изображениях внутри миниатюр
+    thumbsEl.addEventListener('dragstart', (e) => e.preventDefault());
+
+    // Колёсико мыши — горизонтальный скролл миниатюр
+    thumbsEl.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      thumbsEl.scrollLeft += e.deltaY !== 0 ? e.deltaY : e.deltaX;
+    }, { passive: false });
+
     // Клавиатура
     document.addEventListener('keydown', _onKeyDown);
 

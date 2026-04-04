@@ -2002,7 +2002,9 @@ body.qv-open {
   flex-shrink: 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.2) transparent;
+  cursor: grab;
 }
+.qv-thumbs:active { cursor: grabbing; }
 
 /* Webkit scrollbar для .qv-thumbs */
 .qv-thumbs::-webkit-scrollbar {
