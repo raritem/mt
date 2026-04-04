@@ -151,121 +151,206 @@ window.LightBox = (() => {
   });
 
   // ══════════════════════════════════════════════════════════════
-  // TOUCH — pinch-zoom, pan, swipe-nav, swipe-down-to-close
-  // Архитектура как у PhotoSwipe:
-  //   1 палец, scale=1, нет жеста → определяем направление
-  //     → вертикаль вниз = close-drag
-  //     → горизонталь    = навигация (на touchend)
-  //   1 палец, scale>1  → pan (перемещение по изображению)
-  //   2 пальца           → pinch-zoom с сохранением центра
-  // touch-action:none на лайтбоксе даёт нам полный контроль
+  // TOUCH ENGINE — iOS-quality pinch/pan/inertia/rubber-band
+  //
+  // Жесты (определяются по первым 8px, не конфликтуют):
+  //   'deciding' → ждём пока движение не достигнет порога
+  //   'closing'  → свайп вниз при scale=1 (drag-to-close)
+  //   'nav'      → горизонтальный свайп при scale=1 (навигация)
+  //   'pan'      → 1 палец при scale>1 (перемещение с инерцией)
+  //   'pinch'    → 2 пальца (зум с rubber-band за пределами)
+  //
+  // Rubber-band: за пределами лимитов сопротивление 0.55
+  // Инерция: rAF-анимация с экспоненциальным затуханием
+  // Отскок: spring при выходе за границы после инерции/pinch
   // ══════════════════════════════════════════════════════════════
 
-  // Состояние одного касания
-  let _t1 = null, _t2 = null;          // активные касания {id, x, y}
-  let _gesture = 'idle';               // 'idle'|'deciding'|'nav'|'pan'|'pinch'|'closing'
-  let _startX = 0, _startY = 0;
-  let _startTime = 0;
-  // Pinch
-  let _pinchStartDist = 0;
-  let _pinchStartScale = 1;
-  let _pinchCx = 0, _pinchCy = 0;     // центр щипка в viewport
-  // Pan (при зуме)
-  let _panStartTx = 0, _panStartTy = 0;
-  // Close-drag
-  let _closeBaseY = 0;
+  // ── Вспомогательные ──────────────────────────────────────────
+  function _dist(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
+  function _mid(a, b)  { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
 
-  function _dist(a, b) {
-    return Math.hypot(b.x - a.x, b.y - a.y);
-  }
-  function _mid(a, b) {
-    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  // Rubber-band: Apple-style сопротивление за пределами [min,max]
+  function _rubberBand(val, min, max) {
+    if (val >= min && val <= max) return val;
+    const limit = val < min ? min : max;
+    const over  = val - limit;
+    return limit + over * 0.45;
   }
 
-  // Визуальный drag-to-close
+  // Применяем трансформ напрямую (без clamp — для rubber-band)
+  function _applyRaw(sc, x, y) {
+    lbImg.style.transform = `translate(${x}px,${y}px) scale(${sc})`;
+    lbWrap.classList.toggle('zoomed', sc > 1);
+  }
+
+  // Границы pan для заданного масштаба
+  function _panBounds(sc) {
+    const bw = lbImg.offsetWidth  * sc;
+    const bh = lbImg.offsetHeight * sc;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const mx = Math.max(0, (bw - vw)  / 2);
+    const my = Math.max(0, (bh - vh) / 2);
+    return { minX: -mx, maxX: mx, minY: -my, maxY: my };
+  }
+
+  // Spring-анимация через rAF (damped spring)
+  function _springTo(targetSc, targetTx, targetTy, onDone) {
+    let cancelled = false;
+    const stiff = 0.22, damp = 0.72;
+    let vSc = 0, vx = 0, vy = 0;
+
+    function step() {
+      if (cancelled) return;
+      vSc = vSc * damp + (targetSc - scale) * stiff;
+      vx  = vx  * damp + (targetTx - tx)   * stiff;
+      vy  = vy  * damp + (targetTy - ty)   * stiff;
+      scale += vSc; tx += vx; ty += vy;
+      _applyRaw(scale, tx, ty);
+
+      const settled =
+        Math.abs(targetSc - scale) < 0.001 && Math.abs(vSc) < 0.001 &&
+        Math.abs(targetTx - tx)    < 0.3   && Math.abs(vx)   < 0.3  &&
+        Math.abs(targetTy - ty)    < 0.3   && Math.abs(vy)   < 0.3;
+
+      if (settled) {
+        scale = targetSc; tx = targetTx; ty = targetTy;
+        _applyRaw(scale, tx, ty);
+        if (onDone) onDone();
+      } else {
+        requestAnimationFrame(step);
+      }
+    }
+    requestAnimationFrame(step);
+    return () => { cancelled = true; };
+  }
+
+  // Инерционная анимация с отскоком от стен
+  function _inertia(initVx, initVy) {
+    let cancelled = false;
+    let vx = initVx, vy = initVy;
+    const friction = 0.94;
+
+    function step() {
+      if (cancelled) return;
+      vx *= friction; vy *= friction;
+      tx += vx; ty += vy;
+      _applyRaw(scale, tx, ty);
+
+      const b = _panBounds(scale);
+      const overX = tx < b.minX ? tx - b.minX : tx > b.maxX ? tx - b.maxX : 0;
+      const overY = ty < b.minY ? ty - b.minY : ty > b.maxY ? ty - b.maxY : 0;
+      if (overX !== 0) vx *= -0.35;
+      if (overY !== 0) vy *= -0.35;
+
+      if (Math.abs(vx) < 0.2 && Math.abs(vy) < 0.2) {
+        const clTx = Math.max(b.minX, Math.min(b.maxX, tx));
+        const clTy = Math.max(b.minY, Math.min(b.maxY, ty));
+        if (Math.abs(tx - clTx) > 0.5 || Math.abs(ty - clTy) > 0.5) {
+          _cancelSpring = _springTo(scale, clTx, clTy);
+        }
+        return;
+      }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+    return () => { cancelled = true; };
+  }
+
+  // ── Состояние touch ──────────────────────────────────────────
+  let _gesture   = 'idle';
+  let _startX    = 0, _startY = 0, _startTime = 0;
+  let _prevX     = 0, _prevY  = 0, _prevTime  = 0;
+  let _velX      = 0, _velY   = 0;
+  let _pinchDist0 = 0, _pinchScale0 = 1;
+  let _pinchCx    = 0, _pinchCy    = 0;
+  let _panTx0     = 0, _panTy0     = 0;
+  let _cancelInertia = null, _cancelSpring = null;
+
+  function _stopAnimation() {
+    if (_cancelInertia) { _cancelInertia(); _cancelInertia = null; }
+    if (_cancelSpring)  { _cancelSpring();  _cancelSpring  = null; }
+  }
+
+  // ── Close-drag ───────────────────────────────────────────────
   function _applyCloseDrag(dy) {
-    const progress = Math.min(1, Math.abs(dy) / 320);
-    const sc = 1 - progress * 0.18;
-    // Не трогаем transform через zoomAt/applyTransform — работаем со wrap
+    const p  = Math.min(1, dy / 350);
     lbWrap.style.transition = 'none';
-    lbWrap.style.transform  = `translateY(${dy}px) scale(${sc})`;
-    lb.style.background     = `rgba(0,0,0,${1 - progress * 0.92})`;
+    lbWrap.style.transform  = `translateY(${dy}px) scale(${1 - p * 0.18})`;
+    lb.style.background     = `rgba(0,0,0,${1 - p * 0.92})`;
   }
 
   function _resetCloseDrag(animate) {
-    const dur = animate ? '0.32s' : '0s';
-    const ease = 'cubic-bezier(0.34,1.56,0.64,1)'; // spring
-    lbWrap.style.transition = animate ? `transform ${dur} ${ease}` : 'none';
-    lbWrap.style.transform  = '';
-    lb.style.transition     = animate ? `background ${dur} ease` : 'none';
-    lb.style.background     = '';
+    lbWrap.style.transition = animate
+      ? 'transform 0.36s cubic-bezier(0.34,1.56,0.64,1)'
+      : 'none';
+    lbWrap.style.transform = '';
+    lb.style.transition = animate ? 'background 0.32s ease' : 'none';
+    lb.style.background = '';
     if (animate) setTimeout(() => {
-      lbWrap.style.transition = '';
-      lb.style.transition     = '';
-    }, 340);
+      lbWrap.style.transition = lb.style.transition = '';
+    }, 380);
   }
 
   function _commitClose() {
-    lbWrap.style.transition = 'transform 0.26s cubic-bezier(0.4,0,1,1)';
-    lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.88)`;
-    lb.style.transition     = 'background 0.26s ease';
+    lbWrap.style.transition = 'transform 0.28s cubic-bezier(0.4,0,1,1)';
+    lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.85)`;
+    lb.style.transition     = 'background 0.28s ease';
     lb.style.background     = 'rgba(0,0,0,0)';
     setTimeout(() => {
-      lbWrap.style.transition = '';
-      lbWrap.style.transform  = '';
-      lb.style.transition     = '';
-      lb.style.background     = '';
+      lbWrap.style.transition = lbWrap.style.transform =
+      lb.style.transition     = lb.style.background    = '';
       close();
-    }, 260);
+    }, 280);
   }
 
+  // ── touchstart ───────────────────────────────────────────────
   lb.addEventListener('touchstart', (e) => {
-    e.preventDefault(); // предотвращаем зум страницы
+    e.preventDefault();
+    _stopAnimation();
+
+    if (e.touches.length >= 2) {
+      const a = e.touches[0], b = e.touches[1];
+      const p1 = { x: a.clientX, y: a.clientY };
+      const p2 = { x: b.clientX, y: b.clientY };
+      _pinchDist0  = _dist(p1, p2);
+      _pinchScale0 = scale;
+      const m = _mid(p1, p2);
+      _pinchCx = m.x; _pinchCy = m.y;
+      _gesture = 'pinch';
+      // Сбросить close-drag если был
+      lbWrap.style.transition = lbWrap.style.transform =
+      lb.style.transition     = lb.style.background    = '';
+      return;
+    }
 
     if (e.touches.length === 1) {
       const t = e.touches[0];
-      _t1 = { id: t.identifier, x: t.clientX, y: t.clientY };
-      _t2 = null;
-      _startX    = t.clientX;
-      _startY    = t.clientY;
-      _startTime = e.timeStamp;
-
-      if (scale > 1) {
-        // При зуме — начинаем pan
-        _gesture   = 'pan';
-        _panStartTx = tx;
-        _panStartTy = ty;
-      } else {
-        _gesture = 'deciding';
-      }
-    }
-
-    if (e.touches.length === 2) {
-      const t1 = e.touches[0], t2 = e.touches[1];
-      _t1 = { id: t1.identifier, x: t1.clientX, y: t1.clientY };
-      _t2 = { id: t2.identifier, x: t2.clientX, y: t2.clientY };
-      _pinchStartDist  = _dist(_t1, _t2);
-      _pinchStartScale = scale;
-      const m = _mid(_t1, _t2);
-      _pinchCx = m.x; _pinchCy = m.y;
-      _gesture = 'pinch';
-
-      // Если был close-drag — сбрасываем
-      if (_gesture === 'closing') _resetCloseDrag(false);
+      _startX = _prevX = t.clientX;
+      _startY = _prevY = t.clientY;
+      _startTime = _prevTime = e.timeStamp;
+      _velX = _velY = 0;
+      _panTx0 = tx; _panTy0 = ty;
+      _gesture = scale > 1 ? 'pan' : 'deciding';
     }
   }, { passive: false });
 
+  // ── touchmove ────────────────────────────────────────────────
   lb.addEventListener('touchmove', (e) => {
     e.preventDefault();
 
-    // ── Pinch ──────────────────────────────────────────────────
-    if (e.touches.length === 2 && _gesture === 'pinch') {
-      const ta = e.touches[0], tb = e.touches[1];
-      const cur1 = { x: ta.clientX, y: ta.clientY };
-      const cur2 = { x: tb.clientX, y: tb.clientY };
-      const curDist = _dist(cur1, cur2);
-      const ratio   = curDist / _pinchStartDist;
-      const newScale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, _pinchStartScale * ratio));
+    // PINCH
+    if (_gesture === 'pinch' && e.touches.length >= 2) {
+      const a = e.touches[0], b = e.touches[1];
+      const p1 = { x: a.clientX, y: a.clientY };
+      const p2 = { x: b.clientX, y: b.clientY };
+      const curDist  = _dist(p1, p2);
+      const rawScale = _pinchScale0 * (curDist / _pinchDist0);
+
+      // Rubber-band за пределами: Apple-style сопротивление
+      const OVER_MIN = ZOOM_MIN * 0.65;
+      const OVER_MAX = ZOOM_MAX * 1.35;
+      const newScale = Math.max(OVER_MIN, Math.min(OVER_MAX, rawScale));
 
       // Зум в центр щипка
       const vw = window.innerWidth, vh = window.innerHeight;
@@ -274,83 +359,106 @@ window.LightBox = (() => {
       scale = newScale;
       tx = _pinchCx - vw/2 - lx * scale;
       ty = _pinchCy - vh/2 - ly * scale;
-      applyTransform();
 
-      // Pan во время pinch (смещение центра)
-      const newMid = _mid(cur1, cur2);
-      tx += newMid.x - _pinchCx;
-      ty += newMid.y - _pinchCy;
-      _pinchCx = newMid.x; _pinchCy = newMid.y;
-      applyTransform();
+      // Pan центра щипка
+      const m = _mid(p1, p2);
+      tx += m.x - _pinchCx;
+      ty += m.y - _pinchCy;
+      _pinchCx = m.x; _pinchCy = m.y;
+
+      _applyRaw(scale, tx, ty);
       return;
     }
 
     if (e.touches.length !== 1) return;
-    const t = e.touches[0];
-    const dx = t.clientX - _startX;
-    const dy = t.clientY - _startY;
+    const t  = e.touches[0];
+    const cx = t.clientX, cy = t.clientY;
+    const dx = cx - _startX, dy = cy - _startY;
+    const dt = Math.max(e.timeStamp - _prevTime, 1);
 
-    // ── Pan при зуме ───────────────────────────────────────────
+    // EMA velocity для инерции
+    const alpha = 0.4;
+    _velX = _velX * (1 - alpha) + ((cx - _prevX) / dt * 16) * alpha;
+    _velY = _velY * (1 - alpha) + ((cy - _prevY) / dt * 16) * alpha;
+    _prevX = cx; _prevY = cy; _prevTime = e.timeStamp;
+
+    // PAN при зуме с rubber-band у стен
     if (_gesture === 'pan') {
-      tx = _panStartTx + dx;
-      ty = _panStartTy + dy;
-      applyTransform();
+      const b = _panBounds(scale);
+      tx = _rubberBand(_panTx0 + dx, b.minX, b.maxX);
+      ty = _rubberBand(_panTy0 + dy, b.minY, b.maxY);
+      _applyRaw(scale, tx, ty);
       return;
     }
 
-    // ── Определение жеста ──────────────────────────────────────
+    // Определяем жест
     if (_gesture === 'deciding' && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
-      if (Math.abs(dy) > Math.abs(dx) && dy > 0) {
-        _gesture    = 'closing';
-        _closeBaseY = _startY;
-      } else if (Math.abs(dx) >= Math.abs(dy)) {
-        _gesture = 'nav';
-      } else {
-        _gesture = 'nav'; // вверх — тоже nav (заблокируем)
-      }
+      _gesture = (Math.abs(dy) > Math.abs(dx) && dy > 0) ? 'closing' : 'nav';
     }
 
-    // ── Close drag ─────────────────────────────────────────────
-    if (_gesture === 'closing') {
-      _applyCloseDrag(Math.max(0, dy));
-    }
+    if (_gesture === 'closing') _applyCloseDrag(Math.max(0, dy));
   }, { passive: false });
 
+  // ── touchend ─────────────────────────────────────────────────
   lb.addEventListener('touchend', (e) => {
+
+    // PINCH end — spring к ближайшему допустимому масштабу
     if (_gesture === 'pinch') {
-      // Если после pinch scale < 1.05 — сбрасываем в 1
-      if (scale < 1.05) resetZoom();
+      let tSc = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, scale));
+
+      // Если масштаб почти 1 — сбрасываем полностью
+      if (tSc <= 1.05) {
+        _cancelSpring = _springTo(1, 0, 0, resetZoom);
+      } else {
+        const b  = _panBounds(tSc);
+        const ratio = tSc / scale;
+        const tTx = Math.max(b.minX, Math.min(b.maxX, tx * ratio));
+        const tTy = Math.max(b.minY, Math.min(b.maxY, ty * ratio));
+        _cancelSpring = _springTo(tSc, tTx, tTy, () => applyTransform());
+      }
       _gesture = 'idle';
       return;
     }
 
-    const changedT = e.changedTouches[0];
-    const dx = changedT.clientX - _startX;
-    const dy = changedT.clientY - _startY;
-    const dt = e.timeStamp - _startTime;
-    const vy = dy / Math.max(dt, 1) * 1000; // px/s вертикальная скорость
+    const t  = e.changedTouches[0];
+    const dx = t.clientX - _startX;
+    const dy = t.clientY - _startY;
+    const dt = Math.max(e.timeStamp - _startTime, 1);
 
-    if (_gesture === 'closing') {
-      if (dy > 100 || vy > 450) {
-        _commitClose();
+    // PAN end — инерция + spring к границам
+    if (_gesture === 'pan') {
+      const b  = _panBounds(scale);
+      const inBounds = tx >= b.minX && tx <= b.maxX && ty >= b.minY && ty <= b.maxY;
+      if (inBounds && (Math.abs(_velX) > 0.5 || Math.abs(_velY) > 0.5)) {
+        _cancelInertia = _inertia(_velX, _velY);
       } else {
-        _resetCloseDrag(true);
+        const clTx = Math.max(b.minX, Math.min(b.maxX, tx));
+        const clTy = Math.max(b.minY, Math.min(b.maxY, ty));
+        if (Math.abs(tx - clTx) > 0.5 || Math.abs(ty - clTy) > 0.5) {
+          _cancelSpring = _springTo(scale, clTx, clTy);
+        }
       }
+
+    // CLOSING
+    } else if (_gesture === 'closing') {
+      const vy = dy / dt * 1000;
+      (dy > 100 || vy > 450) ? _commitClose() : _resetCloseDrag(true);
+
+    // NAV
     } else if (_gesture === 'nav' && scale <= 1) {
-      const vx = dx / Math.max(dt, 1) * 1000;
+      const vx = dx / dt * 1000;
       if (Math.abs(dx) > 40 || Math.abs(vx) > 300) {
-        if (dx < 0) next(); else prev();
+        dx < 0 ? next() : prev();
       }
     }
 
     _gesture = 'idle';
-    _t1 = _t2 = null;
   });
 
   lb.addEventListener('touchcancel', () => {
     if (_gesture === 'closing') _resetCloseDrag(true);
+    _stopAnimation();
     _gesture = 'idle';
-    _t1 = _t2 = null;
   });
 
   // ── Рендер ────────────────────────────────────────────────────
