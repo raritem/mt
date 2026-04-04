@@ -48,9 +48,13 @@
 ══════════════════════════════════════════════════════════════ */
 .lightbox {
   display: none;
-  position: fixed; inset: 0; z-index: 500;
+  position: fixed; inset: 0; z-index: 1100;
   background: #000;
 }
+
+/* Скрываем панели лайтбокса пока он закрыт (предотвращает "фигню снизу") */
+.lightbox:not(.open) .lb-thumbnails,
+.lightbox:not(.open) .lb-toolbar { display: none; }
 .lightbox.open { display: block; }
 
 .lightbox-bg {

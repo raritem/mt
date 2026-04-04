@@ -434,6 +434,38 @@ input, textarea { font-family: var(--font-body); }
   stroke: #ff3737;
 }
 
+/* ── Мобильная кнопка быстрого просмотра (bottom-right, только touch) ── */
+@media (hover: none) {
+  .btn-quickview {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    opacity: 1;
+    pointer-events: auto;
+    background: #000000c2;
+    width: 36px;
+    height: 36px;
+  }
+  /* На тач-устройствах центральный враппер становится прозрачным контейнером,
+     чтобы btn-quickview (дочерний элемент) работал с position:absolute */
+  .lot-card-overlay-center {
+    display: contents;
+  }
+  /* Скрываем кнопку покупки на мобиле — оставляем только quickview */
+  .lot-card-overlay-center .btn-buy {
+    display: none;
+  }
+  /* Оверлей на мобиле не нужен (нет hover), убираем затемнение */
+  .lot-card-overlay {
+    pointer-events: none;
+    background: transparent !important;
+  }
+  /* Но fav-кнопка должна оставаться кликабельной */
+  .card-action-btn.btn-fav.fav-active {
+    pointer-events: auto;
+  }
+}
+
 /* ── Favourite icon in header ─────────────────────────────────── */
 .header-fav-btn {
   order: 3;
@@ -1711,4 +1743,459 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     margin-left: -5px;
   }
   .lot-row-tags .resource-value { font-size: 13px; }
+}
+
+
+/* ================================================================
+   Quick View Modal (quickview.js)
+   ================================================================ */
+
+/* ── Блокировка скролла фона (position:fixed — стандарт отрасли).
+   body фиксируется на месте, top компенсирует scrollY.
+   Ширина 100% предотвращает сжатие контента. ── */
+body.qv-open {
+  position: fixed;
+  top: var(--qv-scroll-top, 0px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow-y: scroll; /* держим скроллбар видимым, чтобы не было сдвига */
+}
+
+/* Оверлей */
+.qv-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.qv-modal--visible {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* Фон-затемнение — без blur для сохранения качества текста */
+.qv-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 72%);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.qv-modal--visible .qv-backdrop {
+  opacity: 1;
+}
+
+/* Диалог — фиксированный размер, не зависящий от контента */
+.qv-dialog {
+  position: relative;
+  background: var(--card-bg, #1a1f27);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 16px;
+  width: 100%;
+  max-width: 900px;
+  height: 560px;       /* фиксированная высота на десктопе */
+  max-height: calc(100dvh - 48px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 60%);
+}
+
+.qv-modal--visible .qv-dialog {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Кнопка закрытия */
+.qv-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 50%);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted, #9ca3af);
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+  line-height: 0;
+}
+
+.qv-close:hover {
+  background: var(--accent, #4e73f8);
+  color: #fff;
+}
+
+/* Спиннер */
+.qv-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  flex: 1;
+}
+
+/* Ошибка */
+.qv-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 280px;
+  color: var(--text-muted, #9ca3af);
+  font-size: 15px;
+  flex: 1;
+}
+
+.qv-error .empty-icon {
+  font-size: 40px;
+}
+
+/* Двухколоночный лейаут */
+.qv-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Левая панель: галерея ── */
+.qv-gallery {
+  flex: 0 0 55%;
+  display: flex;
+  flex-direction: column;
+  background: #111418;
+  border-right: 1px solid var(--border, rgba(255,255,255,0.07));
+  overflow: hidden;
+}
+
+.qv-img-stage {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  background: #0d1014;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qv-main-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: opacity 0.15s;
+  pointer-events: none; /* оверлей перехватывает клики */
+  position: relative;
+  z-index: 3;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+}
+
+.qv-img--loading {
+  opacity: 0.3;
+}
+
+/* Стрелки галереи */
+.qv-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 55%);
+  border: 1px solid rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  padding: 0;
+  line-height: 0;
+}
+
+.qv-img-stage:hover .qv-arrow {
+  opacity: 1;
+}
+
+.qv-arrow:hover {
+  background: var(--accent, #4e73f8);
+}
+
+.qv-prev { left: 10px; }
+.qv-next { right: 10px; }
+
+/* Счётчик */
+.qv-counter {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  background: rgb(0 0 0 / 55%);
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+/* Zoom overlay on gallery image */
+.qv-zoom-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.18s ease;
+  cursor: pointer;
+  z-index: 4;
+}
+
+.qv-img-stage:hover .qv-zoom-overlay {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.qv-zoom-icon {
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  pointer-events: none;
+}
+
+.qv-img-stage:hover .qv-zoom-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Миниатюры */
+.qv-thumbs {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
+}
+
+/* Webkit scrollbar для .qv-thumbs */
+.qv-thumbs::-webkit-scrollbar {
+  height: 4px;
+}
+.qv-thumbs::-webkit-scrollbar-track {
+  background: transparent;
+}
+.qv-thumbs::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+}
+.qv-thumbs::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+.qv-thumb {
+  flex-shrink: 0;
+  width: 52px;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  padding: 0;
+  background: none;
+  transition: border-color 0.12s;
+  line-height: 0;
+}
+
+.qv-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.qv-thumb--active {
+  border-color: var(--accent, #4e73f8);
+}
+
+/* ── Правая панель: инфо ── */
+.qv-info {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+}
+
+.qv-title {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text, #e8eaf0);
+  margin: 0;
+  padding-right: 30px; /* место для кнопки закрытия */
+}
+
+.qv-price-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qv-price {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent, #4e73f8);
+  letter-spacing: -0.3px;
+}
+
+.qv-tanks10-text {
+  font-size: 13px;
+  color: var(--text-muted, #9ca3af);
+  margin: 0;
+}
+
+/* Кнопки */
+.qv-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.qv-btn-buy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 18px;
+  background: var(--accent, #4e73f8);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.12s;
+  border: none;
+}
+
+.qv-btn-buy:hover {
+  background: var(--accent-hover, #3a5ce0);
+  transform: translateY(-1px);
+}
+
+.qv-btn-buy img {
+  height: 14px;
+}
+
+.qv-full-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: transparent;
+  color: var(--text-muted, #9ca3af);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.qv-full-link:hover {
+  color: var(--text, #e8eaf0);
+  border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.04);
+}
+
+/* ── Мобильный лейаут — шторка снизу ── */
+@media (max-width: 640px) {
+  .qv-modal {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .qv-dialog {
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 100%;
+    height: auto;             /* на мобиле высота авто */
+    max-height: 88dvh;        /* не доезжает до верха — видно, что это шторка */
+    transform: translateY(100%);  /* въезжает снизу */
+    opacity: 1;               /* на мобиле без fade-out, только slide */
+    /* Отступ снизу для панели браузера (адресная строка, кнопки) */
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  .qv-modal--visible .qv-dialog {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Индикатор-ручка шторки */
+  .qv-dialog::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.2);
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+
+  .qv-content {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .qv-gallery {
+    flex: 0 0 auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border, rgba(255,255,255,0.07));
+  }
+
+  .qv-img-stage {
+    height: 220px;
+  }
+
+  .qv-info {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* На мобиле стрелки всегда видны */
+  .qv-arrow {
+    opacity: 1;
+  }
 }

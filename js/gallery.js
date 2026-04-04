@@ -233,13 +233,19 @@ window.LightBox = (() => {
     render();
     renderThumbs();
     lb.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    // Если QuickView уже заблокировал скролл через position:fixed — не трогаем body
+    if (!document.body.classList.contains('qv-open')) {
+      document.body.style.overflow = 'hidden';
+    }
     hideUI();
   }
 
   function close() {
     lb.classList.remove('open');
-    document.body.style.overflow = '';
+    // Восстанавливаем только если QuickView не держит блокировку
+    if (!document.body.classList.contains('qv-open')) {
+      document.body.style.overflow = '';
+    }
     resetZoom();
     clearTimeout(hideTimer);
     hideUI();

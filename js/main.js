@@ -490,10 +490,14 @@ async function loadShop() {
         </div>
       `;
 
-      // Быстрый просмотр → переход на лот
+      // Быстрый просмотр → открываем модалку
       card.querySelector('.btn-quickview')?.addEventListener('click', (e) => {
         e.stopPropagation();
-        window.location.href = lotUrl;
+        if (window.QuickView) {
+          window.QuickView.open(shopId, String(lot.id));
+        } else {
+          window.location.href = lotUrl;
+        }
       });
 
       // Добавить / убрать из избранного
@@ -734,7 +738,7 @@ async function loadLot() {
       thumb.innerHTML = `
         <img src="${assetUrl(src)}" alt="Скриншот ${idx+1}" loading="lazy" class="loading">
         <div class="gallery-thumb-overlay">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg width="33" height="33" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" style="display:none"/>
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
@@ -890,7 +894,11 @@ async function loadFavourites() {
 
       card.querySelector('.btn-quickview')?.addEventListener('click', (e) => {
         e.stopPropagation();
-        window.location.href = lotUrl;
+        if (window.QuickView) {
+          window.QuickView.open(shopId, String(lot.id));
+        } else {
+          window.location.href = lotUrl;
+        }
       });
 
       const favBtn = card.querySelector('.btn-fav');
