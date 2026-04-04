@@ -169,14 +169,6 @@ window.LightBox = (() => {
   function _dist(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
   function _mid(a, b)  { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
 
-  // Rubber-band: Apple-style сопротивление за пределами [min,max]
-  function _rubberBand(val, min, max) {
-    if (val >= min && val <= max) return val;
-    const limit = val < min ? min : max;
-    const over  = val - limit;
-    return limit + over * 0.45;
-  }
-
   // Применяем трансформ напрямую (без clamp — для rubber-band)
   function _applyRaw(sc, x, y) {
     lbImg.style.transform = `translate(${x}px,${y}px) scale(${sc})`;
@@ -194,32 +186,93 @@ window.LightBox = (() => {
     return { minX: -mx, maxX: mx, minY: -my, maxY: my };
   }
 
-  // ── Critically-damped spring (нет осцилляций, 1 плавный приход) ──
-  // Используем экспоненциальную интерполяцию — как CSS ease-out,
-  // но прерываемую и с корректным velocity при старте.
-  // factor ≈ 0.72 даёт ~300ms до settlment при 60fps, без перелёта.
+  // ════════════════════════════════════════════════════════════════
+  // PHYSICS ENGINE v3 — Apple-accurate
+  //
+  // 1. INERTIA: UIScrollView точная формула
+  //      p(t) = p0 + v0·τ·(1 - e^(-t/τ)),  τ = 325ms
+  //    Per-frame: v[n+1] = v[n] * decayPerFrame,  decay = e^(-16/325) ≈ 0.9516
+  //    Остановка: если палец не двигался >100ms до touchend → v=0
+  //    (Apple отслеживает именно "finger still on screen", а не скорость)
+  //
+  // 2. SPRING: critically-damped, аналитическое решение
+  //    x(t) = target + (x0-target)·(1+k·t)·e^(-k·t)  где k=8 (1/s)
+  //    Per-frame lerp: x += (target-x)·(1-exp(-k·dt))
+  //    Нет velocity propagation → нет осцилляций
+  //
+  // 3. RUBBER-BAND: Apple-formula
+  //    x' = x - (x-limit)·(1 - 1/(|x-limit|/C + 1)),  C=120px
+  //    За пределами сопротивление растёт по гиперболе
+  //
+  // 4. PINCH rubber-band на scale:
+  //    rawScale → resistedScale через ту же гиперболу
+  // ════════════════════════════════════════════════════════════════
+
+  // Decay per 16ms frame: e^(-16/325)
+  const DECAY_PER_FRAME = 0.9516;
+  // Spring stiffness per frame: 1 - e^(-8*0.016) ≈ 0.119
+  const SPRING_K = 0.119;
+  // Rubber-band constant (px)
+  const RB_C = 120;
+  // Минимальная скорость для запуска инерции (px/frame)
+  const INERTIA_MIN_VEL = 2.0;
+  // Если палец не двигался дольше (ms) — инерции нет
+  const STILL_THRESHOLD_MS = 100;
+
+  // Apple rubber-band formula: limit + over/(|over|/C + 1)
+  function _rb(val, lo, hi) {
+    if (val >= lo && val <= hi) return val;
+    if (val < lo) {
+      const over = val - lo; // отрицательное
+      return lo + over / (Math.abs(over) / RB_C + 1);
+    }
+    const over = val - hi;   // положительное
+    return hi + over / (over / RB_C + 1);
+  }
+
+  // Rubber-band для масштаба
+  function _rbScale(s, lo, hi) {
+    if (s >= lo && s <= hi) return s;
+    if (s < lo) {
+      const over = s - lo;
+      return lo + over / (Math.abs(over) / 0.4 + 1);
+    }
+    const over = s - hi;
+    return hi + over / (over / 0.4 + 1);
+  }
+
+  // Применяем трансформ напрямую (без clamp)
+  function _applyRaw(sc, x, y) {
+    lbImg.style.transform = `translate(${x}px,${y}px) scale(${sc})`;
+    lbWrap.classList.toggle('zoomed', sc > 1);
+  }
+
+  // Границы pan для заданного масштаба
+  function _panBounds(sc) {
+    const bw = lbImg.offsetWidth  * sc;
+    const bh = lbImg.offsetHeight * sc;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const mx = Math.max(0, (bw - vw)  / 2);
+    const my = Math.max(0, (bh - vh) / 2);
+    return { minX: -mx, maxX: mx, minY: -my, maxY: my };
+  }
+
+  // Critically-damped spring (аналитический per-frame)
+  // Нет velocity — нет осцилляций. Плавный exponential ease-out.
   function _springTo(targetSc, targetTx, targetTy, onDone) {
     let cancelled = false;
-    // Critically damped: позиция = target + (start-target)*exp(-k*t)
-    // Реализуем через per-frame lerp с фиксированным коэффициентом.
-    // factor 0.78 = ~критическое затухание, ноль осцилляций.
-    const F = 0.78;
-
     function step() {
       if (cancelled) return;
-
+      // x += (target - x) * (1 - e^(-k*dt)) = (target - x) * SPRING_K
       const dSc = targetSc - scale;
       const dTx = targetTx - tx;
       const dTy = targetTy - ty;
-
-      scale += dSc * (1 - F);
-      tx    += dTx * (1 - F);
-      ty    += dTy * (1 - F);
-
+      scale += dSc * SPRING_K;
+      tx    += dTx * SPRING_K;
+      ty    += dTy * SPRING_K;
       _applyRaw(scale, tx, ty);
-
-      // Критерий остановки
-      if (Math.abs(dSc) < 0.0008 && Math.abs(dTx) < 0.15 && Math.abs(dTy) < 0.15) {
+      if (Math.abs(dSc) < 0.0005 && Math.abs(dTx) < 0.1 && Math.abs(dTy) < 0.1) {
         scale = targetSc; tx = targetTx; ty = targetTy;
         _applyRaw(scale, tx, ty);
         if (onDone) onDone();
@@ -231,85 +284,39 @@ window.LightBox = (() => {
     return () => { cancelled = true; };
   }
 
-  // ── Инерция — точная модель iOS ────────────────────────────────
-  // iOS использует decay функцию: p(t) = p0 + v0 * (1 - exp(-t/τ)) * τ
-  // Реализуем через per-frame: v *= decayFactor каждые 16ms.
-  // decayFactor 0.95 → τ ≈ 300ms (соответствует UIScrollView).
-  //
-  // Velocity-cutoff: если скорость при touchend < MIN_VEL — инерции нет.
-  // Это решает проблему «плывёт при медленном свайпе».
-  //
-  // За границей: inertia продолжается с rubber-band затуханием,
-  // после остановки — _springTo возвращает без осцилляций.
-  const INERTIA_MIN_VEL = 2.5; // px/frame — порог для запуска инерции
-
+  // Инерция — точная формула UIScrollView
   function _inertia(initVx, initVy) {
     let cancelled = false;
     let vx = initVx, vy = initVy;
-
-    // iOS-style decay: быстро в начале, плавно в конце
-    // decayPerFrame для 60fps: 0.95 → τ≈300ms
-    const DECAY = 0.95;
-    // За границей скорость дополнительно гасится
-    const BOUNDARY_DAMP = 0.6;
-
     function step() {
       if (cancelled) return;
-
-      vx *= DECAY;
-      vy *= DECAY;
-
-      const b = _panBounds(scale);
-
-      // Обновляем позицию
-      let nx = tx + vx;
-      let ny = ty + vy;
-
-      // За границей — rubber-band (позиция) + гасим скорость
-      const overX = nx < b.minX ? nx - b.minX : nx > b.maxX ? nx - b.maxX : 0;
-      const overY = ny < b.minY ? ny - b.minY : ny > b.maxY ? ny - b.maxY : 0;
-
-      if (overX !== 0) {
-        // Rubber-band: чем дальше за границу — тем сильнее сопротивление
-        nx = (nx < b.minX ? b.minX : b.maxX) + overX * 0.4;
-        vx *= BOUNDARY_DAMP; // гасим скорость у стены
-      }
-      if (overY !== 0) {
-        ny = (ny < b.minY ? b.minY : b.maxY) + overY * 0.4;
-        vy *= BOUNDARY_DAMP;
-      }
-
-      tx = nx; ty = ny;
+      vx *= DECAY_PER_FRAME;
+      vy *= DECAY_PER_FRAME;
+      const b  = _panBounds(scale);
+      tx += vx; ty += vy;
+      // Rubber-band за границей (позиция), скорость гасим пропорционально
+      const rbTx = _rb(tx, b.minX, b.maxX);
+      const rbTy = _rb(ty, b.minY, b.maxY);
+      if (rbTx !== tx) { vx *= 0.5; }
+      if (rbTy !== ty) { vy *= 0.5; }
+      tx = rbTx; ty = rbTy;
       _applyRaw(scale, tx, ty);
-
-      // Стоп: скорость упала до нуля
       if (Math.abs(vx) < 0.15 && Math.abs(vy) < 0.15) {
-        // Если вышли за границу — spring обратно (без осцилляций)
+        // Spring обратно к границам если вышли
         const clTx = Math.max(b.minX, Math.min(b.maxX, tx));
         const clTy = Math.max(b.minY, Math.min(b.maxY, ty));
-        if (Math.abs(tx - clTx) > 0.3 || Math.abs(ty - clTy) > 0.3) {
+        if (Math.abs(tx - clTx) > 0.2 || Math.abs(ty - clTy) > 0.2) {
           _cancelSpring = _springTo(scale, clTx, clTy);
         }
         return;
       }
-
       requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
     return () => { cancelled = true; };
   }
 
-  // ── Состояние touch ──────────────────────────────────────────
-  let _gesture   = 'idle';
-  let _startX    = 0, _startY = 0, _startTime = 0;
-  let _prevX     = 0, _prevY  = 0, _prevTime  = 0;
-  let _velX      = 0, _velY   = 0;
-  let _pinchDist0 = 0, _pinchScale0 = 1;
-  let _pinchCx    = 0, _pinchCy    = 0;
-  let _panTx0     = 0, _panTy0     = 0;
-  let _cancelInertia = null, _cancelSpring = null;
-
-  function _stopAnimation() {
+    function _stopAnimation() {
     if (_cancelInertia) { _cancelInertia(); _cancelInertia = null; }
     if (_cancelSpring)  { _cancelSpring();  _cancelSpring  = null; }
   }
@@ -389,10 +396,8 @@ window.LightBox = (() => {
       const curDist  = _dist(p1, p2);
       const rawScale = _pinchScale0 * (curDist / _pinchDist0);
 
-      // Rubber-band за пределами: Apple-style сопротивление
-      const OVER_MIN = ZOOM_MIN * 0.65;
-      const OVER_MAX = ZOOM_MAX * 1.35;
-      const newScale = Math.max(OVER_MIN, Math.min(OVER_MAX, rawScale));
+      // Rubber-band масштаба по гиперболе (Apple formula)
+      const newScale = _rbScale(rawScale, ZOOM_MIN, ZOOM_MAX);
 
       // Зум в центр щипка
       const vw = window.innerWidth, vh = window.innerHeight;
@@ -418,17 +423,18 @@ window.LightBox = (() => {
     const dx = cx - _startX, dy = cy - _startY;
     const dt = Math.max(e.timeStamp - _prevTime, 1);
 
-    // EMA velocity для инерции
-    const alpha = 0.4;
-    _velX = _velX * (1 - alpha) + ((cx - _prevX) / dt * 16) * alpha;
-    _velY = _velY * (1 - alpha) + ((cy - _prevY) / dt * 16) * alpha;
+    // Velocity: среднее последних 3 фреймов (баланс стабильности и отзывчивости)
+    const rawVx = (cx - _prevX) / dt * 16;
+    const rawVy = (cy - _prevY) / dt * 16;
+    _velX = _velX * 0.5 + rawVx * 0.5;
+    _velY = _velY * 0.5 + rawVy * 0.5;
     _prevX = cx; _prevY = cy; _prevTime = e.timeStamp;
 
-    // PAN при зуме с rubber-band у стен
+    // PAN при зуме с Apple rubber-band у стен
     if (_gesture === 'pan') {
       const b = _panBounds(scale);
-      tx = _rubberBand(_panTx0 + dx, b.minX, b.maxX);
-      ty = _rubberBand(_panTy0 + dy, b.minY, b.maxY);
+      tx = _rb(_panTx0 + dx, b.minX, b.maxX);
+      ty = _rb(_panTy0 + dy, b.minY, b.maxY);
       _applyRaw(scale, tx, ty);
       return;
     }
@@ -473,26 +479,24 @@ window.LightBox = (() => {
     const dy = t.clientY - _startY;
     const dt = Math.max(e.timeStamp - _startTime, 1);
 
-    // PAN end — инерция только при реально быстром свайпе
+    // PAN end — инерция только если палец двигался до самого отпускания
     if (_gesture === 'pan') {
       const b  = _panBounds(scale);
 
-      // Velocity-cutoff: если последнее движение было >80ms назад
-      // (палец "завис") — считаем скорость нулём. Как iOS.
-      const timeSinceLastMove = e.timeStamp - _prevTime;
-      const effectiveVx = timeSinceLastMove > 80 ? 0 : _velX;
-      const effectiveVy = timeSinceLastMove > 80 ? 0 : _velY;
-
-      const speed = Math.sqrt(effectiveVx * effectiveVx + effectiveVy * effectiveVy);
+      // Apple: инерции нет если палец "завис" перед отпусканием
+      const stillMs = e.timeStamp - _prevTime;
+      const moving  = stillMs < STILL_THRESHOLD_MS;
+      const speed   = moving
+        ? Math.sqrt(_velX * _velX + _velY * _velY)
+        : 0;
 
       if (speed >= INERTIA_MIN_VEL) {
-        // Запускаем инерцию — она сама справится с границами
-        _cancelInertia = _inertia(effectiveVx, effectiveVy);
+        _cancelInertia = _inertia(_velX, _velY);
       } else {
-        // Нет инерции — просто spring к границам если вышли
+        // Стоп — spring к границам если вышли за rubber-band
         const clTx = Math.max(b.minX, Math.min(b.maxX, tx));
         const clTy = Math.max(b.minY, Math.min(b.maxY, ty));
-        if (Math.abs(tx - clTx) > 0.3 || Math.abs(ty - clTy) > 0.3) {
+        if (Math.abs(tx - clTx) > 0.2 || Math.abs(ty - clTy) > 0.2) {
           _cancelSpring = _springTo(scale, clTx, clTy);
         }
       }
