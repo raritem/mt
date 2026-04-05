@@ -102,6 +102,8 @@ window.LightBox = (() => {
     scale = 1; tx = 0; ty = 0;
     lbImg.style.transform = '';
     lbWrap.classList.remove('zoomed');
+    // Явно сбрасываем gesture чтобы следующий тач не думал что мы в pan
+    _gesture = 'idle';
   }
 
   // Зум относительно центра VIEWPORT (не изображения).
@@ -266,21 +268,27 @@ window.LightBox = (() => {
     return { minX: -mx, maxX: mx, minY: -my, maxY: my };
   }
 
-  // Critically-damped spring (аналитический per-frame)
-  // Нет velocity — нет осцилляций. Плавный exponential ease-out.
+  // Spring с гиперболическим ease-out (cubic-out) — быстрый старт, плавное замедление.
+  // iOS использует именно такую кривую для возврата rubber-band.
   function _springTo(targetSc, targetTx, targetTy, onDone) {
     let cancelled = false;
-    function step() {
+    const startSc = scale, startTx = tx, startTy = ty;
+    const startTime = performance.now();
+    const dist = Math.max(
+      Math.abs(targetSc - startSc) * 200,
+      Math.hypot(targetTx - startTx, targetTy - startTy)
+    );
+    const duration = Math.max(220, Math.min(380, dist * 0.6));
+
+    function step(now) {
       if (cancelled) return;
-      // x += (target - x) * (1 - e^(-k*dt)) = (target - x) * SPRING_K
-      const dSc = targetSc - scale;
-      const dTx = targetTx - tx;
-      const dTy = targetTy - ty;
-      scale += dSc * SPRING_K;
-      tx    += dTx * SPRING_K;
-      ty    += dTy * SPRING_K;
+      const t    = Math.min((now - startTime) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3); // cubic ease-out
+      scale = startSc + (targetSc - startSc) * ease;
+      tx    = startTx + (targetTx - startTx) * ease;
+      ty    = startTy + (targetTy - startTy) * ease;
       _applyRaw(scale, tx, ty);
-      if (Math.abs(dSc) < 0.0005 && Math.abs(dTx) < 0.1 && Math.abs(dTy) < 0.1) {
+      if (t >= 1) {
         scale = targetSc; tx = targetTx; ty = targetTy;
         _applyRaw(scale, tx, ty);
         if (onDone) onDone();
@@ -333,7 +341,8 @@ window.LightBox = (() => {
   function _applyCloseDrag(dy) {
     const p  = Math.min(1, dy / 350);
     lbWrap.style.transition = 'none';
-    lbWrap.style.transform  = `translateY(${dy}px) scale(${1 - p * 0.18})`;
+    // Более явное уменьшение: от 1.0 до 0.70 (было 0.82)
+    lbWrap.style.transform  = `translateY(${dy}px) scale(${1 - p * 0.30})`;
     lb.style.background     = `rgba(0,0,0,${1 - p * 0.92})`;
   }
 
