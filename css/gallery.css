@@ -152,11 +152,7 @@
   user-select: none; -webkit-user-drag: none;
   transform-origin: center center;
   transition: opacity 0.12s ease;
-  /* Фикс ghosting/полос при transform на мобилке:
-     изолируем в отдельный GPU-слой, отключаем subpixel rendering */
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+  /* НЕ добавляем will-change/backface — они снижают качество рендера */
 }
 
 /* ── Миниатюры снизу с навигацией — скрыты по умолчанию ─────── */

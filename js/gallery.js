@@ -282,8 +282,10 @@ window.LightBox = (() => {
 
     function step(now) {
       if (cancelled) return;
-      const t    = Math.min((now - startTime) / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 3); // cubic ease-out
+      const t = Math.min((now - startTime) / duration, 1);
+      // expo ease-out: очень быстрый старт → резкое замедление в конце
+      // 1 - 2^(-10t) — именно такую кривую даёт iOS rubber-band return
+      const ease = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
       scale = startSc + (targetSc - startSc) * ease;
       tx    = startTx + (targetTx - startTx) * ease;
       ty    = startTy + (targetTy - startTy) * ease;
@@ -404,12 +406,25 @@ window.LightBox = (() => {
       _startTime = _prevTime = e.timeStamp;
       _velX = _velY = 0;
       _panTx0 = tx; _panTy0 = ty;
+
+      // Double-tap детектим здесь — работает при любом scale
+      const now      = e.timeStamp;
+      const timeDiff = now - _lastTapTime;
+      const distDiff = Math.hypot(t.clientX - _lastTapX, t.clientY - _lastTapY);
+      _lastTapTime = now;
+      _lastTapX = t.clientX;
+      _lastTapY = t.clientY;
+
+      if (timeDiff < 300 && timeDiff > 0 && distDiff < 40) {
+        // Double-tap подтверждён — сбрасываем чтобы тройной не триггерил
+        _lastTapTime = 0;
+        _gesture = 'doubletap';
+        return;
+      }
+
       if (scale > 1 && _imgFillsHeight()) {
-        // Изображение занимает всю высоту — сразу pan по обеим осям
         _gesture = 'pan';
       } else {
-        // Либо scale==1, либо не заполняет высоту:
-        // ждём первых 8px чтобы понять жест (double-tap / nav / close / pan-x)
         _gesture = 'deciding';
       }
     }
@@ -426,14 +441,13 @@ window.LightBox = (() => {
       const p2 = { x: b.clientX, y: b.clientY };
       const curDist  = _dist(p1, p2);
       const rawScale = _pinchScale0 * (curDist / _pinchDist0);
-
-      // Rubber-band масштаба по гиперболе (Apple formula)
       const newScale = _rbScale(rawScale, ZOOM_MIN, ZOOM_MAX);
 
-      // Зум в центр щипка
+      // Зум в центр щипка — используем scale ДО обновления для lx/ly
       const vw = window.innerWidth, vh = window.innerHeight;
-      const lx = (_pinchCx - vw/2 - tx) / scale;
-      const ly = (_pinchCy - vh/2 - ty) / scale;
+      const prevScale = scale;
+      const lx = (_pinchCx - vw/2 - tx) / prevScale;
+      const ly = (_pinchCy - vh/2 - ty) / prevScale;
       scale = newScale;
       tx = _pinchCx - vw/2 - lx * scale;
       ty = _pinchCy - vh/2 - ly * scale;
@@ -564,39 +578,29 @@ window.LightBox = (() => {
         dx < 0 ? next() : prev();
       }
 
-    // DECIDING — тап: проверяем double-tap
-    } else if (_gesture === 'deciding') {
-      const t        = e.changedTouches[0];
-      const tapX     = t.clientX, tapY = t.clientY;
-      const now      = e.timeStamp;
-      const timeDiff = now - _lastTapTime;
-      const distDiff = Math.hypot(tapX - _lastTapX, tapY - _lastTapY);
-
-      if (timeDiff < 300 && distDiff < 40) {
-        // DOUBLE TAP — iOS поведение:
-        // • scale == 1 → зум до 2.5x в точку тапа
-        // • любой scale > 1 → сброс к 1
-        _stopAnimation();
-        if (scale > 1.05) {
-          _cancelSpring = _springTo(1, 0, 0, resetZoom);
-        } else {
-          const TARGET = 2.5;
-          const vw = window.innerWidth, vh = window.innerHeight;
-          const lx = (tapX - vw/2 - tx) / scale;
-          const ly = (tapY - vh/2 - ty) / scale;
-          const tTxRaw = tapX - vw/2 - lx * TARGET;
-          const tTyRaw = tapY - vh/2 - ly * TARGET;
-          const b   = _panBounds(TARGET);
-          const tTx = Math.max(b.minX, Math.min(b.maxX, tTxRaw));
-          const tTy = Math.max(b.minY, Math.min(b.maxY, tTyRaw));
-          _cancelSpring = _springTo(TARGET, tTx, tTy, () => applyTransform());
-        }
-        _lastTapTime = 0;
+    // DOUBLETAP — детектируется в touchstart, выполняется в touchend
+    } else if (_gesture === 'doubletap') {
+      const tapX = e.changedTouches[0].clientX;
+      const tapY = e.changedTouches[0].clientY;
+      _stopAnimation();
+      if (scale > 1.05) {
+        _cancelSpring = _springTo(1, 0, 0, resetZoom);
       } else {
-        _lastTapTime = now;
-        _lastTapX    = tapX;
-        _lastTapY    = tapY;
+        const TARGET = 2.5;
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const lx = (tapX - vw/2 - tx) / scale;
+        const ly = (tapY - vh/2 - ty) / scale;
+        const tTxRaw = tapX - vw/2 - lx * TARGET;
+        const tTyRaw = tapY - vh/2 - ly * TARGET;
+        const b   = _panBounds(TARGET);
+        const tTx = Math.max(b.minX, Math.min(b.maxX, tTxRaw));
+        const tTy = Math.max(b.minY, Math.min(b.maxY, tTyRaw));
+        _cancelSpring = _springTo(TARGET, tTx, tTy, () => applyTransform());
       }
+
+    // DECIDING — одиночный тап (ничего не делаем)
+    } else if (_gesture === 'deciding') {
+      // одиночный тап — no-op
     }
 
     _gesture = 'idle';
