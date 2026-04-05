@@ -47,8 +47,6 @@ window.LightBox = (() => {
   let _panTx0 = 0, _panTy0 = 0;
   let _pinchDist0  = 0, _pinchScale0 = 1;
   let _pinchCx = 0, _pinchCy = 0;
-  let _pinchStartCx = 0, _pinchStartCy = 0; // начальный центр щипка
-  let _pinchPan0x = 0, _pinchPan0y = 0;     // начальный pan при старте щипка
   let _cancelInertia = null, _cancelSpring = null;
 
   // Double-tap state
@@ -222,33 +220,28 @@ window.LightBox = (() => {
   // Если палец не двигался дольше (ms) — инерции нет
   const STILL_THRESHOLD_MS = 80;
 
-  // Настоящая Apple rubber-band формула (из Twitter @chpwn + подтверждена Яндексом):
-  // f(x, d, c) = (x * d * c) / (d + c * x)
-  // x — расстояние от края, d — размер контейнера, c = 0.55 (константа Apple)
-  // В нашем случае d = viewport width/height
-  const RB_APPLE_C = 0.55;
+  // Apple rubber-band formula: limit + over/(|over|/C + 1)
   function _rb(val, lo, hi) {
     if (val >= lo && val <= hi) return val;
     if (val < lo) {
-      const x   = lo - val;          // расстояние от нижнего края (положительное)
-      const d   = window.innerWidth; // используем viewport как d
-      const res = (x * d * RB_APPLE_C) / (d + RB_APPLE_C * x);
-      return lo - res;
+      const over = val - lo; // отрицательное
+      return lo + over / (Math.abs(over) / RB_C + 1);
     }
-    const x   = val - hi;
-    const d   = window.innerWidth;
-    const res = (x * d * RB_APPLE_C) / (d + RB_APPLE_C * x);
-    return hi + res;
+    const over = val - hi;   // положительное
+    return hi + over / (over / RB_C + 1);
   }
 
-  // Friction при выходе за пределы масштаба — точно как в PhotoSwipe v5:
-  // UPPER_ZOOM_FRICTION = 0.05  (выше max — очень жёстко)
-  // LOWER_ZOOM_FRICTION = 0.15  (ниже min — чуть мягче)
-  // currZoomLevel = limit + (curr - limit) * FRICTION
+  // Rubber-band для масштаба
   function _rbScale(s, lo, hi) {
     if (s >= lo && s <= hi) return s;
-    if (s < lo) return lo - (lo - s) * 0.15;
-    return hi + (s - hi) * 0.05;
+    if (s < lo) {
+      // Уменьшение — C=0.5, хорошо ощущается как на iOS
+      const over = s - lo;
+      return lo + over / (Math.abs(over) / 0.5 + 1);
+    }
+    // Увеличение — C=4.0, хорошо заметный ход за максимум
+    const over = s - hi;
+    return hi + over / (over / 4.0 + 1);
   }
 
   // Возвращает true если изображение при текущем масштабе занимает
@@ -275,51 +268,29 @@ window.LightBox = (() => {
     return { minX: -mx, maxX: mx, minY: -my, maxY: my };
   }
 
-  // Spring — точная копия PhotoSwipe v5 SpringEaser.easeFrame()
-  // dampingRatio=1 (critically damped, нет осцилляций)
-  // naturalFrequency=40 (PhotoSwipe использует именно 40 для zoom/pan)
+  // Spring с гиперболическим ease-out (cubic-out) — быстрый старт, плавное замедление.
+  // iOS использует именно такую кривую для возврата rubber-band.
   function _springTo(targetSc, targetTx, targetTy, onDone) {
     let cancelled = false;
-    const DAMPING   = 1;
-    const FREQUENCY = 40;
-    // Состояние: displacement и velocity для каждой оси
-    let dSc = scale - targetSc, vSc = 0;
-    let dTx = tx    - targetTx, vTx = 0;
-    let dTy = ty    - targetTy, vTy = 0;
-    let prevTime = Date.now();
+    const startSc = scale, startTx = tx, startTy = ty;
+    const startTime = performance.now();
+    const dist = Math.max(
+      Math.abs(targetSc - startSc) * 200,
+      Math.hypot(targetTx - startTx, targetTy - startTy)
+    );
+    const duration = Math.max(220, Math.min(380, dist * 0.6));
 
-    function easeFrame(delta, vel, dt) {
-      // Critically-damped (dampingRatio=1): per-frame точная формула
-      const dtSec = dt / 1000;
-      const pow  = Math.E ** (-DAMPING * FREQUENCY * dtSec);
-      const coef = vel + FREQUENCY * delta;
-      const newDelta = (delta + coef * dtSec) * pow;
-      const newVel   = newDelta * (-FREQUENCY) + coef * pow;
-      return { delta: newDelta, vel: newVel };
-    }
-
-    function step() {
+    function step(now) {
       if (cancelled) return;
-      const now = Date.now();
-      const dt  = Math.min(now - prevTime, 64); // cap at 64ms
-      prevTime  = now;
-
-      const rSc = easeFrame(dSc, vSc, dt);
-      const rTx = easeFrame(dTx, vTx, dt);
-      const rTy = easeFrame(dTy, vTy, dt);
-      dSc = rSc.delta; vSc = rSc.vel;
-      dTx = rTx.delta; vTx = rTx.vel;
-      dTy = rTy.delta; vTy = rTy.vel;
-
-      scale = targetSc + dSc;
-      tx    = targetTx + dTx;
-      ty    = targetTy + dTy;
+      const t = Math.min((now - startTime) / duration, 1);
+      // expo ease-out: очень быстрый старт → резкое замедление в конце
+      // 1 - 2^(-10t) — именно такую кривую даёт iOS rubber-band return
+      const ease = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      scale = startSc + (targetSc - startSc) * ease;
+      tx    = startTx + (targetTx - startTx) * ease;
+      ty    = startTy + (targetTy - startTy) * ease;
       _applyRaw(scale, tx, ty);
-
-      // Условие остановки как в PhotoSwipe: |delta| < 1px и |vel| < 50px/s
-      if (Math.abs(dSc) < 0.001 && Math.abs(vSc) < 0.05
-       && Math.abs(dTx) < 1     && Math.abs(vTx) < 50
-       && Math.abs(dTy) < 1     && Math.abs(vTy) < 50) {
+      if (t >= 1) {
         scale = targetSc; tx = targetTx; ty = targetTy;
         _applyRaw(scale, tx, ty);
         if (onDone) onDone();
@@ -421,10 +392,8 @@ window.LightBox = (() => {
       _pinchScale0 = scale;
       const m = _mid(p1, p2);
       _pinchCx = m.x; _pinchCy = m.y;
-      // Запоминаем начальный центр и pan — для PhotoSwipe pan-формулы
-      _pinchStartCx = m.x; _pinchStartCy = m.y;
-      _pinchPan0x   = tx;  _pinchPan0y   = ty;
       _gesture = 'pinch';
+      // Сбросить close-drag если был
       lbWrap.style.transition = lbWrap.style.transform =
       lb.style.transition     = lb.style.background    = '';
       return;
@@ -474,15 +443,21 @@ window.LightBox = (() => {
       const rawScale = _pinchScale0 * (curDist / _pinchDist0);
       const newScale = _rbScale(rawScale, ZOOM_MIN, ZOOM_MAX);
 
-      // Pan по формуле PhotoSwipe _calculatePanForZoomLevel:
-      // pan = zoomPoint - (startZoomPoint - startPan) * zoomFactor
-      // Это единственная формула которая не даёт смещения при оверзуме
-      const m = _mid(p1, p2);
-      const zoomFactor = newScale / _pinchScale0;
-      tx = m.x - (_pinchStartCx - _pinchPan0x) * zoomFactor;
-      ty = m.y - (_pinchStartCy - _pinchPan0y) * zoomFactor;
-
+      // Зум в центр щипка — используем scale ДО обновления для lx/ly
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const prevScale = scale;
+      const lx = (_pinchCx - vw/2 - tx) / prevScale;
+      const ly = (_pinchCy - vh/2 - ty) / prevScale;
       scale = newScale;
+      tx = _pinchCx - vw/2 - lx * scale;
+      ty = _pinchCy - vh/2 - ly * scale;
+
+      // Pan центра щипка
+      const m = _mid(p1, p2);
+      tx += m.x - _pinchCx;
+      ty += m.y - _pinchCy;
+      _pinchCx = m.x; _pinchCy = m.y;
+
       _applyRaw(scale, tx, ty);
       return;
     }
