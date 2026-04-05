@@ -211,8 +211,8 @@ window.LightBox = (() => {
   // Spring stiffness: 1 - e^(-20*0.016) ≈ 0.274 — быстрый iOS-щелчок
   // (было k=8/0.119 — пружина была в ~2.5x медленнее)
   const SPRING_K = 0.274;
-  // Rubber-band constant (px) — iOS ≈ 120-130px ощутимый ход у края
-  const RB_C = 130;
+  // Rubber-band constant (px) — большое значение = мягче, дальше тянется
+  const RB_C = 180;
   // Минимальная скорость для запуска инерции (px/frame)
   const INERTIA_MIN_VEL = 2.0;
   // Если палец не двигался дольше (ms) — инерции нет
@@ -354,7 +354,7 @@ window.LightBox = (() => {
     // кривая ease-in (разгон как падение под гравитацией).
     // В горизонтальном режиме экран короче по вертикали —
     // используем innerHeight чтобы duration был одинаковым.
-    const duration = 240;
+    const duration = 200;
     lbWrap.style.transition = `transform ${duration}ms cubic-bezier(0.55,0,1,1)`;
     lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.9)`;
     lb.style.transition     = `background ${duration}ms ease-in`;
@@ -395,9 +395,12 @@ window.LightBox = (() => {
       _startTime = _prevTime = e.timeStamp;
       _velX = _velY = 0;
       _panTx0 = tx; _panTy0 = ty;
-      if (scale > 1) {
+      if (scale > 1 && _imgFillsHeight()) {
+        // Изображение занимает всю высоту — сразу pan по обеим осям
         _gesture = 'pan';
       } else {
+        // Либо scale==1, либо не заполняет высоту:
+        // ждём первых 8px чтобы понять жест (double-tap / nav / close / pan-x)
         _gesture = 'deciding';
       }
     }
@@ -468,12 +471,18 @@ window.LightBox = (() => {
 
     // Определяем жест
     if (_gesture === 'deciding' && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
-      if (_imgFillsHeight()) {
-        // Изображение на весь экран — вертикальный свайп вниз закрывает
+      if (scale > 1 && !_imgFillsHeight()) {
+        // Зумировано, но не на всю высоту:
+        // горизонт → pan-x, вниз → closing
+        _gesture = Math.abs(dx) >= Math.abs(dy) ? 'pan' : 'closing';
+      } else if (scale > 1) {
+        // На всю высоту — pan по обеим осям
+        _gesture = 'pan';
+      } else if (_imgFillsHeight()) {
+        // scale==1, изображение на весь экран (portrait) — вниз закрывает
         _gesture = (Math.abs(dy) > Math.abs(dx) && dy > 0) ? 'closing' : 'nav';
       } else {
-        // Изображение не на весь экран — любой свайп вниз закрывает,
-        // горизонтальный — навигация
+        // scale==1, не на весь экран (landscape) — любой вниз закрывает
         _gesture = Math.abs(dx) > Math.abs(dy) ? 'nav' : 'closing';
       }
     }
@@ -492,16 +501,13 @@ window.LightBox = (() => {
         // Сброс к scale=1: центрируем
         _cancelSpring = _springTo(1, 0, 0, resetZoom);
       } else {
-        // Пересчёт tx/ty под целевой масштаб:
-        // Логическая точка под центром экрана остаётся на месте.
-        const vw = window.innerWidth, vh = window.innerHeight;
-        const lx = (vw/2 - tx) / scale;  // логические координаты центра
-        const ly = (vh/2 - ty) / scale;
-        const tTxRaw = vw/2 - lx * tSc;
-        const tTyRaw = vh/2 - ly * tSc;
+        // Пересчёт tx/ty: зажимаем в допустимые границы для tSc.
+        // НЕ пересчитываем через логические координаты — это и давало смещение,
+        // потому что scale был искажён rubber-band.
+        // Просто клампим текущий tx/ty к границам нового масштаба.
         const b   = _panBounds(tSc);
-        const tTx = Math.max(b.minX, Math.min(b.maxX, tTxRaw));
-        const tTy = Math.max(b.minY, Math.min(b.maxY, tTyRaw));
+        const tTx = Math.max(b.minX, Math.min(b.maxX, tx));
+        const tTy = Math.max(b.minY, Math.min(b.maxY, ty));
         _cancelSpring = _springTo(tSc, tTx, tTy, () => applyTransform());
       }
       _gesture = 'idle';
