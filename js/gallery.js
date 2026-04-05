@@ -49,6 +49,9 @@ window.LightBox = (() => {
   let _pinchCx = 0, _pinchCy = 0;
   let _cancelInertia = null, _cancelSpring = null;
 
+  // Double-tap state
+  let _lastTapTime = 0, _lastTapX = 0, _lastTapY = 0;
+
   // UI auto-hide
   let hideTimer = null;
   let uiVisible = false;
@@ -229,12 +232,15 @@ window.LightBox = (() => {
   // Rubber-band для масштаба
   function _rbScale(s, lo, hi) {
     if (s >= lo && s <= hi) return s;
+    // iOS даёт ~30-40% «резинового» хода за пределы лимита.
+    // Константа 0.5 — мягче чем для pan (0.85 * RB_C),
+    // потому что масштаб воспринимается нелинейно.
     if (s < lo) {
       const over = s - lo;
-      return lo + over / (Math.abs(over) / 0.25 + 1);
+      return lo + over / (Math.abs(over) / 0.5 + 1);
     }
     const over = s - hi;
-    return hi + over / (over / 0.25 + 1);
+    return hi + over / (over / 0.5 + 1);
   }
 
   // Применяем трансформ напрямую (без clamp)
@@ -514,6 +520,41 @@ window.LightBox = (() => {
       const vx = dx / dt * 1000;
       if (Math.abs(dx) > 40 || Math.abs(vx) > 300) {
         dx < 0 ? next() : prev();
+      }
+
+    // DECIDING — тап: проверяем double-tap
+    } else if (_gesture === 'deciding') {
+      const t        = e.changedTouches[0];
+      const tapX     = t.clientX, tapY = t.clientY;
+      const now      = e.timeStamp;
+      const timeDiff = now - _lastTapTime;
+      const distDiff = Math.hypot(tapX - _lastTapX, tapY - _lastTapY);
+
+      if (timeDiff < 300 && distDiff < 40) {
+        // DOUBLE TAP — iOS поведение:
+        // • если scale == 1 → зум до 2.5x в точку тапа
+        // • если scale == 2.5 → сброс к 1
+        // • если любой другой scale → сброс к 1
+        _stopAnimation();
+        if (scale > 1) {
+          _cancelSpring = _springTo(1, 0, 0, resetZoom);
+        } else {
+          const TARGET = 2.5;
+          const vw = window.innerWidth, vh = window.innerHeight;
+          const lx = (tapX - vw/2 - tx) / scale;
+          const ly = (tapY - vh/2 - ty) / scale;
+          const tTxRaw = tapX - vw/2 - lx * TARGET;
+          const tTyRaw = tapY - vh/2 - ly * TARGET;
+          const b   = _panBounds(TARGET);
+          const tTx = Math.max(b.minX, Math.min(b.maxX, tTxRaw));
+          const tTy = Math.max(b.minY, Math.min(b.maxY, tTyRaw));
+          _cancelSpring = _springTo(TARGET, tTx, tTy, () => applyTransform());
+        }
+        _lastTapTime = 0; // сбрасываем чтобы тройной тап не триггерил снова
+      } else {
+        _lastTapTime = now;
+        _lastTapX    = tapX;
+        _lastTapY    = tapY;
       }
     }
 
