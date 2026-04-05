@@ -17,6 +17,7 @@ window.LightBox = (() => {
   const lbNext    = document.getElementById('lb-next');
   const lbImg     = document.getElementById('lb-img');
   const lbWrap    = document.getElementById('lb-img-wrap');
+  const lbStage   = document.getElementById('lb-stage');
   const lbZoomIn  = document.getElementById('lb-zoom-in');
   const lbZoomOut = document.getElementById('lb-zoom-out');
   const lbCounter = document.getElementById('lb-counter');
@@ -354,7 +355,9 @@ window.LightBox = (() => {
   }
 
   // ── touchstart ───────────────────────────────────────────────
-  lb.addEventListener('touchstart', (e) => {
+  // Вешаем на lb-stage, а не на lb — чтобы кнопки (close, arrows, zoom)
+  // не блокировались preventDefault на мобилке
+  lbStage.addEventListener('touchstart', (e) => {
     e.preventDefault();
     _stopAnimation();
 
@@ -385,7 +388,7 @@ window.LightBox = (() => {
   }, { passive: false });
 
   // ── touchmove ────────────────────────────────────────────────
-  lb.addEventListener('touchmove', (e) => {
+  lbStage.addEventListener('touchmove', (e) => {
     e.preventDefault();
 
     // PINCH
@@ -448,7 +451,7 @@ window.LightBox = (() => {
   }, { passive: false });
 
   // ── touchend ─────────────────────────────────────────────────
-  lb.addEventListener('touchend', (e) => {
+  lbStage.addEventListener('touchend', (e) => {
 
     // PINCH end — spring к ближайшему допустимому масштабу
     if (_gesture === 'pinch') {
@@ -517,7 +520,7 @@ window.LightBox = (() => {
     _gesture = 'idle';
   });
 
-  lb.addEventListener('touchcancel', () => {
+  lbStage.addEventListener('touchcancel', () => {
     if (_gesture === 'closing') _resetCloseDrag(true);
     _stopAnimation();
     _gesture = 'idle';

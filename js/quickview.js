@@ -386,6 +386,9 @@ window.QuickView = (() => {
         if (Math.abs(dx) > 40 || Math.abs(vx) > 280) {
           _navigate(dx < 0 ? 1 : -1);
         }
+      } else if (_gesture === 'deciding') {
+        // Это тап (палец почти не двигался) — открываем лайтбокс
+        _openLightbox();
       }
 
       _gesture = 'idle'; _t1 = _t2 = null;

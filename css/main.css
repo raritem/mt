@@ -2201,3 +2201,14 @@ body.qv-open {
     opacity: 1;
   }
 }
+
+/* ── Отключаем hover-эффекты на touch-устройствах ────────────── */
+/* На мобилке hover не работает корректно, поэтому убираем все
+   hover-зависимые стили для qv-img-stage и используем только
+   touch-ориентированный UI (стрелки всегда видны — выше в media) */
+@media (hover: none) {
+  .qv-img-stage:hover .qv-arrow { opacity: 1; }
+  .qv-img-stage:hover .qv-zoom-overlay { background: rgba(0,0,0,0); }
+  .qv-img-stage:hover .qv-zoom-icon { opacity: 0; transform: scale(0.8); }
+  .qv-zoom-overlay { cursor: default; pointer-events: none; }
+}

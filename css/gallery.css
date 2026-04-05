@@ -50,7 +50,6 @@
   display: none;
   position: fixed; inset: 0; z-index: 1100;
   background: #000;
-  touch-action: none; /* отдаём все жесты нашему коду, браузер не зумирует страницу */
 }
 
 /* Скрываем панели лайтбокса пока он закрыт (предотвращает "фигню снизу") */
@@ -137,6 +136,7 @@
   position: absolute; inset: 0; z-index: 10;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
+  touch-action: none; /* жесты обрабатываются нашим кодом */
 }
 .lb-img-wrap {
   display: flex; align-items: center; justify-content: center;
@@ -261,3 +261,13 @@
 @keyframes slideInLeft  { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:none; } }
 .lb-slide-in-right { animation: slideInRight 0.22s ease both; }
 .lb-slide-in-left  { animation: slideInLeft  0.22s ease both; }
+
+/* ── Отключаем hover-эффекты на touch-устройствах ────────────── */
+@media (hover: none) {
+  .gallery-thumb:hover .gallery-thumb-overlay { opacity: 0; }
+  .lb-close:hover { background: rgba(0,0,0,0.55); opacity: 0.75; }
+  .lb-arrow:hover::after { background: rgba(255,255,255,0.08); }
+  .lb-tn:hover { opacity: 0.5; }
+  .lb-tn.active { opacity: 1; }
+  .lb-tool:hover { background: none; color: rgba(255,255,255,0.7); }
+}
