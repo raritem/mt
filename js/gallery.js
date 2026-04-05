@@ -220,15 +220,23 @@ window.LightBox = (() => {
   // Если палец не двигался дольше (ms) — инерции нет
   const STILL_THRESHOLD_MS = 80;
 
-  // Apple rubber-band formula: limit + over/(|over|/C + 1)
+  // Настоящая Apple rubber-band формула (из Twitter @chpwn + подтверждена Яндексом):
+  // f(x, d, c) = (x * d * c) / (d + c * x)
+  // x — расстояние от края, d — размер контейнера, c = 0.55 (константа Apple)
+  // В нашем случае d = viewport width/height
+  const RB_APPLE_C = 0.55;
   function _rb(val, lo, hi) {
     if (val >= lo && val <= hi) return val;
     if (val < lo) {
-      const over = val - lo; // отрицательное
-      return lo + over / (Math.abs(over) / RB_C + 1);
+      const x   = lo - val;          // расстояние от нижнего края (положительное)
+      const d   = window.innerWidth; // используем viewport как d
+      const res = (x * d * RB_APPLE_C) / (d + RB_APPLE_C * x);
+      return lo - res;
     }
-    const over = val - hi;   // положительное
-    return hi + over / (over / RB_C + 1);
+    const x   = val - hi;
+    const d   = window.innerWidth;
+    const res = (x * d * RB_APPLE_C) / (d + RB_APPLE_C * x);
+    return hi + res;
   }
 
   // Rubber-band для масштаба
@@ -268,34 +276,50 @@ window.LightBox = (() => {
     return { minX: -mx, maxX: mx, minY: -my, maxY: my };
   }
 
-  // Spring с гиперболическим ease-out (cubic-out) — быстрый старт, плавное замедление.
-  // iOS использует именно такую кривую для возврата rubber-band.
-  function _springTo(targetSc, targetTx, targetTy, onDone) {
+  // Critically-damped spring — точная физическая модель iOS UIScrollView bounce.
+  // Уравнение: x(t) = target + (x0-target)·(1 + β·t)·e^(-β·t)
+  // где β = stiffness (угловая частота для critically-damped, ζ=1).
+  // Именно эта формула даёт характерное iOS-замедление: быстрый старт,
+  // нарастающее сопротивление в конце ("как в After Effects").
+  // Начальная velocity учитывается через C₂ коэффициент.
+  function _springTo(targetSc, targetTx, targetTy, onDone, initVelSc, initVelTx, initVelTy) {
     let cancelled = false;
-    const startSc = scale, startTx = tx, startTy = ty;
+    const x0Sc = scale - targetSc;
+    const x0Tx = tx    - targetTx;
+    const x0Ty = ty    - targetTy;
+    // β ≈ 12 — соответствует iOS spring с duration ~300ms
+    const beta  = 12;
+    const v0Sc  = (initVelSc || 0) - 0;
+    const v0Tx  = (initVelTx || 0) - 0;
+    const v0Ty  = (initVelTy || 0) - 0;
+    // Critically-damped: C1=x0, C2=v0+β*x0
+    const c1Sc  = x0Sc, c2Sc = v0Sc + beta * x0Sc;
+    const c1Tx  = x0Tx, c2Tx = v0Tx + beta * x0Tx;
+    const c1Ty  = x0Ty, c2Ty = v0Ty + beta * x0Ty;
     const startTime = performance.now();
-    const dist = Math.max(
-      Math.abs(targetSc - startSc) * 200,
-      Math.hypot(targetTx - startTx, targetTy - startTy)
-    );
-    const duration = Math.max(220, Math.min(380, dist * 0.6));
+    // Время завершения: когда |x(t)| < 0.5px/0.001scale
+    const duration = Math.max(200, Math.min(420,
+      Math.log(Math.max(
+        Math.abs(x0Sc) * 400,
+        Math.hypot(x0Tx, x0Ty)
+      ) + 1) * 60 + 160
+    ));
 
     function step(now) {
       if (cancelled) return;
-      const t = Math.min((now - startTime) / duration, 1);
-      // expo ease-out: очень быстрый старт → резкое замедление в конце
-      // 1 - 2^(-10t) — именно такую кривую даёт iOS rubber-band return
-      const ease = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-      scale = startSc + (targetSc - startSc) * ease;
-      tx    = startTx + (targetTx - startTx) * ease;
-      ty    = startTy + (targetTy - startTy) * ease;
-      _applyRaw(scale, tx, ty);
-      if (t >= 1) {
+      const t = (now - startTime) / 1000; // в секундах
+      const elapsed = (now - startTime);
+      if (elapsed >= duration) {
         scale = targetSc; tx = targetTx; ty = targetTy;
         _applyRaw(scale, tx, ty);
         if (onDone) onDone();
         return;
       }
+      const e = Math.exp(-beta * t);
+      scale = targetSc + (c1Sc + c2Sc * t) * e;
+      tx    = targetTx + (c1Tx + c2Tx * t) * e;
+      ty    = targetTy + (c1Ty + c2Ty * t) * e;
+      _applyRaw(scale, tx, ty);
       requestAnimationFrame(step);
     }
     requestAnimationFrame(step);

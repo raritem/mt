@@ -141,6 +141,10 @@
 .lb-img-wrap {
   display: flex; align-items: center; justify-content: center;
   cursor: default; user-select: none;
+  /* GPU-слой на обёртке (не на img) — фиксит ghosting/полосы без потери качества.
+     translateZ(0) изолирует compositing-слой, img рендерится в полном разрешении */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 .lb-img-wrap.zoomed { cursor: grab; }
 
