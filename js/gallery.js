@@ -232,15 +232,19 @@ window.LightBox = (() => {
   // Rubber-band для масштаба
   function _rbScale(s, lo, hi) {
     if (s >= lo && s <= hi) return s;
-    // iOS даёт ~30-40% «резинового» хода за пределы лимита.
-    // Константа 0.5 — мягче чем для pan (0.85 * RB_C),
-    // потому что масштаб воспринимается нелинейно.
+    // Асимметричный rubber-band — iOS ведёт себя именно так:
+    // • уменьшение (s < lo=1): C=0.08 — жёстко, почти нет хода.
+    //   Масштаб нелинеен: даже Δ=0.05 визуально огромен,
+    //   поэтому iOS почти не пускает за минимум.
+    // • увеличение (s > hi=6): C=0.9 — мягко, заметный ход.
+    //   На большом масштабе Δscale почти не виден линейно,
+    //   поэтому нужно больше «резины» чтобы ощущение было.
     if (s < lo) {
       const over = s - lo;
-      return lo + over / (Math.abs(over) / 0.5 + 1);
+      return lo + over / (Math.abs(over) / 0.08 + 1);
     }
     const over = s - hi;
-    return hi + over / (over / 0.5 + 1);
+    return hi + over / (over / 0.9 + 1);
   }
 
   // Применяем трансформ напрямую (без clamp)
@@ -344,14 +348,15 @@ window.LightBox = (() => {
   }
 
   function _commitClose(vy, currentDy) {
-    // Duration динамический: продолжаем движение с той же скоростью пальца.
-    // iOS никогда не «перезапускает» анимацию медленнее чем шёл свайп.
-    const remaining = window.innerHeight - (currentDy || 0);
-    const absVy = Math.max(Math.abs(vy || 0), 100); // px/s, минимум 100
-    const duration = Math.max(120, Math.min(280, (remaining / absVy) * 1000));
-    lbWrap.style.transition = `transform ${duration}ms cubic-bezier(0.25,0,0.5,1)`;
-    lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.88)`;
-    lb.style.transition     = `background ${duration}ms ease`;
+    // iOS-анимация закрытия: фиксированная длительность ~300ms,
+    // кривая ease-in (разгон как падение под гравитацией).
+    // Скорость свайпа НЕ влияет на duration — iOS всегда одинаково.
+    // cubic-bezier(0.55, 0, 1, 1) — стандартный ease-in, имитирует
+    // гравитационное ускорение как в After Effects.
+    const duration = 300;
+    lbWrap.style.transition = `transform ${duration}ms cubic-bezier(0.55,0,1,1)`;
+    lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.9)`;
+    lb.style.transition     = `background ${duration}ms ease-in`;
     lb.style.background     = 'rgba(0,0,0,0)';
     setTimeout(() => {
       lbWrap.style.transition = lbWrap.style.transform =
