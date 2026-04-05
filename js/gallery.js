@@ -36,8 +36,18 @@ window.LightBox = (() => {
   // Drag
   let dragging = false, dragStartX = 0, dragStartY = 0;
 
-  // Touch
+  // Touch state
   let touchStartX = 0, touchStartY = 0;
+
+  // Touch engine state (physics)
+  let _gesture     = 'idle';
+  let _startX = 0, _startY = 0, _startTime = 0;
+  let _prevX  = 0, _prevY  = 0, _prevTime  = 0;
+  let _velX   = 0, _velY   = 0;
+  let _panTx0 = 0, _panTy0 = 0;
+  let _pinchDist0  = 0, _pinchScale0 = 1;
+  let _pinchCx = 0, _pinchCy = 0;
+  let _cancelInertia = null, _cancelSpring = null;
 
   // UI auto-hide
   let hideTimer = null;
@@ -169,23 +179,6 @@ window.LightBox = (() => {
   // ── Вспомогательные ──────────────────────────────────────────
   function _dist(a, b) { return Math.hypot(b.x - a.x, b.y - a.y); }
   function _mid(a, b)  { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
-
-  // Применяем трансформ напрямую (без clamp — для rubber-band)
-  function _applyRaw(sc, x, y) {
-    lbImg.style.transform = `translate(${x}px,${y}px) scale(${sc})`;
-    lbWrap.classList.toggle('zoomed', sc > 1);
-  }
-
-  // Границы pan для заданного масштаба
-  function _panBounds(sc) {
-    const bw = lbImg.offsetWidth  * sc;
-    const bh = lbImg.offsetHeight * sc;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const mx = Math.max(0, (bw - vw)  / 2);
-    const my = Math.max(0, (bh - vh) / 2);
-    return { minX: -mx, maxX: mx, minY: -my, maxY: my };
-  }
 
   // ════════════════════════════════════════════════════════════════
   // PHYSICS ENGINE v3 — Apple-accurate
