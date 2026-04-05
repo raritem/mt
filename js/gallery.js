@@ -51,6 +51,7 @@ window.LightBox = (() => {
 
   // Double-tap state
   let _lastTapTime = 0, _lastTapX = 0, _lastTapY = 0;
+  let _lastTapWasClean = false; // true только если предыдущий тач не был свайпом
 
   // UI auto-hide
   let hideTimer = null;
@@ -407,7 +408,9 @@ window.LightBox = (() => {
       _velX = _velY = 0;
       _panTx0 = tx; _panTy0 = ty;
 
-      // Double-tap детектим здесь — работает при любом scale
+      // Double-tap детектим здесь — работает при любом scale.
+      // Условия как на iOS: оба касания должны быть почти статичными.
+      // _lastTapWasClean = предыдущий тач завершился без смещения.
       const now      = e.timeStamp;
       const timeDiff = now - _lastTapTime;
       const distDiff = Math.hypot(t.clientX - _lastTapX, t.clientY - _lastTapY);
@@ -415,12 +418,14 @@ window.LightBox = (() => {
       _lastTapX = t.clientX;
       _lastTapY = t.clientY;
 
-      if (timeDiff < 300 && timeDiff > 0 && distDiff < 40) {
-        // Double-tap подтверждён — сбрасываем чтобы тройной не триггерил
+      if (timeDiff < 300 && timeDiff > 0 && distDiff < 40 && _lastTapWasClean) {
+        // Double-tap подтверждён — оба касания были статичными
         _lastTapTime = 0;
+        _lastTapWasClean = false;
         _gesture = 'doubletap';
         return;
       }
+      _lastTapWasClean = false; // сбросим в touchend если тап был чистым
 
       if (scale > 1 && _imgFillsHeight()) {
         _gesture = 'pan';
@@ -600,7 +605,15 @@ window.LightBox = (() => {
 
     // DECIDING — одиночный тап (ничего не делаем)
     } else if (_gesture === 'deciding') {
-      // одиночный тап — no-op
+      // Тап чистый только если палец почти не двигался (< 10px как на iOS)
+      const moveDist = Math.hypot(dx, dy);
+      _lastTapWasClean = moveDist < 10;
+    }
+
+    // При любом реальном свайпе — сбрасываем историю тапов
+    if (_gesture === 'nav' || _gesture === 'closing') {
+      _lastTapTime = 0;
+      _lastTapWasClean = false;
     }
 
     _gesture = 'idle';
