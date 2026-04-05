@@ -211,8 +211,8 @@ window.LightBox = (() => {
   // Spring stiffness: 1 - e^(-20*0.016) ≈ 0.274 — быстрый iOS-щелчок
   // (было k=8/0.119 — пружина была в ~2.5x медленнее)
   const SPRING_K = 0.274;
-  // Rubber-band constant (px) — iOS ≈ 80-90, жёстче чем было 120
-  const RB_C = 85;
+  // Rubber-band constant (px) — iOS ≈ 120-130px ощутимый ход у края
+  const RB_C = 130;
   // Минимальная скорость для запуска инерции (px/frame)
   const INERTIA_MIN_VEL = 2.0;
   // Если палец не двигался дольше (ms) — инерции нет
@@ -237,9 +237,16 @@ window.LightBox = (() => {
       const over = s - lo;
       return lo + over / (Math.abs(over) / 0.5 + 1);
     }
-    // Увеличение — C=2.5, заметный ход за максимум
+    // Увеличение — C=4.0, хорошо заметный ход за максимум
     const over = s - hi;
-    return hi + over / (over / 2.5 + 1);
+    return hi + over / (over / 4.0 + 1);
+  }
+
+  // Возвращает true если изображение при текущем масштабе занимает
+  // всю высоту экрана (тогда pan вертикальный, иначе — swipe-to-close)
+  function _imgFillsHeight() {
+    const imgH = lbImg.offsetHeight * scale;
+    return imgH >= window.innerHeight - 2; // 2px допуск на погрешность
   }
 
   // Применяем трансформ напрямую (без clamp)
@@ -343,12 +350,11 @@ window.LightBox = (() => {
   }
 
   function _commitClose(vy, currentDy) {
-    // iOS-анимация закрытия: фиксированная длительность ~300ms,
+    // iOS-анимация закрытия: фиксированная длительность,
     // кривая ease-in (разгон как падение под гравитацией).
-    // Скорость свайпа НЕ влияет на duration — iOS всегда одинаково.
-    // cubic-bezier(0.55, 0, 1, 1) — стандартный ease-in, имитирует
-    // гравитационное ускорение как в After Effects.
-    const duration = 300;
+    // В горизонтальном режиме экран короче по вертикали —
+    // используем innerHeight чтобы duration был одинаковым.
+    const duration = 240;
     lbWrap.style.transition = `transform ${duration}ms cubic-bezier(0.55,0,1,1)`;
     lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.9)`;
     lb.style.transition     = `background ${duration}ms ease-in`;
@@ -389,7 +395,11 @@ window.LightBox = (() => {
       _startTime = _prevTime = e.timeStamp;
       _velX = _velY = 0;
       _panTx0 = tx; _panTy0 = ty;
-      _gesture = scale > 1 ? 'pan' : 'deciding';
+      if (scale > 1) {
+        _gesture = 'pan';
+      } else {
+        _gesture = 'deciding';
+      }
     }
   }, { passive: false });
 
@@ -442,15 +452,30 @@ window.LightBox = (() => {
     // PAN при зуме с Apple rubber-band у стен
     if (_gesture === 'pan') {
       const b = _panBounds(scale);
-      tx = _rb(_panTx0 + dx, b.minX, b.maxX);
-      ty = _rb(_panTy0 + dy, b.minY, b.maxY);
+      if (_imgFillsHeight()) {
+        // Изображение занимает всю высоту — двигаем и по X и по Y
+        tx = _rb(_panTx0 + dx, b.minX, b.maxX);
+        ty = _rb(_panTy0 + dy, b.minY, b.maxY);
+      } else {
+        // Изображение НЕ занимает всю высоту (landscape/широкое фото):
+        // двигаем ТОЛЬКО по X. Вертикаль — только через swipe-to-close.
+        tx = _rb(_panTx0 + dx, b.minX, b.maxX);
+        ty = 0;
+      }
       _applyRaw(scale, tx, ty);
       return;
     }
 
     // Определяем жест
     if (_gesture === 'deciding' && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
-      _gesture = (Math.abs(dy) > Math.abs(dx) && dy > 0) ? 'closing' : 'nav';
+      if (_imgFillsHeight()) {
+        // Изображение на весь экран — вертикальный свайп вниз закрывает
+        _gesture = (Math.abs(dy) > Math.abs(dx) && dy > 0) ? 'closing' : 'nav';
+      } else {
+        // Изображение не на весь экран — любой свайп вниз закрывает,
+        // горизонтальный — навигация
+        _gesture = Math.abs(dx) > Math.abs(dy) ? 'nav' : 'closing';
+      }
     }
 
     if (_gesture === 'closing') _applyCloseDrag(Math.max(0, dy));
@@ -500,9 +525,11 @@ window.LightBox = (() => {
         : 0;
 
       if (speed >= INERTIA_MIN_VEL) {
-        _cancelInertia = _inertia(_velX, _velY);
+        // Если высота не заполнена — инерция только по X
+        const inVx = _velX;
+        const inVy = _imgFillsHeight() ? _velY : 0;
+        _cancelInertia = _inertia(inVx, inVy);
       } else {
-        // Стоп — spring к границам если вышли за rubber-band
         const clTx = Math.max(b.minX, Math.min(b.maxX, tx));
         const clTy = Math.max(b.minY, Math.min(b.maxY, ty));
         if (Math.abs(tx - clTx) > 0.2 || Math.abs(ty - clTy) > 0.2) {
@@ -532,11 +559,10 @@ window.LightBox = (() => {
 
       if (timeDiff < 300 && distDiff < 40) {
         // DOUBLE TAP — iOS поведение:
-        // • если scale == 1 → зум до 2.5x в точку тапа
-        // • если scale == 2.5 → сброс к 1
-        // • если любой другой scale → сброс к 1
+        // • scale == 1 → зум до 2.5x в точку тапа
+        // • любой scale > 1 → сброс к 1
         _stopAnimation();
-        if (scale > 1) {
+        if (scale > 1.05) {
           _cancelSpring = _springTo(1, 0, 0, resetZoom);
         } else {
           const TARGET = 2.5;
@@ -550,7 +576,7 @@ window.LightBox = (() => {
           const tTy = Math.max(b.minY, Math.min(b.maxY, tTyRaw));
           _cancelSpring = _springTo(TARGET, tTx, tTy, () => applyTransform());
         }
-        _lastTapTime = 0; // сбрасываем чтобы тройной тап не триггерил снова
+        _lastTapTime = 0;
       } else {
         _lastTapTime = now;
         _lastTapX    = tapX;
