@@ -202,16 +202,18 @@ window.LightBox = (() => {
   //    rawScale → resistedScale через ту же гиперболу
   // ════════════════════════════════════════════════════════════════
 
-  // Decay per 16ms frame: e^(-16/325)
-  const DECAY_PER_FRAME = 0.9516;
-  // Spring stiffness per frame: 1 - e^(-8*0.016) ≈ 0.119
-  const SPRING_K = 0.119;
-  // Rubber-band constant (px)
-  const RB_C = 120;
+  // Decay per 16ms frame: e^(-16/200) — τ=200ms как в iOS UIScrollView
+  // (было 325ms — слишком долгая инерция, объект уходил далеко)
+  const DECAY_PER_FRAME = 0.9231;
+  // Spring stiffness: 1 - e^(-20*0.016) ≈ 0.274 — быстрый iOS-щелчок
+  // (было k=8/0.119 — пружина была в ~2.5x медленнее)
+  const SPRING_K = 0.274;
+  // Rubber-band constant (px) — iOS ≈ 80-90, жёстче чем было 120
+  const RB_C = 85;
   // Минимальная скорость для запуска инерции (px/frame)
   const INERTIA_MIN_VEL = 2.0;
   // Если палец не двигался дольше (ms) — инерции нет
-  const STILL_THRESHOLD_MS = 100;
+  const STILL_THRESHOLD_MS = 80;
 
   // Apple rubber-band formula: limit + over/(|over|/C + 1)
   function _rb(val, lo, hi) {
@@ -229,10 +231,10 @@ window.LightBox = (() => {
     if (s >= lo && s <= hi) return s;
     if (s < lo) {
       const over = s - lo;
-      return lo + over / (Math.abs(over) / 0.4 + 1);
+      return lo + over / (Math.abs(over) / 0.25 + 1);
     }
     const over = s - hi;
-    return hi + over / (over / 0.4 + 1);
+    return hi + over / (over / 0.25 + 1);
   }
 
   // Применяем трансформ напрямую (без clamp)
@@ -325,26 +327,31 @@ window.LightBox = (() => {
 
   function _resetCloseDrag(animate) {
     lbWrap.style.transition = animate
-      ? 'transform 0.36s cubic-bezier(0.34,1.56,0.64,1)'
+      ? 'transform 0.22s cubic-bezier(0.34,1.4,0.64,1)'
       : 'none';
     lbWrap.style.transform = '';
-    lb.style.transition = animate ? 'background 0.32s ease' : 'none';
+    lb.style.transition = animate ? 'background 0.22s ease' : 'none';
     lb.style.background = '';
     if (animate) setTimeout(() => {
       lbWrap.style.transition = lb.style.transition = '';
-    }, 380);
+    }, 240);
   }
 
-  function _commitClose() {
-    lbWrap.style.transition = 'transform 0.28s cubic-bezier(0.4,0,1,1)';
-    lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.85)`;
-    lb.style.transition     = 'background 0.28s ease';
+  function _commitClose(vy, currentDy) {
+    // Duration динамический: продолжаем движение с той же скоростью пальца.
+    // iOS никогда не «перезапускает» анимацию медленнее чем шёл свайп.
+    const remaining = window.innerHeight - (currentDy || 0);
+    const absVy = Math.max(Math.abs(vy || 0), 100); // px/s, минимум 100
+    const duration = Math.max(120, Math.min(280, (remaining / absVy) * 1000));
+    lbWrap.style.transition = `transform ${duration}ms cubic-bezier(0.25,0,0.5,1)`;
+    lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.88)`;
+    lb.style.transition     = `background ${duration}ms ease`;
     lb.style.background     = 'rgba(0,0,0,0)';
     setTimeout(() => {
       lbWrap.style.transition = lbWrap.style.transform =
       lb.style.transition     = lb.style.background    = '';
       close();
-    }, 280);
+    }, duration + 10);
   }
 
   // ── touchstart ───────────────────────────────────────────────
@@ -500,7 +507,7 @@ window.LightBox = (() => {
     // CLOSING
     } else if (_gesture === 'closing') {
       const vy = dy / dt * 1000;
-      (dy > 100 || vy > 450) ? _commitClose() : _resetCloseDrag(true);
+      (dy > 80 || vy > 280) ? _commitClose(vy, dy) : _resetCloseDrag(true);
 
     // NAV
     } else if (_gesture === 'nav' && scale <= 1) {
