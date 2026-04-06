@@ -39,7 +39,7 @@ window.QuickView = (() => {
         </div>
 
         <!-- Контент (скрыт до загрузки) -->
-        <div class="qv-content" id="qv-content" style="display:none">
+        <div class="qv-content qv-hidden" id="qv-content">
           <!-- Левая панель: галерея -->
           <div class="qv-gallery" id="qv-gallery">
             <div class="qv-img-stage" id="qv-img-stage">
@@ -88,7 +88,7 @@ window.QuickView = (() => {
         </div>
 
         <!-- Ошибка -->
-        <div class="qv-error" id="qv-error" style="display:none">
+        <div class="qv-error qv-hidden" id="qv-error">
           <div class="empty-icon">⚠️</div>
           <p id="qv-error-msg">Ошибка загрузки</p>
         </div>
@@ -529,8 +529,8 @@ window.QuickView = (() => {
 
     // Показываем контент
     spinnerEl.style.display = 'none';
-    errorEl.style.display   = 'none';
-    contentEl.style.display = '';
+    errorEl.classList.add('qv-hidden');
+    contentEl.classList.remove('qv-hidden');
   }
 
   // ── Открытие ─────────────────────────────────────────────────
@@ -549,8 +549,8 @@ window.QuickView = (() => {
     const contentEl = _modal.querySelector('#qv-content');
     const errorEl   = _modal.querySelector('#qv-error');
     spinnerEl.style.display = 'none';
-    contentEl.style.display = '';
-    errorEl.style.display   = 'none';
+    contentEl.classList.remove('qv-hidden');
+    errorEl.classList.add('qv-hidden');
     _showGallerySkeleton();
     _galleryImages   = [];
     _currentLotId    = lotId;
@@ -582,8 +582,9 @@ window.QuickView = (() => {
       _renderContent(lot, data, shopId, lotUrl);
     } catch (e) {
       if (!_isOpen || _currentLotId !== lotId) return;
-      spinnerEl.style.display   = 'none';
-      errorEl.style.display     = '';
+      spinnerEl.style.display = 'none';
+      contentEl.classList.add('qv-hidden');
+      errorEl.classList.remove('qv-hidden');
       _modal.querySelector('#qv-error-msg').textContent = e.message || 'Ошибка загрузки';
     }
   }

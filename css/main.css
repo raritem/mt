@@ -1851,6 +1851,17 @@ body.qv-open {
   flex: 1;
 }
 
+/* qv-content: скрыт но занимает место — нет скачка layout при появлении */
+#qv-content.qv-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* qv-error: полностью скрыт когда не нужен */
+#qv-error.qv-hidden {
+  display: none;
+}
+
 /* Ошибка */
 .qv-error {
   display: flex;
