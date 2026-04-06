@@ -392,8 +392,16 @@ window.QuickView = (() => {
           _navigate(dx < 0 ? 1 : -1);
         }
       } else if (_gesture === 'deciding') {
-        // Это тап (палец почти не двигался) — открываем лайтбокс
-        _openLightbox();
+        // Это тап (палец почти не двигался)
+        // Если тап был по стрелке — листаем, иначе открываем лайтбокс
+        const tappedEl = document.elementFromPoint(_sx, _sy);
+        const arrowBtn = tappedEl && tappedEl.closest('.qv-arrow');
+        if (arrowBtn) {
+          if (arrowBtn.id === 'qv-prev') _navigate(-1);
+          else if (arrowBtn.id === 'qv-next') _navigate(1);
+        } else {
+          _openLightbox();
+        }
       }
 
       _gesture = 'idle'; _t1 = _t2 = null;

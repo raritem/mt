@@ -2275,14 +2275,24 @@ body.qv-open {
   }
 
   .qv-img-stage {
-    height: 322px;
+    height: 242px;
     background: #0d1014;
     border-radius: 0;
   }
 
+  /* Фикс 1: главное изображение растягивается по ширине шторки */
+  .qv-main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   /* Инфо — ниже галереи, обычный поток */
+  /* Фикс 2: добавляем отступы в блоке описания */
   .qv-info {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     overflow-y: visible;
     max-height: none;
     padding: 16px 16px 8px;
@@ -2292,6 +2302,11 @@ body.qv-open {
   .qv-arrow {
     opacity: 1;
     width: 60px;
+  }
+
+  /* Фикс 4: убираем hover со стрелок на мобиле */
+  .qv-arrow:hover {
+    background: transparent;
   }
 
   /* Спиннер на мобиле */
