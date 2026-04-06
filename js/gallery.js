@@ -551,6 +551,13 @@ window.LightBox = (() => {
     if (_gesture === 'pan') {
       const b  = _panBounds(scale);
 
+      // Если палец почти не двигался — это был тап в режиме pan (scale>1)
+      // Запоминаем как чистый тап для детекции double-tap
+      const moveDist = Math.hypot(dx, dy);
+      if (moveDist < 10) {
+        _lastTapWasClean = true;
+      }
+
       // Apple: инерции нет если палец "завис" перед отпусканием
       const stillMs = e.timeStamp - _prevTime;
       const moving  = stillMs < STILL_THRESHOLD_MS;
