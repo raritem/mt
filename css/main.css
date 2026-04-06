@@ -2269,13 +2269,13 @@ body.qv-open {
   .qv-gallery {
     display: block;
     width: 100%;
-    background: #0d1014;
+    background: #1a1f27;
     border-right: none;
     border-radius: 0;
   }
 
   .qv-img-stage {
-    height: 220px;
+    height: 324px;
     background: #0d1014;
     border-radius: 0;
   }
