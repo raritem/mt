@@ -1914,7 +1914,7 @@ body.qv-open {
   height: 100%;
   object-fit: contain;
   display: block;
-  opacity: 0;           /* скрыт до загрузки — нет alt-текста и рамки */
+  opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
   position: relative;
@@ -1922,6 +1922,11 @@ body.qv-open {
   user-select: none;
   -webkit-user-drag: none;
   -webkit-user-select: none;
+}
+
+/* iOS Safari рисует рамку для img[src=""] — убираем */
+.qv-main-img:not([src]), .qv-main-img[src=""] {
+  display: none;
 }
 
 .qv-main-img.qv-img--ready {

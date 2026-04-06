@@ -556,8 +556,6 @@ window.QuickView = (() => {
   async function open(shopId, lotId) {
     if (_isOpen && _currentLotId === lotId) return; // уже открыт этот лот
 
-    if (!_modal) _modal = _buildModal();
-
     // ── Блокировка скролла (position:fixed — industry standard) ──
     // Сохраняем позицию и фиксируем body
     _scrollY = window.scrollY;
@@ -647,6 +645,15 @@ window.QuickView = (() => {
       }, closeDelay);
     }
   });
+
+  // ── Инициализация — создаём DOM заранее ─────────────────────
+  // Модалка создаётся сразу при загрузке страницы, а не при первом тапе.
+  // Это убирает задержку на iOS: браузер уже имеет DOM и CSS в памяти.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { _modal = _buildModal(); });
+  } else {
+    _modal = _buildModal();
+  }
 
   // ── Публичный API ────────────────────────────────────────────
   return { open, close };
