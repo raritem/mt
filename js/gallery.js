@@ -48,10 +48,13 @@ window.LightBox = (() => {
   let _pinchDist0  = 0, _pinchScale0 = 1;
   let _pinchCx = 0, _pinchCy = 0;
   let _cancelInertia = null, _cancelSpring = null;
+  let _springTargetSc = null; // целевой масштаб текущей spring-анимации
 
-  // Double-tap state
-  let _lastTapTime = 0, _lastTapX = 0, _lastTapY = 0;
-  let _lastTapWasClean = false; // true только если предыдущий тач не был свайпом
+  // Double-tap — через таймер как в PhotoSwipe:
+  // первый тап запускает таймер 300ms, второй тап в том же месте → double-tap.
+  // Любое движение между тапами сбрасывает таймер.
+  let _tapTimer    = null;
+  let _tapStartX   = 0, _tapStartY = 0; // координаты первого тапа
 
   // UI auto-hide
   let hideTimer = null;
@@ -272,6 +275,7 @@ window.LightBox = (() => {
   // Spring с гиперболическим ease-out (cubic-out) — быстрый старт, плавное замедление.
   // iOS использует именно такую кривую для возврата rubber-band.
   function _springTo(targetSc, targetTx, targetTy, onDone) {
+    _springTargetSc = targetSc; // запоминаем цель для snap при прерывании
     let cancelled = false;
     const startSc = scale, startTx = tx, startTy = ty;
     const startTime = performance.now();
@@ -383,14 +387,16 @@ window.LightBox = (() => {
   // не блокировались preventDefault на мобилке
   lbStage.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    _stopAnimation();
 
-    // Если анимация возврата к scale=1 была прервана новым касанием,
-    // принудительно завершаем её — иначе scale остаётся > 1
-    // и следующий жест неправильно определяется как pan
-    if (scale < 1.05 && scale !== 1) {
+    // Если прерываем spring-анимацию возврата к scale=1 —
+    // завершаем её мгновенно, иначе scale застревает и ломает жесты
+    if (_cancelSpring && _springTargetSc === 1) {
+      _stopAnimation();
       resetZoom();
+    } else {
+      _stopAnimation();
     }
+    _springTargetSc = null;
 
     if (e.touches.length >= 2) {
       const a = e.touches[0], b = e.touches[1];
@@ -415,24 +421,20 @@ window.LightBox = (() => {
       _velX = _velY = 0;
       _panTx0 = tx; _panTy0 = ty;
 
-      // Double-tap детектим здесь — работает при любом scale.
-      // Условия как на iOS: оба касания должны быть почти статичными.
-      // _lastTapWasClean = предыдущий тач завершился без смещения.
-      const now      = e.timeStamp;
-      const timeDiff = now - _lastTapTime;
-      const distDiff = Math.hypot(t.clientX - _lastTapX, t.clientY - _lastTapY);
-      _lastTapTime = now;
-      _lastTapX = t.clientX;
-      _lastTapY = t.clientY;
-
-      if (timeDiff < 300 && timeDiff > 0 && distDiff < 40 && _lastTapWasClean) {
-        // Double-tap подтверждён — оба касания были статичными
-        _lastTapTime = 0;
-        _lastTapWasClean = false;
-        _gesture = 'doubletap';
-        return;
+      // Если есть активный tapTimer — второй тап пришёл быстро.
+      // Проверяем расстояние между тапами (как PhotoSwipe MIN_TAP_DISTANCE=25px).
+      if (_tapTimer) {
+        clearTimeout(_tapTimer);
+        _tapTimer = null;
+        const distDiff = Math.hypot(t.clientX - _tapStartX, t.clientY - _tapStartY);
+        if (distDiff < 25) {
+          _gesture = 'doubletap';
+          return;
+        }
       }
-      _lastTapWasClean = false; // сбросим в touchend если тап был чистым
+      // Запоминаем старт этого касания для проверки расстояния double-tap
+      _tapStartX = t.clientX;
+      _tapStartY = t.clientY;
 
       if (scale > 1 && _imgFillsHeight()) {
         _gesture = 'pan';
@@ -558,11 +560,11 @@ window.LightBox = (() => {
     if (_gesture === 'pan') {
       const b  = _panBounds(scale);
 
-      // Если палец почти не двигался — это был тап в режиме pan (scale>1)
-      // Запоминаем как чистый тап для детекции double-tap
+      // Если палец почти не двигался — чистый тап в режиме pan.
+      // Запускаем tapTimer как в PhotoSwipe.
       const moveDist = Math.hypot(dx, dy);
       if (moveDist < 10) {
-        _lastTapWasClean = true;
+        _tapTimer = setTimeout(() => { _tapTimer = null; }, 300);
       }
 
       // Apple: инерции нет если палец "завис" перед отпусканием
@@ -617,17 +619,18 @@ window.LightBox = (() => {
         _cancelSpring = _springTo(TARGET, tTx, tTy, () => applyTransform());
       }
 
-    // DECIDING — одиночный тап (ничего не делаем)
+    // DECIDING — одиночный тап: запускаем таймер (PhotoSwipe-подход)
     } else if (_gesture === 'deciding') {
-      // Тап чистый только если палец почти не двигался (< 10px как на iOS)
       const moveDist = Math.hypot(dx, dy);
-      _lastTapWasClean = moveDist < 10;
+      if (moveDist < 10) {
+        // Чистый тап — запускаем таймер ожидания второго тапа
+        _tapTimer = setTimeout(() => { _tapTimer = null; }, 300);
+      }
     }
 
-    // При любом реальном свайпе — сбрасываем историю тапов
+    // Любой реальный свайп — сбрасываем tapTimer (как _clearTapTimer в PhotoSwipe)
     if (_gesture === 'nav' || _gesture === 'closing') {
-      _lastTapTime = 0;
-      _lastTapWasClean = false;
+      if (_tapTimer) { clearTimeout(_tapTimer); _tapTimer = null; }
     }
 
     _gesture = 'idle';
@@ -635,6 +638,7 @@ window.LightBox = (() => {
 
   lbStage.addEventListener('touchcancel', () => {
     if (_gesture === 'closing') _resetCloseDrag(true);
+    if (_tapTimer) { clearTimeout(_tapTimer); _tapTimer = null; }
     _stopAnimation();
     _gesture = 'idle';
   });
