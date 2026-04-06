@@ -385,6 +385,13 @@ window.LightBox = (() => {
     e.preventDefault();
     _stopAnimation();
 
+    // Если анимация возврата к scale=1 была прервана новым касанием,
+    // принудительно завершаем её — иначе scale остаётся > 1
+    // и следующий жест неправильно определяется как pan
+    if (scale < 1.05 && scale !== 1) {
+      resetZoom();
+    }
+
     if (e.touches.length >= 2) {
       const a = e.touches[0], b = e.touches[1];
       const p1 = { x: a.clientX, y: a.clientY };
