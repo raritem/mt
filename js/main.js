@@ -76,21 +76,28 @@ function bindFadeCleanup() {
     if (!(el instanceof HTMLElement)) return;
     if (e.animationName !== 'fadeUp') return;
     if (!el.classList.contains('fade-up')) return;
-    // Сначала фиксируем финальное состояние инлайном — чтобы не было скачка
+    // Фиксируем финальное состояние инлайном — чтобы не было скачка
     // в момент снятия класса (fill-mode: both удерживает to-состояние только
     // пока висит класс/animation, поэтому убираем их только после фиксации).
     el.style.opacity = '1';
     el.style.transform = 'translateY(0)';
-    // Теперь снимаем класс и очищаем анимацию — браузер уже держит состояние инлайном
+    // Снимаем класс и очищаем анимацию — браузер уже держит состояние инлайном
     el.classList.remove('fade-up');
     el.style.animationDelay = '';
     el.style.willChange = '';
     el.style.animation = '';
-    // Убираем инлайн opacity/transform в следующем кадре — к тому моменту
-    // браузер зафиксировал позицию и скачка не будет
+    // Убираем инлайн opacity/transform в следующем кадре.
+    // ВАЖНО: сначала отключаем transition — иначе браузер анимирует переход
+    // от translateY(0) к CSS-значению элемента (например у .gallery-thumb
+    // есть transition: transform), что и вызывает скачок в конце анимации.
     requestAnimationFrame(() => {
+      el.style.transition = 'none';
       el.style.opacity = '';
       el.style.transform = '';
+      // Восстанавливаем transition в следующем кадре
+      requestAnimationFrame(() => {
+        el.style.transition = '';
+      });
     });
   }, true);
 }
