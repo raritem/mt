@@ -734,12 +734,21 @@ async function loadLot() {
 
     gridEl.innerHTML = '';
 
+    let fadeStarted = false;
+    function startFadeIfReady() {
+      if (fadeStarted) return;
+      fadeStarted = true;
+      applyFadeUpStagger(gridEl, '.gallery-thumb', 0.04);
+    }
+
     images.forEach((src, idx) => {
       const thumb = document.createElement('div');
       thumb.className = 'gallery-thumb fade-prep';
       thumb.dataset.index = idx;
+      // Первые 2 картинки — eager (они в viewport), остальные — lazy
+      const loadingAttr = idx < 2 ? 'eager' : 'lazy';
       thumb.innerHTML = `
-        <img src="${assetUrl(src)}" alt="Скриншот ${idx+1}" loading="lazy" class="loading">
+        <img src="${assetUrl(src)}" alt="Скриншот ${idx+1}" loading="${loadingAttr}" class="loading">
         <div class="gallery-thumb-overlay">
           <svg width="33" height="33" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" style="display:none"/>
@@ -750,10 +759,17 @@ async function loadLot() {
         <div class="gallery-thumb-num">${idx + 1}</div>
       `;
 
-      // Lazy load обработчик
       const img = thumb.querySelector('img');
-      img.onload  = () => img.classList.replace('loading', 'loaded');
-      img.onerror = () => img.classList.replace('loading', 'loaded');
+      img.onload = () => {
+        img.classList.replace('loading', 'loaded');
+        // Запускаем анимацию как только первая картинка загрузилась —
+        // чтобы layout shift от загрузки не совпал с анимацией
+        if (idx === 0) startFadeIfReady();
+      };
+      img.onerror = () => {
+        img.classList.replace('loading', 'loaded');
+        if (idx === 0) startFadeIfReady();
+      };
 
       thumb.addEventListener('click', () => {
         if (window.LightBox) window.LightBox.open(images, idx);
@@ -761,7 +777,10 @@ async function loadLot() {
 
       gridEl.appendChild(thumb);
     });
-    applyFadeUpStagger(gridEl, '.gallery-thumb', 0.04);
+
+    // Страховка: если первая картинка уже в кеше (onload не сработает повторно),
+    // или загрузка зависла — запускаем анимацию через 300ms в любом случае
+    setTimeout(startFadeIfReady, 300);
 
     // Инициализируем лайтбокс с изображениями
     if (window.LightBox) {
