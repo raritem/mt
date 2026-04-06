@@ -38,12 +38,12 @@ window.QuickView = (() => {
           <div class="spinner"></div>
         </div>
 
-        <!-- Контент (скрыт до загрузки) -->
-        <div class="qv-content qv-hidden" id="qv-content">
+        <!-- Контент — виден сразу, скелетон в HTML -->
+        <div class="qv-content" id="qv-content">
           <!-- Левая панель: галерея -->
           <div class="qv-gallery" id="qv-gallery">
-            <div class="qv-img-stage" id="qv-img-stage">
-              <img id="qv-img" class="qv-main-img" src="" alt="Скриншот аккаунта">
+            <div class="qv-img-stage" id="qv-img-stage" data-skeleton="1">
+              <img id="qv-img" class="qv-main-img" src="" alt="">
               <!-- Оверлей увеличения по клику -->
               <div class="qv-zoom-overlay" id="qv-zoom-overlay" title="Открыть во весь экран">
                 <svg class="qv-zoom-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -53,20 +53,25 @@ window.QuickView = (() => {
                   <line x1="8" y1="11" x2="14" y2="11"/>
                 </svg>
               </div>
-              <button class="qv-arrow qv-prev" id="qv-prev" aria-label="Предыдущий">
+              <button class="qv-arrow qv-prev" id="qv-prev" aria-label="Предыдущий" style="display:none">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="15 18 9 12 15 6"/>
                 </svg>
               </button>
-              <button class="qv-arrow qv-next" id="qv-next" aria-label="Следующий">
+              <button class="qv-arrow qv-next" id="qv-next" aria-label="Следующий" style="display:none">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="9 18 15 12 9 6"/>
                 </svg>
               </button>
-              <div class="qv-counter" id="qv-counter">1 / 1</div>
+              <div class="qv-counter" id="qv-counter" style="display:none">1 / 1</div>
             </div>
-            <!-- Полоса миниатюр -->
-            <div class="qv-thumbs" id="qv-thumbs"></div>
+            <!-- Полоса миниатюр — 4 скелетных заглушки сразу -->
+            <div class="qv-thumbs" id="qv-thumbs">
+              <div class="qv-thumb-skeleton"></div>
+              <div class="qv-thumb-skeleton"></div>
+              <div class="qv-thumb-skeleton"></div>
+              <div class="qv-thumb-skeleton"></div>
+            </div>
           </div>
 
           <!-- Правая панель: информация -->
@@ -410,23 +415,24 @@ window.QuickView = (() => {
     const thumbsEl = _modal.querySelector('#qv-thumbs');
     const prevBtn  = _modal.querySelector('#qv-prev');
     const nextBtn  = _modal.querySelector('#qv-next');
+    const counterEl = _modal.querySelector('#qv-counter');
     const imgEl    = _modal.querySelector('#qv-img');
 
-    prevBtn.style.display = 'none';
-    nextBtn.style.display = 'none';
-    stageEl.style.display = '';
-    thumbsEl.style.display = '';
-
-    imgEl.src = '';
-    imgEl.classList.remove('qv-img--ready');
+    // Сброс к исходному состоянию — скелетон уже в HTML, просто восстанавливаем
+    prevBtn.style.display  = 'none';
+    nextBtn.style.display  = 'none';
+    counterEl.style.display = 'none';
     stageEl.dataset.skeleton = '1';
 
-    thumbsEl.innerHTML = '';
-    for (let i = 0; i < 4; i++) {
-      const t = document.createElement('div');
-      t.className = 'qv-thumb-skeleton';
-      thumbsEl.appendChild(t);
-    }
+    imgEl.src = '';
+    imgEl.alt = '';
+    imgEl.classList.remove('qv-img--ready');
+
+    thumbsEl.innerHTML =
+      '<div class="qv-thumb-skeleton"></div>' +
+      '<div class="qv-thumb-skeleton"></div>' +
+      '<div class="qv-thumb-skeleton"></div>' +
+      '<div class="qv-thumb-skeleton"></div>';
   }
 
   // ── Рендер контента ──────────────────────────────────────────
@@ -481,7 +487,9 @@ window.QuickView = (() => {
           delete stageEl.dataset.skeleton;
         };
       }
-      _modal.querySelector('#qv-counter').textContent = `1 / ${_galleryImages.length}`;
+      const counterEl2 = _modal.querySelector('#qv-counter');
+      counterEl2.textContent = `1 / ${_galleryImages.length}`;
+      counterEl2.style.display = '';
     } else {
       // Нет изображений — убираем скелетон
       delete stageEl.dataset.skeleton;
@@ -542,7 +550,6 @@ window.QuickView = (() => {
     // Показываем контент
     spinnerEl.style.display = 'none';
     errorEl.classList.add('qv-hidden');
-    contentEl.classList.remove('qv-hidden');
   }
 
   // ── Открытие ─────────────────────────────────────────────────
@@ -561,7 +568,6 @@ window.QuickView = (() => {
     const contentEl = _modal.querySelector('#qv-content');
     const errorEl   = _modal.querySelector('#qv-error');
     spinnerEl.style.display = 'none';
-    contentEl.classList.remove('qv-hidden');
     errorEl.classList.add('qv-hidden');
     _showGallerySkeleton();
     _galleryImages   = [];
@@ -595,8 +601,7 @@ window.QuickView = (() => {
     } catch (e) {
       if (!_isOpen || _currentLotId !== lotId) return;
       spinnerEl.style.display = 'none';
-      contentEl.classList.add('qv-hidden');
-      errorEl.classList.remove('qv-hidden');
+        errorEl.classList.remove('qv-hidden');
       _modal.querySelector('#qv-error-msg').textContent = e.message || 'Ошибка загрузки';
     }
   }
