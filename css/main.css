@@ -1963,7 +1963,9 @@ body.qv-open {
   pointer-events: none;
 }
 
-/* Zoom overlay on gallery image — только центральная зона (не перекрывает стрелки) */
+/* Zoom overlay on gallery image
+   — сам элемент занимает только центральную зону (между стрелками) для pointer-events,
+     но ::before растягивается на весь stage для визуального затемнения */
 .qv-zoom-overlay {
   position: absolute;
   top: 0;
@@ -1973,13 +1975,26 @@ body.qv-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0);
-  transition: background 0.18s ease;
+  background: transparent;
   cursor: pointer;
   z-index: 4;
 }
 
-.qv-zoom-overlay:hover {
+/* Визуальное затемнение на всё изображение через ::before */
+.qv-zoom-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -120px;
+  right: -120px;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.18s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.qv-zoom-overlay:hover::before {
   background: rgba(0, 0, 0, 0.35);
 }
 

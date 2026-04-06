@@ -76,14 +76,22 @@ function bindFadeCleanup() {
     if (!(el instanceof HTMLElement)) return;
     if (e.animationName !== 'fadeUp') return;
     if (!el.classList.contains('fade-up')) return;
+    // Сначала фиксируем финальное состояние инлайном — чтобы не было скачка
+    // в момент снятия класса (fill-mode: both удерживает to-состояние только
+    // пока висит класс/animation, поэтому убираем их только после фиксации).
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
+    // Теперь снимаем класс и очищаем анимацию — браузер уже держит состояние инлайном
     el.classList.remove('fade-up');
     el.style.animationDelay = '';
     el.style.willChange = '';
-    // Возвращаем чистое финальное состояние (без inline-стилей),
-    // чтобы не страдала резкость после анимации.
-    el.style.opacity = '';
-    el.style.transform = '';
     el.style.animation = '';
+    // Убираем инлайн opacity/transform в следующем кадре — к тому моменту
+    // браузер зафиксировал позицию и скачка не будет
+    requestAnimationFrame(() => {
+      el.style.opacity = '';
+      el.style.transform = '';
+    });
   }, true);
 }
 
