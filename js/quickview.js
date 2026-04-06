@@ -200,8 +200,8 @@ window.QuickView = (() => {
 
     img.classList.add('qv-img--loading');
     img.src = assetUrl(_galleryImages[idx]);
-    img.onload  = () => img.classList.remove('qv-img--loading');
-    img.onerror = () => img.classList.remove('qv-img--loading');
+    img.onload  = () => { img.classList.remove('qv-img--loading'); img.classList.add('qv-img--ready'); };
+    img.onerror = () => { img.classList.remove('qv-img--loading'); img.classList.add('qv-img--ready'); };
 
     counter.textContent = `${idx + 1} / ${_galleryImages.length}`;
     thumbs.forEach((t, i) => t.classList.toggle('qv-thumb--active', i === idx));
@@ -418,7 +418,7 @@ window.QuickView = (() => {
     thumbsEl.style.display = '';
 
     imgEl.src = '';
-    imgEl.style.display = 'none';
+    imgEl.classList.remove('qv-img--ready');
     stageEl.dataset.skeleton = '1';
 
     thumbsEl.innerHTML = '';
@@ -464,38 +464,28 @@ window.QuickView = (() => {
     thumbsEl.style.display = _galleryImages.length > 1 ? '' : 'none';
 
     if (_galleryImages.length > 0) {
-      // img скрыт, скелетон ещё держим — покажем img и снимем скелетон только после загрузки
-      imgEl.style.display = 'none';
+      // Скелетон держим до загрузки — img скрыт через CSS opacity:0
+      imgEl.classList.remove('qv-img--ready');
       imgEl.src = assetUrl(_galleryImages[0]);
       function _onFirstImgReady() {
-        imgEl.style.display = '';
-        imgEl.style.opacity = '0';
-        // Плавное появление поверх скелетона
-        requestAnimationFrame(() => {
-          imgEl.style.transition = 'opacity 0.2s ease';
-          imgEl.style.opacity = '1';
-        });
+        imgEl.classList.add('qv-img--ready');
         // Скелетон убираем чуть позже чтобы не мигало
-        setTimeout(() => {
-          delete stageEl.dataset.skeleton;
-          imgEl.style.transition = '';
-        }, 220);
+        setTimeout(() => { delete stageEl.dataset.skeleton; }, 180);
       }
       if (imgEl.complete && imgEl.naturalWidth > 0) {
-        // Уже в кеше
         _onFirstImgReady();
       } else {
         imgEl.onload  = _onFirstImgReady;
         imgEl.onerror = () => {
-          imgEl.style.display = '';
+          imgEl.classList.add('qv-img--ready');
           delete stageEl.dataset.skeleton;
         };
       }
       _modal.querySelector('#qv-counter').textContent = `1 / ${_galleryImages.length}`;
     } else {
-      // Нет изображений — просто убираем скелетон
+      // Нет изображений — убираем скелетон
       delete stageEl.dataset.skeleton;
-      imgEl.style.display = '';
+      imgEl.classList.add('qv-img--ready');
     }
 
     // Заголовок
