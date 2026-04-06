@@ -19,7 +19,7 @@
   cursor: pointer;
   /*background: var(--bg-card);
   border: 1px solid var(--border);*/
-  transition: border-color var(--transition), transform var(--transition);
+  transition: border-color var(--transition);
 }
 /*.gallery-thumb:hover { border-color: rgba(245,197,24,0.3); transform: scale(1.02); }*/
 .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
