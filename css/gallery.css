@@ -22,9 +22,7 @@
   transition: border-color var(--transition), transform var(--transition);
 }
 /*.gallery-thumb:hover { border-color: rgba(245,197,24,0.3); transform: scale(1.02); }*/
-.gallery-thumb img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s ease; }
-.gallery-thumb img.loading { opacity: 0; }
-.gallery-thumb img.loaded  { opacity: 1; }
+.gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
 .gallery-thumb-num {
   position: absolute; bottom: 8px; right: 8px;
@@ -156,6 +154,7 @@
   user-select: none; -webkit-user-drag: none;
   transform-origin: center center;
   transition: opacity 0.12s ease;
+  border-radius: 16px;
   /* НЕ добавляем will-change/backface — они снижают качество рендера */
 }
 

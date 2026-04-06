@@ -733,7 +733,7 @@ async function loadLot() {
 
     images.forEach((src, idx) => {
       const thumb = document.createElement('div');
-      thumb.className = 'gallery-thumb';
+      thumb.className = 'gallery-thumb fade-prep';
       thumb.dataset.index = idx;
       thumb.innerHTML = `
         <img src="${assetUrl(src)}" alt="Скриншот ${idx+1}" loading="lazy" class="loading">

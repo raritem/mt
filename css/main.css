@@ -18,9 +18,9 @@
   --text-muted:   #6b7280;
   --text-dim:     #9ca3af;
 
-  --accent:       #f5c518;       /* золотой — цвет WoT */
+  --accent:       rgb(21 124 255);
   --accent-dim:   rgba(245,197,24,0.12);
-  --accent-hover: #ffd234;
+  --accent-hover: rgb(64 148 255);
   --danger:       #ef4444;
   --success:      #22c55e;
 
@@ -303,9 +303,9 @@ input, textarea { font-family: var(--font-body); }
   object-fit: cover;
   display: block;
   margin: 0px;
-  border-radius: 12px;
-  -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
-  clip-path: inset(-1px -1px 3px -1px);
+  border-radius: 12px 12px 0 0;
+  /*-webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
+  clip-path: inset(-1px -1px 3px -1px);*/
 }
 
 /* Wrapper around the thumbnail image to allow badge positioning */
@@ -320,8 +320,6 @@ input, textarea { font-family: var(--font-body); }
   position: absolute;
   inset: 0;
   background: transparent;
-  -webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
-  mask-image: linear-gradient(180deg, black 60%, transparent 95%);
   transition: background 0.25s ease;
   border-radius: 12px;
   z-index: 5;
@@ -774,18 +772,18 @@ input, textarea { font-family: var(--font-body); }
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 10px 14px;
+  padding: 10px 14px 10px 16px;
   background: rgb(21 124 255);
   border: 0px solid rgba(245,197,24,0.25);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   color: #ffffff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   text-decoration: none;
   transition: background var(--transition), border-color var(--transition);
 }
 .lot-header-funpay-btn:hover {
-  background: #59a2ff;
+  background: var(--accent-hover);
   border-color: rgba(245,197,24,0.4);
 }
 
@@ -1773,12 +1771,10 @@ body.qv-open {
   padding: 16px;
   box-sizing: border-box;
   pointer-events: none;
-  visibility: hidden;
 }
 
 .qv-modal--visible {
   pointer-events: auto;
-  visibility: visible;
 }
 
 /* Фон-затемнение — без blur для сохранения качества текста */
@@ -1787,7 +1783,7 @@ body.qv-open {
   inset: 0;
   background: rgb(0 0 0 / 72%);
   opacity: 0;
-  transition: opacity 0.18s ease;
+  transition: opacity 0.2s ease;
 }
 
 .qv-modal--visible .qv-backdrop {
@@ -1798,24 +1794,26 @@ body.qv-open {
 .qv-dialog {
   position: relative;
   background: var(--card-bg, #1a1f27);
-  border: 1px solid var(--border, rgba(255,255,255,0.08));
-  border-radius: 16px;
+  border: 0px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 22px;
   width: 100%;
-  max-width: 900px;
-  height: 560px;       /* фиксированная высота на десктопе */
+  max-width: 1055px;
+  height: 604px;       /* фиксированная высота на десктопе */
   max-height: calc(100dvh - 48px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   opacity: 0;
-  transform: translateY(12px) scale(0.98);
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transform: translate3d(0, 16px, 0) scale(0.98);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.25, 0, 0, 1);
+  will-change: transform, opacity;
   box-shadow: 0 24px 64px rgb(0 0 0 / 60%);
 }
 
 .qv-modal--visible .qv-dialog {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: auto;
 }
 
 /* Кнопка закрытия */
@@ -1827,8 +1825,8 @@ body.qv-open {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgb(0 0 0 / 50%);
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  background: #00000029;
+  border: 0px solid var(--border, rgba(255,255,255,0.1));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1840,7 +1838,7 @@ body.qv-open {
 }
 
 .qv-close:hover {
-  background: var(--accent, #4e73f8);
+  background: rgb(255 255 255 / 4%);
   color: #fff;
 }
 
@@ -1879,12 +1877,13 @@ body.qv-open {
 
 /* ── Левая панель: галерея ── */
 .qv-gallery {
-  flex: 0 0 55%;
+  flex: 0 0 67%;
   display: flex;
   flex-direction: column;
   background: #111418;
-  border-right: 1px solid var(--border, rgba(255,255,255,0.07));
+  border-right: 0px solid var(--border, rgba(255,255,255,0.07));
   overflow: hidden;
+  border-radius: 22px;
 }
 
 .qv-img-stage {
@@ -1896,6 +1895,7 @@ body.qv-open {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 22px 22px 0 0;
 }
 
 .qv-main-img {
@@ -1922,11 +1922,11 @@ body.qv-open {
   top: 50%;
   transform: translateY(-50%);
   z-index: 5;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgb(0 0 0 / 55%);
-  border: 1px solid rgba(255,255,255,0.12);
+  width: 120px;
+  height: 540px;
+  border-radius: 0%;
+  background: rgba(0, 0, 0, 0);
+  border: 0px solid rgba(255,255,255,0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1936,6 +1936,7 @@ body.qv-open {
   transition: opacity 0.15s, background 0.15s;
   padding: 0;
   line-height: 0;
+  margin: 0px -10px;
 }
 
 .qv-img-stage:hover .qv-arrow {
@@ -1943,7 +1944,7 @@ body.qv-open {
 }
 
 .qv-arrow:hover {
-  background: var(--accent, #4e73f8);
+  background: rgb(0 0 0 / 24%);
 }
 
 .qv-prev { left: 10px; }
@@ -1962,10 +1963,13 @@ body.qv-open {
   pointer-events: none;
 }
 
-/* Zoom overlay on gallery image */
+/* Zoom overlay on gallery image — только центральная зона (не перекрывает стрелки) */
 .qv-zoom-overlay {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 120px;
+  right: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1975,7 +1979,7 @@ body.qv-open {
   z-index: 4;
 }
 
-.qv-img-stage:hover .qv-zoom-overlay {
+.qv-zoom-overlay:hover {
   background: rgba(0, 0, 0, 0.35);
 }
 
@@ -1988,19 +1992,26 @@ body.qv-open {
   pointer-events: none;
 }
 
-.qv-img-stage:hover .qv-zoom-icon {
+.qv-zoom-overlay:hover .qv-zoom-icon {
   opacity: 1;
   transform: scale(1);
 }
 
 /* Миниатюры */
+.qv-arrow:focus-visible,
+.qv-close:focus-visible,
+.qv-thumb:focus-visible,
+.qv-zoom-overlay:focus-visible {
+  outline: none;
+}
+
 .qv-thumbs {
   display: flex;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 12px 12px;
   overflow-x: auto;
   flex-shrink: 0;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   scrollbar-color: rgba(255,255,255,0.2) transparent;
   cursor: grab;
 }
@@ -2008,24 +2019,14 @@ body.qv-open {
 
 /* Webkit scrollbar для .qv-thumbs */
 .qv-thumbs::-webkit-scrollbar {
-  height: 4px;
-}
-.qv-thumbs::-webkit-scrollbar-track {
-  background: transparent;
-}
-.qv-thumbs::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 2px;
-}
-.qv-thumbs::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.35);
+  display: none;
 }
 
 .qv-thumb {
   flex-shrink: 0;
-  width: 52px;
-  height: 40px;
-  border-radius: 6px;
+  width: 68px;
+  height: 50px;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
@@ -2075,7 +2076,7 @@ body.qv-open {
 .qv-price {
   font-size: 22px;
   font-weight: 800;
-  color: var(--accent, #4e73f8);
+  color: #e5e5e5;
   letter-spacing: -0.3px;
 }
 
@@ -2097,11 +2098,11 @@ body.qv-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 3px;
   padding: 11px 18px;
   background: var(--accent, #4e73f8);
   color: #fff;
-  border-radius: 10px;
+  border-radius: 35px;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
@@ -2110,12 +2111,12 @@ body.qv-open {
 }
 
 .qv-btn-buy:hover {
-  background: var(--accent-hover, #3a5ce0);
-  transform: translateY(-1px);
+  background: rgb(64 148 255);
 }
 
 .qv-btn-buy img {
-  height: 14px;
+  height: 20px;
+  margin: 0 4px 1px 0px;
 }
 
 .qv-full-link {
@@ -2127,7 +2128,7 @@ body.qv-open {
   background: transparent;
   color: var(--text-muted, #9ca3af);
   border: 1px solid var(--border, rgba(255,255,255,0.1));
-  border-radius: 10px;
+  border-radius: 35px;
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;
@@ -2207,8 +2208,7 @@ body.qv-open {
    hover-зависимые стили для qv-img-stage и используем только
    touch-ориентированный UI (стрелки всегда видны — выше в media) */
 @media (hover: none) {
-  .qv-img-stage:hover .qv-arrow { opacity: 1; }
-  .qv-img-stage:hover .qv-zoom-overlay { background: rgba(0,0,0,0); }
-  .qv-img-stage:hover .qv-zoom-icon { opacity: 0; transform: scale(0.8); }
   .qv-zoom-overlay { cursor: default; pointer-events: none; }
+  .qv-zoom-overlay:hover { background: rgba(0,0,0,0); }
+  .qv-zoom-overlay:hover .qv-zoom-icon { opacity: 0; transform: scale(0.8); }
 }

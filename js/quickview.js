@@ -562,18 +562,21 @@ window.QuickView = (() => {
     _currentLotId  = null;
     _galleryImages = [];
 
-    document.body.classList.remove('qv-open');
-    document.documentElement.style.removeProperty('--qv-scroll-top');
-    if (_modal) _modal.classList.remove('qv-modal--visible');
-
     // Восстанавливаем URL
     if (history.pushState && _prevUrl) {
       history.pushState(null, '', _prevUrl);
       _prevUrl = null;
     }
 
-    // position:fixed сбросил scrollTop в 0 — восстанавливаем
-    window.scrollTo({ top: _scrollY, behavior: 'instant' });
+    // Сначала убираем видимость — даём transition отыграть (0.2s)
+    if (_modal) _modal.classList.remove('qv-modal--visible');
+
+    // После анимации снимаем qv-open и восстанавливаем скролл
+    setTimeout(() => {
+      document.body.classList.remove('qv-open');
+      document.documentElement.style.removeProperty('--qv-scroll-top');
+      window.scrollTo({ top: _scrollY, behavior: 'instant' });
+    }, 200);
   }
 
   // ── Обработка кнопки "назад" браузера ───────────────────────
@@ -583,10 +586,12 @@ window.QuickView = (() => {
       _currentLotId  = null;
       _galleryImages = [];
       _prevUrl       = null;
-      document.body.classList.remove('qv-open');
-      document.documentElement.style.removeProperty('--qv-scroll-top');
       if (_modal) _modal.classList.remove('qv-modal--visible');
-      window.scrollTo({ top: _scrollY, behavior: 'instant' });
+      setTimeout(() => {
+        document.body.classList.remove('qv-open');
+        document.documentElement.style.removeProperty('--qv-scroll-top');
+        window.scrollTo({ top: _scrollY, behavior: 'instant' });
+      }, 200);
     }
   });
 
