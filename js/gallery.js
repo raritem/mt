@@ -665,7 +665,20 @@ window.LightBox = (() => {
           lbImg.style.opacity = '1';
           void lbWrap.offsetWidth;
           lbWrap.classList.add(dir === 'next' ? 'lb-slide-in-right' : 'lb-slide-in-left');
-          setTimeout(() => lbWrap.classList.remove('lb-slide-in-right', 'lb-slide-in-left'), 280);
+          setTimeout(() => {
+            // Фиксируем финальное состояние инлайном до снятия класса —
+            // иначе fill-mode:both перестаёт держать to-состояние и браузер
+            // на один кадр возвращает элемент в исходную позицию (скачок).
+            lbWrap.style.opacity = '1';
+            lbWrap.style.transform = 'none';
+            lbWrap.classList.remove('lb-slide-in-right', 'lb-slide-in-left');
+            // Убираем инлайн-стили в следующем кадре — к этому моменту
+            // браузер уже зафиксировал позицию и скачка не будет.
+            requestAnimationFrame(() => {
+              lbWrap.style.opacity = '';
+              lbWrap.style.transform = '';
+            });
+          }, 280);
         };
       }, 110);
     } else {
