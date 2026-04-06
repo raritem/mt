@@ -2248,11 +2248,13 @@ body.qv-open {
     flex: 0 0 auto;
     border-right: none;
     border-bottom: 0px solid var(--border, rgba(255,255,255,0.07));
-    background: #11141800;
+    background: transparent;
   }
 
   .qv-img-stage {
     height: 220px;
+    background: #0d1014;
+    border-radius: 0;
   }
 
   .qv-info {
