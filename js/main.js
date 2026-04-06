@@ -71,34 +71,22 @@ function bindFadeCleanup() {
 
   // Снимаем класс сразу после завершения анимации,
   // чтобы браузер не держал элементы в композитинге.
+  // Тест: не делаем НИКАКОГО cleanup — пусть fill-mode:both держит состояние сам.
+  // Если скачок исчезнет — виноват был cleanup-код.
+  // Если скачок останется — виновата сама анимация или внешний layout.
   document.addEventListener('animationend', (e) => {
     const el = e.target;
     if (!(el instanceof HTMLElement)) return;
     if (e.animationName !== 'fadeUp') return;
     if (!el.classList.contains('fade-up')) return;
-    // Фиксируем финальное состояние инлайном — чтобы не было скачка
-    // в момент снятия класса (fill-mode: both удерживает to-состояние только
-    // пока висит класс/animation, поэтому убираем их только после фиксации).
+    // Только фиксируем инлайном и снимаем класс — без rAF, без transition манипуляций
     el.style.opacity = '1';
-    el.style.transform = 'translateY(0)';
-    // Снимаем класс и очищаем анимацию — браузер уже держит состояние инлайном
+    el.style.transform = 'none';
+    el.style.transition = 'none';
     el.classList.remove('fade-up');
     el.style.animationDelay = '';
     el.style.willChange = '';
     el.style.animation = '';
-    // Убираем инлайн opacity/transform в следующем кадре.
-    // ВАЖНО: сначала отключаем transition — иначе браузер анимирует переход
-    // от translateY(0) к CSS-значению элемента (например у .gallery-thumb
-    // есть transition: transform), что и вызывает скачок в конце анимации.
-    requestAnimationFrame(() => {
-      el.style.transition = 'none';
-      el.style.opacity = '';
-      el.style.transform = '';
-      // Восстанавливаем transition в следующем кадре
-      requestAnimationFrame(() => {
-        el.style.transition = '';
-      });
-    });
   }, true);
 }
 
