@@ -601,15 +601,16 @@ window.QuickView = (() => {
       _prevUrl = null;
     }
 
-    // Сначала убираем видимость — даём transition отыграть (0.2s)
+    // Сначала убираем видимость — даём transition отыграть
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
-    // После анимации снимаем qv-open и восстанавливаем скролл
+    // На мобиле шторка едет 440ms, на десктопе 200ms
+    const closeDelay = window.innerWidth <= 640 ? 460 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
-    }, 200);
+    }, closeDelay);
   }
 
   // ── Обработка кнопки "назад" браузера ───────────────────────
@@ -620,11 +621,12 @@ window.QuickView = (() => {
       _galleryImages = [];
       _prevUrl       = null;
       if (_modal) _modal.classList.remove('qv-modal--visible');
+      const closeDelay = window.innerWidth <= 640 ? 460 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
-      }, 200);
+      }, closeDelay);
     }
   });
 

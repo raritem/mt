@@ -2217,6 +2217,8 @@ body.qv-open {
     max-height: 88dvh;        /* не доезжает до верха — видно, что это шторка */
     transform: translateY(100%);  /* въезжает снизу */
     opacity: 1;               /* на мобиле без fade-out, только slide */
+    /* iOS-style spring: быстрый старт, плавное торможение */
+    transition: transform 0.44s cubic-bezier(0.32, 0.72, 0, 1);
     /* Отступ снизу для панели браузера (адресная строка, кнопки) */
     padding-bottom: env(safe-area-inset-bottom, 16px);
   }
