@@ -2229,25 +2229,28 @@ body.qv-open {
   background: rgba(255,255,255,0.04);
 }
 
-/* ── Мобильный лейаут — шторка снизу ── */
+/* ── Мобильный лейаут — единая шторка снизу ── */
 @media (max-width: 640px) {
   .qv-modal {
     padding: 0;
     align-items: flex-end;
   }
 
+  /* Шторка — единый вертикальный контейнер со скроллом */
   .qv-dialog {
     border-radius: 20px 20px 0 0;
     width: 100%;
     max-width: 100%;
-    height: auto;             /* на мобиле высота авто */
-    max-height: 88dvh;        /* не доезжает до верха — видно, что это шторка */
-    transform: translateY(100%);  /* въезжает снизу */
-    opacity: 1;               /* на мобиле без fade-out, только slide */
-    /* iOS-style spring: быстрый старт, плавное торможение */
+    height: auto;
+    max-height: 88dvh;
+    transform: translateY(100%);
+    opacity: 1;
     transition: transform 0.44s cubic-bezier(0.32, 0.72, 0, 1);
-    /* Отступ снизу для панели браузера (адресная строка, кнопки) */
     padding-bottom: env(safe-area-inset-bottom, 16px);
+    /* Сам диалог скроллится как единое целое */
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
   }
 
   .qv-modal--visible .qv-dialog {
@@ -2255,16 +2258,20 @@ body.qv-open {
     opacity: 1;
   }
 
+  /* qv-content — просто вертикальный поток, без flex-панелей */
   .qv-content {
-    flex-direction: column;
-    overflow-y: auto;
+    display: block;
+    overflow: visible;
+    height: auto;
   }
 
+  /* Галерея — верхняя часть, фиксированная высота, сразу занимает место */
   .qv-gallery {
-    flex: 0 0 auto;
+    display: block;
+    width: 100%;
+    background: #0d1014;
     border-right: none;
-    border-bottom: 0px solid var(--border, rgba(255,255,255,0.07));
-    background: transparent;
+    border-radius: 0;
   }
 
   .qv-img-stage {
@@ -2273,15 +2280,23 @@ body.qv-open {
     border-radius: 0;
   }
 
+  /* Инфо — ниже галереи, обычный поток */
   .qv-info {
-    max-height: none;
+    display: block;
     overflow-y: visible;
+    max-height: none;
+    padding: 16px 16px 8px;
   }
 
   /* На мобиле стрелки всегда видны */
   .qv-arrow {
     opacity: 1;
     width: 60px;
+  }
+
+  /* Спиннер на мобиле */
+  .qv-spinner {
+    min-height: 260px;
   }
 }
 
