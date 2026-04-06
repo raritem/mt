@@ -403,6 +403,32 @@ window.QuickView = (() => {
     stage.style.touchAction = 'none';
   }
 
+  // ── Скелетон галереи ─────────────────────────────────────────
+  function _showGallerySkeleton() {
+    if (!_modal) return;
+    const stageEl  = _modal.querySelector('#qv-img-stage');
+    const thumbsEl = _modal.querySelector('#qv-thumbs');
+    const prevBtn  = _modal.querySelector('#qv-prev');
+    const nextBtn  = _modal.querySelector('#qv-next');
+    const imgEl    = _modal.querySelector('#qv-img');
+
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+    stageEl.style.display = '';
+    thumbsEl.style.display = '';
+
+    imgEl.src = '';
+    imgEl.style.display = 'none';
+    stageEl.dataset.skeleton = '1';
+
+    thumbsEl.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+      const t = document.createElement('div');
+      t.className = 'qv-thumb-skeleton';
+      thumbsEl.appendChild(t);
+    }
+  }
+
   // ── Рендер контента ──────────────────────────────────────────
   function _renderContent(lot, shopData, shopId, lotUrl) {
     if (!_modal) return;
@@ -410,6 +436,12 @@ window.QuickView = (() => {
     const contentEl  = _modal.querySelector('#qv-content');
     const spinnerEl  = _modal.querySelector('#qv-spinner');
     const errorEl    = _modal.querySelector('#qv-error');
+
+    // Убираем скелетон
+    const stageEl2 = _modal.querySelector('#qv-img-stage');
+    delete stageEl2.dataset.skeleton;
+    const imgElPre = _modal.querySelector('#qv-img');
+    imgElPre.style.display = '';
 
     // Галерея
     _galleryImages = lot.images || [];
@@ -516,9 +548,10 @@ window.QuickView = (() => {
     const spinnerEl = _modal.querySelector('#qv-spinner');
     const contentEl = _modal.querySelector('#qv-content');
     const errorEl   = _modal.querySelector('#qv-error');
-    spinnerEl.style.display = '';
-    contentEl.style.display = 'none';
+    spinnerEl.style.display = 'none';
+    contentEl.style.display = '';
     errorEl.style.display   = 'none';
+    _showGallerySkeleton();
     _galleryImages   = [];
     _currentLotId    = lotId;
 
