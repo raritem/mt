@@ -18,6 +18,9 @@ window.LightBox = (() => {
   const lbImg     = document.getElementById('lb-img');
   const lbWrap    = document.getElementById('lb-img-wrap');
   const lbStage   = document.getElementById('lb-stage');
+  const lbTrack   = document.getElementById('lb-track');
+  const lbImgPrev = document.getElementById('lb-img-prev');
+  const lbImgNext = document.getElementById('lb-img-next');
   const lbZoomIn  = document.getElementById('lb-zoom-in');
   const lbZoomOut = document.getElementById('lb-zoom-out');
   const lbCounter = document.getElementById('lb-counter');
@@ -106,8 +109,68 @@ window.LightBox = (() => {
     scale = 1; tx = 0; ty = 0;
     lbImg.style.transform = '';
     lbWrap.classList.remove('zoomed');
-    // Явно сбрасываем gesture чтобы следующий тач не думал что мы в pan
     _gesture = 'idle';
+  }
+
+  // ── Карусельный трек ─────────────────────────────────────────
+  let _trackDragX = 0;
+
+  function _trackSlotW() { return lbStage.offsetWidth; }
+
+  function _setTrackX(extraPx, animate) {
+    const base = _trackSlotW();
+    if (animate) {
+      lbTrack.classList.add('lb-track--animating');
+    } else {
+      lbTrack.classList.remove('lb-track--animating');
+    }
+    lbTrack.style.transform = `translateX(${-base + extraPx}px)`;
+  }
+
+  function _resetTrack() {
+    _trackDragX = 0;
+    lbTrack.classList.remove('lb-track--animating');
+    lbTrack.style.transform = '';
+  }
+
+  function _imgSrc(path) {
+    return (typeof assetUrl === 'function') ? assetUrl(path) : (ROOT + path);
+  }
+
+  function _fillSideSlides() {
+    const prevSrc = current > 0 ? _imgSrc(images[current - 1]) : '';
+    const nextSrc = current < images.length - 1 ? _imgSrc(images[current + 1]) : '';
+    lbImgPrev.src = prevSrc;
+    lbImgNext.src = nextSrc;
+    lbImgPrev.parentElement.style.visibility = prevSrc ? '' : 'hidden';
+    lbImgNext.parentElement.style.visibility = nextSrc ? '' : 'hidden';
+  }
+
+  function _slideCarousel(dir) {
+    const base = _trackSlotW();
+    const targetPx = -dir * base;
+    lbTrack.classList.add('lb-track--animating');
+    lbTrack.style.transform = `translateX(${-base + targetPx}px)`;
+    lbTrack.addEventListener('transitionend', function onEnd() {
+      lbTrack.removeEventListener('transitionend', onEnd);
+      current += dir;
+      lbImg.src = _imgSrc(images[current]);
+      _fillSideSlides();
+      _resetTrack();
+      _updateUI(false);
+    }, { once: true });
+  }
+
+  function _updateUI(fromThumbs) {
+    lbCounter.textContent = (current + 1) + ' / ' + images.length;
+    lbPrev.disabled = current === 0;
+    lbNext.disabled = current === images.length - 1;
+    if (!fromThumbs) hideUI();
+    if (lbTnRow) {
+      Array.from(lbTnRow.children).forEach((t, i) => t.classList.toggle('active', i === current));
+      const at = lbTnRow.children[current];
+      if (at) at.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
   }
 
   // Зум относительно центра VIEWPORT (не изображения).
@@ -258,8 +321,19 @@ window.LightBox = (() => {
   // Применяем трансформ напрямую (без clamp)
   function _applyRaw(sc, x, y) {
     lbImg.style.transform = `translate(${x}px,${y}px) scale(${sc})`;
-    lbWrap.classList.toggle('zoomed', sc > 1);
+    lbWrap.classList.toggle("zoomed", sc > 1);
   }
+
+  // Drag-смещение трека при nav-свайпе
+  function _applyNavDrag(dx) {
+    _trackDragX = dx;
+    _setTrackX(dx, false);
+  }
+
+
+
+
+
 
   // Границы pan для заданного масштаба
   function _panBounds(sc) {
@@ -344,40 +418,38 @@ window.LightBox = (() => {
     if (_cancelSpring)  { _cancelSpring();  _cancelSpring  = null; }
   }
 
-  // ── Close-drag ───────────────────────────────────────────────
+  // ── Close-drag (двигаем весь трек вниз) ─────────────────────
   function _applyCloseDrag(dy) {
-    const p  = Math.min(1, dy / 350);
-    lbWrap.style.transition = 'none';
-    // Более явное уменьшение: от 1.0 до 0.70 (было 0.82)
-    lbWrap.style.transform  = `translateY(${dy}px) scale(${1 - p * 0.30})`;
-    lb.style.background     = `rgba(0,0,0,${1 - p * 0.92})`;
+    const p = Math.min(1, dy / 350);
+    lbTrack.style.transition = 'none';
+    // Смещаем трек целиком вниз + уменьшаем
+    const baseOff = -_trackSlotW();
+    lbTrack.style.transform = `translateX(${baseOff}px) translateY(${dy}px) scale(${1 - p * 0.30})`;
+    lb.style.background = `rgba(0,0,0,${1 - p * 0.92})`;
   }
 
   function _resetCloseDrag(animate) {
-    lbWrap.style.transition = animate
+    lbTrack.style.transition = animate
       ? 'transform 0.22s cubic-bezier(0.34,1.4,0.64,1)'
       : 'none';
-    lbWrap.style.transform = '';
+    lbTrack.style.transform = '';
     lb.style.transition = animate ? 'background 0.22s ease' : 'none';
     lb.style.background = '';
     if (animate) setTimeout(() => {
-      lbWrap.style.transition = lb.style.transition = '';
+      lbTrack.style.transition = lb.style.transition = '';
     }, 240);
   }
 
   function _commitClose(vy, currentDy) {
-    // iOS-анимация закрытия: фиксированная длительность,
-    // кривая ease-in (разгон как падение под гравитацией).
-    // В горизонтальном режиме экран короче по вертикали —
-    // используем innerHeight чтобы duration был одинаковым.
     const duration = 200;
-    lbWrap.style.transition = `transform ${duration}ms cubic-bezier(0.55,0,1,1)`;
-    lbWrap.style.transform  = `translateY(${window.innerHeight}px) scale(0.9)`;
-    lb.style.transition     = `background ${duration}ms ease-in`;
-    lb.style.background     = 'rgba(0,0,0,0)';
+    const baseOff = -_trackSlotW();
+    lbTrack.style.transition = `transform ${duration}ms cubic-bezier(0.55,0,1,1)`;
+    lbTrack.style.transform  = `translateX(${baseOff}px) translateY(${window.innerHeight}px) scale(0.9)`;
+    lb.style.transition      = `background ${duration}ms ease-in`;
+    lb.style.background      = 'rgba(0,0,0,0)';
     setTimeout(() => {
-      lbWrap.style.transition = lbWrap.style.transform =
-      lb.style.transition     = lb.style.background    = '';
+      lbTrack.style.transition = lbTrack.style.transform =
+      lb.style.transition      = lb.style.background     = '';
       close();
     }, duration + 10);
   }
@@ -408,8 +480,8 @@ window.LightBox = (() => {
       _pinchCx = m.x; _pinchCy = m.y;
       _gesture = 'pinch';
       // Сбросить close-drag если был
-      lbWrap.style.transition = lbWrap.style.transform =
-      lb.style.transition     = lb.style.background    = '';
+      lbTrack.style.transition = lbTrack.style.transform =
+      lb.style.transition      = lb.style.background     = '';
       return;
     }
 
@@ -525,6 +597,14 @@ window.LightBox = (() => {
     }
 
     if (_gesture === 'closing') _applyCloseDrag(Math.max(0, dy));
+    if (_gesture === 'nav') {
+      // Двигаем трек вместе с пальцем (rubber-band у краёв)
+      let ndx = dx;
+      if ((dx > 0 && current === 0) || (dx < 0 && current === images.length - 1)) {
+        ndx = dx * 0.25; // сопротивление у края
+      }
+      _applyNavDrag(ndx);
+    }
   }, { passive: false });
 
   // ── touchend ─────────────────────────────────────────────────
@@ -596,7 +676,19 @@ window.LightBox = (() => {
     } else if (_gesture === 'nav' && scale <= 1) {
       const vx = dx / dt * 1000;
       if (Math.abs(dx) > 40 || Math.abs(vx) > 300) {
-        dx < 0 ? next() : prev();
+        if (dx < 0 && current < images.length - 1) {
+          _slideCarousel(1);  // next
+        } else if (dx > 0 && current > 0) {
+          _slideCarousel(-1); // prev
+        } else {
+          // У края — snap back
+          _setTrackX(0, true);
+          lbTrack.addEventListener('transitionend', () => _resetTrack(), { once: true });
+        }
+      } else {
+        // Не хватило — snap back
+        _setTrackX(0, true);
+        lbTrack.addEventListener('transitionend', () => _resetTrack(), { once: true });
       }
 
     // DOUBLETAP — детектируется в touchstart, выполняется в touchend
@@ -638,60 +730,23 @@ window.LightBox = (() => {
 
   lbStage.addEventListener('touchcancel', () => {
     if (_gesture === 'closing') _resetCloseDrag(true);
+    if (_gesture === 'nav') {
+      _setTrackX(0, true);
+      lbTrack.addEventListener('transitionend', () => _resetTrack(), { once: true });
+    }
     if (_tapTimer) { clearTimeout(_tapTimer); _tapTimer = null; }
     _stopAnimation();
     _gesture = 'idle';
   });
 
   // ── Рендер ────────────────────────────────────────────────────
+  // render — заполняет все три слота карусели и сбрасывает трек в центр
   function render(dir, fromThumbs) {
-    const src = (typeof assetUrl === 'function')
-      ? assetUrl(images[current])
-      : (ROOT + images[current]);
-    lbCounter.textContent = (current + 1) + ' / ' + images.length;
-    lbPrev.disabled = current === 0;
-    lbNext.disabled = current === images.length - 1;
-
     resetZoom();
-    // При навигации стрелками/клавишами прячем UI, при навигации через панель — нет
-    if (!fromThumbs) hideUI();
-
-    if (dir) {
-      lbWrap.classList.remove('lb-slide-in-right', 'lb-slide-in-left');
-      lbImg.style.opacity = '0';
-      setTimeout(() => {
-        lbImg.src = src;
-        lbImg.onload = () => {
-          lbImg.style.opacity = '1';
-          void lbWrap.offsetWidth;
-          lbWrap.classList.add(dir === 'next' ? 'lb-slide-in-right' : 'lb-slide-in-left');
-          setTimeout(() => {
-            // Фиксируем финальное состояние инлайном до снятия класса —
-            // иначе fill-mode:both перестаёт держать to-состояние и браузер
-            // на один кадр возвращает элемент в исходную позицию (скачок).
-            lbWrap.style.opacity = '1';
-            lbWrap.style.transform = 'none';
-            lbWrap.classList.remove('lb-slide-in-right', 'lb-slide-in-left');
-            // Убираем инлайн-стили в следующем кадре — к этому моменту
-            // браузер уже зафиксировал позицию и скачка не будет.
-            requestAnimationFrame(() => {
-              lbWrap.style.opacity = '';
-              lbWrap.style.transform = '';
-            });
-          }, 280);
-        };
-      }, 110);
-    } else {
-      lbImg.src = src;
-      lbImg.style.opacity = '1';
-    }
-
-    // Миниатюры
-    if (lbTnRow) {
-      Array.from(lbTnRow.children).forEach((t, i) => t.classList.toggle('active', i === current));
-      const at = lbTnRow.children[current];
-      if (at) at.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
+    lbImg.src = _imgSrc(images[current]);
+    _fillSideSlides();
+    _resetTrack();
+    _updateUI(fromThumbs || false);
   }
 
   function renderThumbs() {
@@ -700,20 +755,24 @@ window.LightBox = (() => {
     images.forEach((src, i) => {
       const tn = document.createElement('div');
       tn.className = 'lb-tn' + (i === current ? ' active' : '');
-      const u = (typeof assetUrl === 'function') ? assetUrl(src) : (ROOT + src);
+      const u = _imgSrc(src);
       tn.innerHTML = `<img src="${u}" alt="" loading="lazy">`;
       tn.addEventListener('click', () => {
         if (i === current) return;
-        const dir = i > current ? 'next' : 'prev';
+        const dir = i > current ? 1 : -1;
         current = i;
-        render(dir, true); // fromThumbs=true → не прячем UI
+        render(null, true);
       });
       lbTnRow.appendChild(tn);
     });
   }
 
-  function prev() { if (current > 0) { current--; render('prev'); } }
-  function next() { if (current < images.length - 1) { current++; render('next'); } }
+  function prev() {
+    if (current > 0) _slideCarousel(-1);
+  }
+  function next() {
+    if (current < images.length - 1) _slideCarousel(1);
+  }
 
   // ── Public API ─────────────────────────────────────────────────
   function setImages(imgs) { images = imgs || []; }
