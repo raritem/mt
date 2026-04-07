@@ -625,31 +625,57 @@ window.QuickView = (() => {
       _prevUrl = null;
     }
 
+    // На мобиле применяем ease-in (ускорение вниз, как падение),
+    // на десктопе оставляем стандартный transition из CSS
+    const isMobile = window.innerWidth <= 640;
+    if (isMobile && _modal) {
+      const dialog = _modal.querySelector('.qv-dialog');
+      if (dialog) {
+        // Переопределяем transition: cubic-bezier имитирует After Effects
+        // Easy In — медленно начинает, быстро заканчивает
+        dialog.style.transition = 'transform 0.38s cubic-bezier(0.55, 0, 1, 1)';
+      }
+    }
+
     // Сначала убираем видимость — даём transition отыграть
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
-    // На мобиле шторка едет 440ms, на десктопе 200ms
-    const closeDelay = window.innerWidth <= 640 ? 460 : 200;
+    // На мобиле шторка едет 380ms, на десктопе 200ms
+    const closeDelay = isMobile ? 400 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
+      // Сбрасываем transition чтобы следующее открытие анимировалось правильно
+      if (isMobile && _modal) {
+        const dialog = _modal.querySelector('.qv-dialog');
+        if (dialog) dialog.style.transition = '';
+      }
     }, closeDelay);
   }
 
-  // ── Обработка кнопки "назад" браузера ───────────────────────
+  // ── Обработка кнопки «назад» браузера ───────────────────────
   window.addEventListener('popstate', (e) => {
     if (_isOpen && !(e.state && e.state.quickview)) {
       _isOpen        = false;
       _currentLotId  = null;
       _galleryImages = [];
       _prevUrl       = null;
+      const isMobilePs = window.innerWidth <= 640;
+      if (isMobilePs && _modal) {
+        const dialog = _modal.querySelector('.qv-dialog');
+        if (dialog) dialog.style.transition = 'transform 0.38s cubic-bezier(0.55, 0, 1, 1)';
+      }
       if (_modal) _modal.classList.remove('qv-modal--visible');
-      const closeDelay = window.innerWidth <= 640 ? 460 : 200;
+      const closeDelay = isMobilePs ? 400 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
+        if (isMobilePs && _modal) {
+          const dialog = _modal.querySelector('.qv-dialog');
+          if (dialog) dialog.style.transition = '';
+        }
       }, closeDelay);
     }
   });
