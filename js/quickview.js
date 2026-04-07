@@ -289,6 +289,8 @@ window.QuickView = (() => {
 
     stage.addEventListener('touchstart', (e) => {
       e.preventDefault();
+      // На мобиле в шторке пинч-зум отключён — обрабатываем только одно касание
+      const isMobileSheet = window.innerWidth <= 640;
       if (e.touches.length === 1) {
         const t = e.touches[0];
         _t1 = { x: t.clientX, y: t.clientY };
@@ -297,7 +299,7 @@ window.QuickView = (() => {
         _gesture = _sc > 1 ? 'pan' : 'deciding';
         if (_sc > 1) { _panTx0 = _tx; _panTy0 = _ty; }
       }
-      if (e.touches.length === 2) {
+      if (e.touches.length === 2 && !isMobileSheet) {
         const a = e.touches[0], b = e.touches[1];
         _t1 = { x: a.clientX, y: a.clientY };
         _t2 = { x: b.clientX, y: b.clientY };
@@ -313,8 +315,8 @@ window.QuickView = (() => {
     stage.addEventListener('touchmove', (e) => {
       e.preventDefault();
 
-      // Pinch-zoom
-      if (e.touches.length === 2 && _gesture === 'pinch') {
+      // Pinch-zoom — только не в мобильной шторке
+      if (e.touches.length === 2 && _gesture === 'pinch' && window.innerWidth > 640) {
         const a = e.touches[0], b = e.touches[1];
         const c1 = { x: a.clientX, y: a.clientY };
         const c2 = { x: b.clientX, y: b.clientY };
@@ -631,17 +633,16 @@ window.QuickView = (() => {
     if (isMobile && _modal) {
       const dialog = _modal.querySelector('.qv-dialog');
       if (dialog) {
-        // Переопределяем transition: cubic-bezier имитирует After Effects
-        // Easy In — медленно начинает, быстро заканчивает
-        dialog.style.transition = 'transform 0.38s cubic-bezier(0.55, 0, 1, 1)';
+        // Быстрое падение вниз — ease-in, заметно короче открытия
+        dialog.style.transition = 'transform 0.22s cubic-bezier(0.55, 0, 1, 1)';
       }
     }
 
     // Сначала убираем видимость — даём transition отыграть
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
-    // На мобиле шторка едет 380ms, на десктопе 200ms
-    const closeDelay = isMobile ? 400 : 200;
+    // На мобиле шторка едет 220ms, на десктопе 200ms
+    const closeDelay = isMobile ? 240 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
@@ -664,10 +665,10 @@ window.QuickView = (() => {
       const isMobilePs = window.innerWidth <= 640;
       if (isMobilePs && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
-        if (dialog) dialog.style.transition = 'transform 0.38s cubic-bezier(0.55, 0, 1, 1)';
+        if (dialog) dialog.style.transition = 'transform 0.22s cubic-bezier(0.55, 0, 1, 1)';
       }
       if (_modal) _modal.classList.remove('qv-modal--visible');
-      const closeDelay = isMobilePs ? 400 : 200;
+      const closeDelay = isMobilePs ? 240 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');

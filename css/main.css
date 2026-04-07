@@ -2009,7 +2009,6 @@ body.qv-open {
   border: none;
   display: flex;
   align-items: center;
-  justify-content: center;
   cursor: pointer;
   color: #fff;
   opacity: 0;
@@ -2020,8 +2019,9 @@ body.qv-open {
   transform: none;
 }
 
-.qv-prev { left: 0; }
-.qv-next { right: 0; }
+/* Стрелки прижаты к краям: prev — иконка у левого края, next — у правого */
+.qv-prev { left: 0; justify-content: flex-start; padding-left: 25px; }
+.qv-next { right: 0; justify-content: flex-end;  padding-right: 25px; }
 
 /* Стрелка видна только при наведении на свою зону */
 .qv-prev:hover,
@@ -2032,7 +2032,10 @@ body.qv-open {
 
 /* SVG-иконка внутри стрелки */
 .qv-arrow svg {
+  width: 23px;
+  height: 23px;
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
+  flex-shrink: 0;
 }
 
 /* Счётчик */
@@ -2148,15 +2151,15 @@ body.qv-open {
 }
 
 .qv-title {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.4;
   color: var(--text, #e8eaf0);
   margin: 0;
   padding-right: 30px; /* место для кнопки закрытия */
   background: linear-gradient(90deg, #30343c, transparent 70%);
-  padding: 1px 30px 2px 6px;
-  border-radius: 6px;
+  padding: 2px 46px 2px 8px;
+  border-radius: 8px;
 }
 
 .qv-price-row {
@@ -2249,7 +2252,8 @@ body.qv-open {
     max-height: 88dvh;
     transform: translateY(100%);
     opacity: 1;
-    transition: transform 0.44s cubic-bezier(0.32, 0.72, 0, 1);
+    /* Открытие: быстрый spring с небольшим отскоком */
+    transition: transform 0.32s cubic-bezier(0.34, 1.28, 0.64, 1);
     padding-bottom: env(safe-area-inset-bottom, 16px);
     /* Сам диалог скроллится как единое целое */
     overflow-y: auto;
@@ -2302,16 +2306,38 @@ body.qv-open {
     padding: 16px 16px 8px;
   }
 
-  /* На мобиле стрелки всегда видны */
+  /* На мобиле стрелки всегда видны, маленькие, прижаты к краям как в исходнике */
   .qv-arrow {
     opacity: 1;
-    width: 33.333%;
+    width: 60px;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    justify-content: center;
+    padding: 0;
   }
 
-  /* Фикс 4: убираем hover со стрелок на мобиле */
+  .qv-prev { left: 0; }
+  .qv-next { right: 0; }
+
+  .qv-arrow svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Убираем hover-фон со стрелок на мобиле */
   .qv-prev:hover,
   .qv-next:hover {
     background: transparent;
+  }
+
+  /* Лупа на мобиле не нужна */
+  .qv-zoom-overlay {
+    pointer-events: none;
+    cursor: default;
+  }
+  .qv-zoom-icon {
+    display: none;
   }
 
   /* Спиннер на мобиле */
@@ -2325,8 +2351,8 @@ body.qv-open {
    hover-зависимые стили для qv-img-stage и используем только
    touch-ориентированный UI (стрелки всегда видны — выше в media) */
 @media (hover: none) {
+  /* zoom-overlay уже отключена в мобильном блоке выше */
   .qv-zoom-overlay { cursor: default; pointer-events: none; }
-  .qv-zoom-overlay:hover { background: rgba(0,0,0,0); }
   .qv-zoom-overlay:hover .qv-zoom-icon { opacity: 0; transform: scale(0.8); }
 
   /* Карточки витрины / лотов — убираем hover тени и фон */
