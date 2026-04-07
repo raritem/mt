@@ -18,7 +18,7 @@
   --text-muted:   #6b7280;
   --text-dim:     #9ca3af;
 
-  --accent:       rgb(21 124 255);
+  --accent:       rgba(0, 91, 255, 1);
   --accent-dim:   rgba(245,197,24,0.12);
   --accent-hover: rgb(64 148 255);
   --danger:       #ef4444;
@@ -775,7 +775,7 @@ input, textarea { font-family: var(--font-body); }
   justify-content: center;
   text-align: center;
   padding: 10px 14px 10px 16px;
-  background: rgb(21 124 255);
+  background: var(--accent);
   border: 0px solid rgba(245,197,24,0.25);
   border-radius: 10px;
   color: #ffffff;
@@ -2196,15 +2196,16 @@ body.qv-open {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  padding: 10px 18px;
+  padding: 14px 18px;
   background: var(--accent, #4e73f8);
   color: #fff;
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: 16px;
+  font-size: 16px;
   font-weight: 600;
   text-decoration: none;
   transition: background 0.15s, transform 0.12s;
   border: none;
+  margin: 0px 20px 0px 20px;
 }
 
 .qv-btn-buy:hover {
@@ -2212,7 +2213,7 @@ body.qv-open {
 }
 
 .qv-btn-buy img {
-  height: 20px;
+  height: 23px;
   margin: 0 4px 1px 0px;
 }
 
@@ -2224,7 +2225,7 @@ body.qv-open {
   padding: 10px 18px;
   background: transparent;
   color: var(--text-muted, #9ca3af);
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border: 0px solid var(--border, rgba(255,255,255,0.1));
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
