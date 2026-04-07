@@ -2245,9 +2245,9 @@ body.qv-open {
 
   /* Шторка — единый вертикальный контейнер со скроллом */
   .qv-dialog {
-    border-radius: 20px 20px 20px 20px;
+    border-radius: 20px 20px 0px 0px;
     width: 100%;
-    max-width: 95%;
+    max-width: 100%;
     height: auto;
     max-height: 88dvh;
     transform: translateY(100%);
