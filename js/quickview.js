@@ -210,6 +210,9 @@ window.QuickView = (() => {
 
     counter.textContent = `${idx + 1} / ${_galleryImages.length}`;
     thumbs.forEach((t, i) => t.classList.toggle('qv-thumb--active', i === idx));
+    // Прокручиваем карусель превьюшек к активному элементу (как в лайтбоксе)
+    const activeThumb = _modal.querySelector('.qv-thumb--active');
+    if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     _galIdx = idx;
   }
 
@@ -627,30 +630,35 @@ window.QuickView = (() => {
       _prevUrl = null;
     }
 
-    // На мобиле применяем ease-in (ускорение вниз, как падение),
-    // на десктопе оставляем стандартный transition из CSS
+    // На мобиле: подскок вверх → падение вниз (двухфазная анимация)
     const isMobile = window.innerWidth <= 640;
     if (isMobile && _modal) {
       const dialog = _modal.querySelector('.qv-dialog');
       if (dialog) {
-        // Быстрое падение вниз — ease-in, заметно короче открытия
-        dialog.style.transition = 'transform 0.22s cubic-bezier(0.55, 0, 1, 1)';
+        // Фаза 1: лёгкий подскок вверх (~8px) за 90ms
+        dialog.style.transition = 'transform 0.09s cubic-bezier(0.33, 0, 0.66, 1)';
+        dialog.style.transform  = 'translateY(-8px)';
+        // Фаза 2: быстрое падение вниз через 90ms
+        setTimeout(() => {
+          dialog.style.transition = 'transform 0.2s cubic-bezier(0.55, 0, 1, 1)';
+          dialog.style.transform  = 'translateY(100%)';
+        }, 90);
       }
     }
 
-    // Сначала убираем видимость — даём transition отыграть
+    // Сначала убираем видимость (backdrop и pointer-events)
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
-    // На мобиле шторка едет 220ms, на десктопе 200ms
-    const closeDelay = isMobile ? 240 : 200;
+    // На мобиле: 90ms подскок + 200ms падение = 290ms, на десктопе 200ms
+    const closeDelay = isMobile ? 310 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
-      // Сбрасываем transition чтобы следующее открытие анимировалось правильно
+      // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
       if (isMobile && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
-        if (dialog) dialog.style.transition = '';
+        if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
       }
     }, closeDelay);
   }
@@ -665,17 +673,24 @@ window.QuickView = (() => {
       const isMobilePs = window.innerWidth <= 640;
       if (isMobilePs && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
-        if (dialog) dialog.style.transition = 'transform 0.22s cubic-bezier(0.55, 0, 1, 1)';
+        if (dialog) {
+          dialog.style.transition = 'transform 0.09s cubic-bezier(0.33, 0, 0.66, 1)';
+          dialog.style.transform  = 'translateY(-8px)';
+          setTimeout(() => {
+            dialog.style.transition = 'transform 0.2s cubic-bezier(0.55, 0, 1, 1)';
+            dialog.style.transform  = 'translateY(100%)';
+          }, 90);
+        }
       }
       if (_modal) _modal.classList.remove('qv-modal--visible');
-      const closeDelay = isMobilePs ? 240 : 200;
+      const closeDelay = isMobilePs ? 310 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
         if (isMobilePs && _modal) {
           const dialog = _modal.querySelector('.qv-dialog');
-          if (dialog) dialog.style.transition = '';
+          if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
         }
       }, closeDelay);
     }
