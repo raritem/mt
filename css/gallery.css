@@ -133,46 +133,44 @@
 .lb-stage {
   position: absolute; inset: 0; z-index: 10;
   overflow: hidden;
-  touch-action: none; /* жесты обрабатываются нашим кодом */
+  touch-action: none;
+  user-select: none;
 }
 
-/* Карусельный трек — три слайда рядом */
+/* Трек: ширина = slideW, позиционируется через JS translateX */
 .lb-track {
-  display: flex;
-  width: 300%;
-  height: 100%;
-  /* translateX(-33.333%) = центральный слайд виден */
-  transform: translateX(-33.333%);
+  position: absolute;
+  inset: 0;
+  /* Никаких CSS transitions — анимация через rAF в JS */
   will-change: transform;
 }
 
-.lb-track.lb-track--animating {
-  transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* Держатели слайдов: абсолютные, позиционируются через JS translateX */
+.lb-slide-holder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  /* Ширина = ширина stage, задаётся через translateX в JS */
+  width: 100%;
 }
-
-.lb-img-wrap {
-  flex: 0 0 33.333%;
-  width: 33.333%;
-  height: 100%;
-  display: flex; align-items: center; justify-content: center;
-  cursor: default; user-select: none;
-}
-.lb-img-wrap.zoomed { cursor: grab; }
+.lb-slide-holder.zoomed { cursor: grab; }
 
 .lb-slide-img {
   display: block;
-  max-width: 100%; max-height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
   width: auto; height: auto;
   object-fit: contain;
-  user-select: none; -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-drag: none;
   transform-origin: center center;
   border-radius: 16px;
-  pointer-events: none;
-}
-
-/* Основное изображение — трансформация зума применяется только к нему */
-#lb-img {
   pointer-events: auto;
+  /* Подсказка браузеру: этот элемент будет трансформироваться */
+  will-change: transform;
 }
 
 /* ── Миниатюры снизу с навигацией — скрыты по умолчанию ─────── */
