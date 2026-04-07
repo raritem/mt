@@ -132,45 +132,30 @@
 /* ── Сцена ───────────────────────────────────────────────────── */
 .lb-stage {
   position: absolute; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
   overflow: hidden;
-  touch-action: none;
-  user-select: none;
+  touch-action: none; /* жесты обрабатываются нашим кодом */
 }
-
-/* Трек: ширина = slideW, позиционируется через JS translateX */
-.lb-track {
-  position: absolute;
-  inset: 0;
-  /* Никаких CSS transitions — анимация через rAF в JS */
-  will-change: transform;
+.lb-img-wrap {
+  display: flex; align-items: center; justify-content: center;
+  cursor: default; user-select: none;
+  /* GPU-слой на обёртке (не на img) — фиксит ghosting/полосы без потери качества.
+     translateZ(0) изолирует compositing-слой, img рендерится в полном разрешении */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
+.lb-img-wrap.zoomed { cursor: grab; }
 
-/* Держатели слайдов: абсолютные, позиционируются через JS translateX */
-.lb-slide-holder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: default;
-  /* Ширина = ширина stage, задаётся через translateX в JS */
-  width: 100%;
-}
-.lb-slide-holder.zoomed { cursor: grab; }
-
-.lb-slide-img {
+#lb-img {
   display: block;
-  max-width: 100vw;
-  max-height: 100vh;
+  max-width: 100vw; max-height: 100vh;
   width: auto; height: auto;
   object-fit: contain;
-  user-select: none;
-  -webkit-user-drag: none;
+  user-select: none; -webkit-user-drag: none;
   transform-origin: center center;
-  border-radius: 16px;
-  pointer-events: auto;
-  /* Подсказка браузеру: этот элемент будет трансформироваться */
-  will-change: transform;
+  transition: none;
+  border-radius: 0;
+  /* НЕ добавляем will-change/backface — они снижают качество рендера */
 }
 
 /* ── Миниатюры снизу с навигацией — скрыты по умолчанию ─────── */
@@ -276,7 +261,7 @@
 }
 
 /* ── Анимации слайдов ────────────────────────────────────────── */
-/* Carousel slide-in animations removed — carousel track handles transitions */
+/* lb-slide-in-* классы удалены — используется crossfade через JS-клон */
 
 /* ── Отключаем hover-эффекты на touch-устройствах ────────────── */
 @media (hover: none) {
