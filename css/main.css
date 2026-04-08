@@ -20,7 +20,7 @@
 
   --accent:       rgba(0, 91, 255, 1);
   --accent-dim:   rgba(245,197,24,0.12);
-  --accent-hover: rgb(64 148 255);
+  --accent-hover: rgba(0, 79, 222, 1);
   --danger:       #ef4444;
   --success:      #22c55e;
 
@@ -1840,7 +1840,7 @@ body.qv-open {
 }
 
 .qv-close:hover {
-  background: rgb(255 255 255 / 4%);
+  background: rgb(255 255 255 / 7%);
   color: #fff;
 }
 
@@ -2209,7 +2209,7 @@ body.qv-open {
 }
 
 .qv-btn-buy:hover {
-  background: rgb(64 148 255);
+  background: var(--accent-hover);
 }
 
 .qv-btn-buy img {
@@ -2256,7 +2256,7 @@ body.qv-open {
     transform: translateY(100%);
     opacity: 1;
     /* Открытие: мягкий подброс — быстрый старт, замедление с лёгким зацепом */
-    transition: transform 0.46s cubic-bezier(0.22, 1.1, 0.36, 1.015);
+    transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
     padding-bottom: env(safe-area-inset-bottom, 16px);
     /* Сам диалог скроллится как единое целое */
     overflow-y: auto;
