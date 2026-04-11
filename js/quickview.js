@@ -595,6 +595,7 @@ window.QuickView = (() => {
 
     // Показываем модалку
     _isOpen = true;
+    _modal.style.display = ''; // сбрасываем display:none после предыдущего закрытия
     document.body.classList.add('qv-open');
     _modal.classList.add('qv-modal--visible');
 
@@ -652,12 +653,13 @@ window.QuickView = (() => {
     // Сначала убираем видимость (backdrop и pointer-events)
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
-    // На мобиле: 280ms скольжение, на десктопе 200ms
     const closeDelay = isMobile ? 220 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
+      // Полностью скрываем модалку чтобы не оставался артефакт на iOS
+      if (_modal) _modal.style.display = 'none';
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
       if (isMobile && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
@@ -687,6 +689,7 @@ window.QuickView = (() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
+        if (_modal) _modal.style.display = 'none';
         if (isMobilePs && _modal) {
           const dialog = _modal.querySelector('.qv-dialog');
           if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
