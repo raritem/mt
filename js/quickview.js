@@ -639,27 +639,21 @@ window.QuickView = (() => {
       _prevUrl = null;
     }
 
-    // На мобиле: подскок вверх → падение вниз (двухфазная анимация)
+    // На мобиле: плавное скольжение вниз без отскока
     const isMobile = window.innerWidth <= 640;
     if (isMobile && _modal) {
       const dialog = _modal.querySelector('.qv-dialog');
       if (dialog) {
-        // Фаза 1: лёгкий подскок вверх (~8px) за 90ms
-        dialog.style.transition = 'transform 0.09s cubic-bezier(0.33, 0, 0.66, 1)';
-        dialog.style.transform  = 'translateY(-8px)';
-        // Фаза 2: быстрое падение вниз через 90ms
-        setTimeout(() => {
-          dialog.style.transition = 'transform 0.2s cubic-bezier(0.55, 0, 1, 1)';
-          dialog.style.transform  = 'translateY(100%)';
-        }, 90);
+        dialog.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 1, 1)';
+        dialog.style.transform  = 'translateY(100%)';
       }
     }
 
     // Сначала убираем видимость (backdrop и pointer-events)
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
-    // На мобиле: 90ms подскок + 200ms падение = 290ms, на десктопе 200ms
-    const closeDelay = isMobile ? 310 : 200;
+    // На мобиле: 280ms скольжение, на десктопе 200ms
+    const closeDelay = isMobile ? 220 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
@@ -683,16 +677,12 @@ window.QuickView = (() => {
       if (isMobilePs && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
         if (dialog) {
-          dialog.style.transition = 'transform 0.09s cubic-bezier(0.33, 0, 0.66, 1)';
-          dialog.style.transform  = 'translateY(-8px)';
-          setTimeout(() => {
-            dialog.style.transition = 'transform 0.2s cubic-bezier(0.55, 0, 1, 1)';
-            dialog.style.transform  = 'translateY(100%)';
-          }, 90);
+          dialog.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 1, 1)';
+          dialog.style.transform  = 'translateY(100%)';
         }
       }
       if (_modal) _modal.classList.remove('qv-modal--visible');
-      const closeDelay = isMobilePs ? 310 : 200;
+      const closeDelay = isMobilePs ? 220 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
