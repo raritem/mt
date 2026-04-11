@@ -595,10 +595,12 @@ window.QuickView = (() => {
 
     // Показываем модалку
     _isOpen = true;
-    _modal.style.display = ''; // сбрасываем display:none после предыдущего закрытия
+    _modal.style.display = ''; // сбрасываем display:none
     document.body.classList.add('qv-open');
-    // rAF даёт браузеру один кадр чтобы отрисовать начальное состояние до анимации
-    requestAnimationFrame(() => { _modal.classList.add('qv-modal--visible'); });
+    // Двойной rAF: первый кадр — браузер видит display:flex, второй — запускает анимацию
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      _modal.classList.add('qv-modal--visible');
+    }));
 
     // History API: обновляем URL
     const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
@@ -703,9 +705,13 @@ window.QuickView = (() => {
   // Модалка создаётся сразу при загрузке страницы, а не при первом тапе.
   // Это убирает задержку на iOS: браузер уже имеет DOM и CSS в памяти.
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { _modal = _buildModal(); });
+    document.addEventListener('DOMContentLoaded', () => {
+      _modal = _buildModal();
+      _modal.style.display = 'none';
+    });
   } else {
     _modal = _buildModal();
+    _modal.style.display = 'none';
   }
 
   // ── Публичный API ────────────────────────────────────────────
