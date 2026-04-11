@@ -597,7 +597,8 @@ window.QuickView = (() => {
     _isOpen = true;
     _modal.style.display = ''; // сбрасываем display:none после предыдущего закрытия
     document.body.classList.add('qv-open');
-    _modal.classList.add('qv-modal--visible');
+    // rAF даёт браузеру один кадр чтобы отрисовать начальное состояние до анимации
+    requestAnimationFrame(() => { _modal.classList.add('qv-modal--visible'); });
 
     // History API: обновляем URL
     const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
@@ -658,12 +659,18 @@ window.QuickView = (() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
-      // Полностью скрываем модалку чтобы не оставался артефакт на iOS
-      if (_modal) _modal.style.display = 'none';
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
       if (isMobile && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
         if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
+      }
+      // Плавно растворяем весь модал, затем скрываем
+      if (_modal) {
+        _modal.style.transition = 'opacity 0.18s ease';
+        _modal.style.opacity = '0';
+        setTimeout(() => {
+          if (_modal) { _modal.style.display = 'none'; _modal.style.transition = ''; _modal.style.opacity = ''; }
+        }, 190);
       }
     }, closeDelay);
   }
@@ -689,10 +696,16 @@ window.QuickView = (() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
-        if (_modal) _modal.style.display = 'none';
         if (isMobilePs && _modal) {
           const dialog = _modal.querySelector('.qv-dialog');
           if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
+        }
+        if (_modal) {
+          _modal.style.transition = 'opacity 0.18s ease';
+          _modal.style.opacity = '0';
+          setTimeout(() => {
+            if (_modal) { _modal.style.display = 'none'; _modal.style.transition = ''; _modal.style.opacity = ''; }
+          }, 190);
         }
       }, closeDelay);
     }
