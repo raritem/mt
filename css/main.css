@@ -1795,8 +1795,8 @@ body.qv-open {
 /* Диалог — фиксированный размер, не зависящий от контента */
 .qv-dialog {
   position: relative;
-  background: #14181cba;
-  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  background: #14181c;
+  border: 0px solid var(--border, rgba(255,255,255,0.08));
   border-radius: 16px;
   width: 100%;
   max-width: 1055px;
@@ -1812,7 +1812,6 @@ body.qv-open {
   transition-timing-function: ease;
   will-change: transform, opacity;
   box-shadow: 0 24px 64px rgb(0 0 0 / 60%);
-  backdrop-filter: blur(10px);
 }
 
 .qv-modal--visible .qv-dialog {
