@@ -77,10 +77,10 @@ window.QuickView = (() => {
           <!-- Правая панель: информация -->
           <div class="qv-info" id="qv-info">
             <h2 class="qv-title" id="qv-title"></h2>
-            <div class="qv-price-row" id="qv-price-row"></div>
             <div class="qv-tanks10" id="qv-tanks10"></div>
-            <div class="qv-resources" id="qv-resources"></div>
             <div class="qv-badges" id="qv-badges"></div>
+            <div class="qv-resources" id="qv-resources"></div>
+            <div class="qv-price-row" id="qv-price-row"></div>
             <div class="qv-actions" id="qv-actions"></div>
             <a class="qv-full-link" id="qv-full-link" href="#">
               Больше информации об аккаунте
@@ -583,6 +583,15 @@ window.QuickView = (() => {
     _showGallerySkeleton();
     _galleryImages   = [];
     _currentLotId    = lotId;
+
+    // Очищаем текстовые поля, чтобы не проскакивало содержимое предыдущего лота
+    _modal.querySelector('#qv-title').innerHTML      = '';
+    _modal.querySelector('#qv-price-row').innerHTML  = '';
+    _modal.querySelector('#qv-tanks10').innerHTML    = '';
+    _modal.querySelector('#qv-resources').innerHTML  = '';
+    _modal.querySelector('#qv-badges').innerHTML     = '';
+    _modal.querySelector('#qv-actions').innerHTML    = '';
+    _modal.querySelector('#qv-full-link').href       = '#';
 
     // Показываем модалку
     _isOpen = true;

@@ -1795,8 +1795,8 @@ body.qv-open {
 /* Диалог — фиксированный размер, не зависящий от контента */
 .qv-dialog {
   position: relative;
-  background: #14181c;
-  border: 0px solid var(--border, rgba(255,255,255,0.08));
+  background: #14181cba;
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
   border-radius: 16px;
   width: 100%;
   max-width: 1055px;
@@ -1806,16 +1806,18 @@ body.qv-open {
   display: flex;
   flex-direction: column;
   opacity: 0;
-  transform: translate3d(0, 16px, 0) scale(0.98);
-  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.25, 0, 0, 1);
+  transform: translateZ(0) scale(0.97);
+  transition-property: transform, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: ease;
   will-change: transform, opacity;
   box-shadow: 0 24px 64px rgb(0 0 0 / 60%);
+  backdrop-filter: blur(10px);
 }
 
 .qv-modal--visible .qv-dialog {
   opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  will-change: auto;
+  transform: translateZ(0) scale(1);
 }
 
 /* Кнопка закрытия */
@@ -1914,7 +1916,7 @@ body.qv-open {
 .qv-main-img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -2175,7 +2177,26 @@ body.qv-open {
   font-weight: 800;
   color: #e5e5e5;
   letter-spacing: -0.3px;
+  background: #2f333b;
+  padding: 0px 14px;
+  border-radius: 6px;
+  position: relative;
 }
+
+.qv-price::before,
+.qv-price::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  translate: 0 -47%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #14181c;
+}
+
+.qv-price::before { left: -6px; }
+.qv-price::after  { right: -6px; }
 
 .qv-tanks10-text {
   font-size: 13px;
@@ -2208,8 +2229,11 @@ body.qv-open {
   margin: 0px 20px 0px 20px;
 }
 
-.qv-btn-buy:hover {
+.qv-btn-buy:hover,
+.qv-btn-buy:focus,
+.qv-btn-buy:focus-visible {
   background: var(--accent-hover);
+  outline: none;
 }
 
 .qv-btn-buy img {
@@ -2234,9 +2258,9 @@ body.qv-open {
 }
 
 .qv-full-link:hover {
-  color: var(--text, #e8eaf0);
+  color: #dfdfdf;
   border-color: rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.04);
+  background: rgb(255 255 255 / 0%);
 }
 
 /* ── Мобильный лейаут — единая шторка снизу ── */
