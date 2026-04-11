@@ -2278,18 +2278,11 @@ body.qv-open {
     align-items: flex-end;
   }
 
-  /* На мобилке низ backdrop красим в цвет шторки — убирает полосу под ней */
-  .qv-backdrop {
-    background: linear-gradient(
-      to bottom,
-      rgb(0 0 0 / 72%) 70%,
-      #14181c 100%
-    );
-  }
-
   /* Шторка — единый вертикальный контейнер со скроллом */
   .qv-dialog {
     border-radius: 20px 20px 0px 0px;
+    /* Тень вниз закрашивает зазор между шторкой и низом экрана */
+    box-shadow: 0 100px 0 100px #14181c;
     width: 100%;
     max-width: 100%;
     height: auto;
