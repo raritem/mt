@@ -1768,8 +1768,6 @@ body.qv-open {
 .qv-modal {
   position: fixed;
   inset: 0;
-  /* iOS Safari: расширяем ниже safe-area чтобы не было чёрной полосы */
-  bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -2284,7 +2282,9 @@ body.qv-open {
     opacity: 1;
     /* Открытие: мягкий подброс — быстрый старт, замедление с лёгким зацепом */
     transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
-    padding-bottom: env(safe-area-inset-bottom, 16px);
+    /* Растягиваем фон шторки до самого низа чтобы не просвечивал backdrop */
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 60px);
+    margin-bottom: -60px;
     /* Сам диалог скроллится как единое целое */
     overflow-y: auto;
     overflow-x: hidden;
