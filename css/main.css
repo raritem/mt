@@ -2293,7 +2293,7 @@ body.qv-open {
     width: 100%;
     max-width: 100%;
     height: auto;
-    max-height: 100dvh;
+    max-height: 88dvh;
     transform: translateY(100%);
     opacity: 1;
     /* Открытие: мягкий подброс — быстрый старт, замедление с лёгким зацепом */
