@@ -596,9 +596,8 @@ window.QuickView = (() => {
     // Показываем модалку
     _isOpen = true;
     _modal.style.display = ''; // сбрасываем display:none
+    document.body.style.background = '#14181c'; // iOS Safari берёт цвет нижней полосы из body
     document.body.classList.add('qv-open');
-    // iOS Safari берёт цвет нижней полосы из body — ставим после того как backdrop стал непрозрачным
-    setTimeout(() => { document.body.style.background = '#14181c'; }, 220);
     // Двойной rAF: первый кадр — браузер видит display:flex, второй — запускает анимацию
     requestAnimationFrame(() => requestAnimationFrame(() => {
       _modal.classList.add('qv-modal--visible');
