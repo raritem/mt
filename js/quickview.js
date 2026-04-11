@@ -644,7 +644,7 @@ window.QuickView = (() => {
     if (isMobile && _modal) {
       const dialog = _modal.querySelector('.qv-dialog');
       if (dialog) {
-        dialog.style.transition = 'transform 0.28s cubic-bezier(0.4, 0, 1, 1)';
+        dialog.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 1, 1)';
         dialog.style.transform  = 'translateY(100%)';
       }
     }
@@ -653,7 +653,7 @@ window.QuickView = (() => {
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
     // На мобиле: 280ms скольжение, на десктопе 200ms
-    const closeDelay = isMobile ? 300 : 200;
+    const closeDelay = isMobile ? 220 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
@@ -677,12 +677,12 @@ window.QuickView = (() => {
       if (isMobilePs && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
         if (dialog) {
-          dialog.style.transition = 'transform 0.28s cubic-bezier(0.4, 0, 1, 1)';
+          dialog.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 1, 1)';
           dialog.style.transform  = 'translateY(100%)';
         }
       }
       if (_modal) _modal.classList.remove('qv-modal--visible');
-      const closeDelay = isMobilePs ? 300 : 200;
+      const closeDelay = isMobilePs ? 220 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
