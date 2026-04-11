@@ -596,6 +596,7 @@ window.QuickView = (() => {
     // Показываем модалку
     _isOpen = true;
     _modal.style.display = ''; // сбрасываем display:none
+    document.body.style.background = '#14181c'; // iOS Safari берёт цвет нижней полосы из body
     document.body.classList.add('qv-open');
     // Двойной rAF: первый кадр — браузер видит display:flex, второй — запускает анимацию
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -659,6 +660,7 @@ window.QuickView = (() => {
     const closeDelay = isMobile ? 220 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
+      document.body.style.background = ''; // возвращаем исходный цвет body
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
       // Полностью скрываем модалку чтобы не оставался артефакт на iOS
@@ -690,6 +692,7 @@ window.QuickView = (() => {
       const closeDelay = isMobilePs ? 220 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
+        document.body.style.background = ''; // возвращаем исходный цвет body
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
         if (_modal) _modal.style.display = 'none';
