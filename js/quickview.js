@@ -595,7 +595,8 @@ window.QuickView = (() => {
 
     // Показываем модалку
     _isOpen = true;
-    _modal.style.display = ''; // сбрасываем display:none после предыдущего закрытия
+    _modal.style.display = ''; // сбрасываем inline display:none от предыдущего закрытия
+    _modal.classList.add('qv-modal--open'); // display: flex
     document.body.classList.add('qv-open');
     // rAF даёт браузеру один кадр чтобы отрисовать начальное состояние до анимации
     requestAnimationFrame(() => { _modal.classList.add('qv-modal--visible'); });
@@ -669,7 +670,7 @@ window.QuickView = (() => {
         _modal.style.transition = 'opacity 0.18s ease';
         _modal.style.opacity = '0';
         setTimeout(() => {
-          if (_modal) { _modal.style.display = 'none'; _modal.style.transition = ''; _modal.style.opacity = ''; }
+          if (_modal) { _modal.style.display = 'none'; _modal.classList.remove('qv-modal--open'); _modal.style.transition = ''; _modal.style.opacity = ''; }
         }, 190);
       }
     }, closeDelay);
@@ -704,7 +705,7 @@ window.QuickView = (() => {
           _modal.style.transition = 'opacity 0.18s ease';
           _modal.style.opacity = '0';
           setTimeout(() => {
-            if (_modal) { _modal.style.display = 'none'; _modal.style.transition = ''; _modal.style.opacity = ''; }
+            if (_modal) { _modal.style.display = 'none'; _modal.classList.remove('qv-modal--open'); _modal.style.transition = ''; _modal.style.opacity = ''; }
           }, 190);
         }
       }, closeDelay);
