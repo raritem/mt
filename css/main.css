@@ -1783,6 +1783,8 @@ body.qv-open {
 .qv-backdrop {
   position: absolute;
   inset: 0;
+  /* На iOS не заходим в safe area снизу — там body даёт нужный цвет для панели вкладок */
+  bottom: env(safe-area-inset-bottom, 0px);
   background: rgb(0 0 0 / 72%);
   opacity: 0;
   transition: opacity 0.2s ease;
