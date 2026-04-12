@@ -1803,17 +1803,16 @@ body.qv-open {
   background: #14181c;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  display: none;
 }
 
 body.qv-open .safari-toolbar-fill {
-  opacity: 1;
+  display: block;
 }
 
 @media (min-width: 641px) {
   .safari-toolbar-fill {
-    display: none;
+    display: none !important;
   }
 }
 

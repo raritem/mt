@@ -98,6 +98,7 @@ window.QuickView = (() => {
           <p id="qv-error-msg">Ошибка загрузки</p>
         </div>
       </div>
+      <div class="qv-fill-area"></div>
     `;
 
     document.body.appendChild(el);
@@ -652,12 +653,18 @@ window.QuickView = (() => {
     // Сначала убираем видимость (backdrop и pointer-events)
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
+    // Принудительно скрываем fill block
+    const fillBlock = document.querySelector('.safari-toolbar-fill');
+    if (fillBlock) fillBlock.style.display = 'none';
+
     // На мобиле: 280ms скольжение, на десктопе 200ms
     const closeDelay = isMobile ? 300 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
+      // Убираем inline display чтобы следующее открытие сработало через CSS
+      if (fillBlock) fillBlock.style.display = '';
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
       if (isMobile && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
@@ -682,11 +689,14 @@ window.QuickView = (() => {
         }
       }
       if (_modal) _modal.classList.remove('qv-modal--visible');
+      const fillBlockPs = document.querySelector('.safari-toolbar-fill');
+      if (fillBlockPs) fillBlockPs.style.display = 'none';
       const closeDelay = isMobilePs ? 300 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
+        if (fillBlockPs) fillBlockPs.style.display = '';
         if (isMobilePs && _modal) {
           const dialog = _modal.querySelector('.qv-dialog');
           if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
