@@ -15,6 +15,25 @@ window.QuickView = (() => {
   let _galleryImages = [];
   let _galIdx        = 0;
   let _isOpen        = false;
+  let _fillBlock     = null;
+
+  // ── Управление fill-блоком для Safari iOS 26 ────────────────
+  function _ensureFillBlock() {
+    if (!_fillBlock || !document.body.contains(_fillBlock)) {
+      if (_fillBlock) _fillBlock.remove();
+      _fillBlock = document.createElement('div');
+      _fillBlock.className = 'safari-toolbar-fill';
+      document.body.appendChild(_fillBlock);
+    }
+    return _fillBlock;
+  }
+
+  function _removeFillBlock() {
+    if (_fillBlock && document.body.contains(_fillBlock)) {
+      _fillBlock.remove();
+      _fillBlock = null;
+    }
+  }
 
   // ── Создание DOM (один раз) ──────────────────────────────────
   function _buildModal() {
@@ -598,6 +617,7 @@ window.QuickView = (() => {
     _isOpen = true;
     document.body.classList.add('qv-open');
     _modal.classList.add('qv-modal--visible');
+    _ensureFillBlock();
 
     // History API: обновляем URL
     const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
@@ -630,6 +650,7 @@ window.QuickView = (() => {
   // ── Закрытие ─────────────────────────────────────────────────
   function close() {
     if (!_isOpen) return;
+    _removeFillBlock();
     _isOpen        = false;
     _currentLotId  = null;
     _galleryImages = [];
@@ -688,6 +709,7 @@ window.QuickView = (() => {
           dialog.style.transform  = 'translateY(100%)';
         }
       }
+      _removeFillBlock();
       if (_modal) _modal.classList.remove('qv-modal--visible');
       const fillBlockPs = document.querySelector('.safari-toolbar-fill');
       if (fillBlockPs) fillBlockPs.style.display = 'none';

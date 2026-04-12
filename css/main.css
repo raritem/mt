@@ -1803,10 +1803,6 @@ body.qv-open {
   background: #14181c;
   pointer-events: none;
   z-index: 9999;
-  display: none;
-}
-
-body.qv-open .safari-toolbar-fill {
   display: block;
 }
 
