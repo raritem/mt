@@ -98,7 +98,6 @@ window.QuickView = (() => {
           <p id="qv-error-msg">Ошибка загрузки</p>
         </div>
       </div>
-      <div class="qv-fill-area"></div>
     `;
 
     document.body.appendChild(el);

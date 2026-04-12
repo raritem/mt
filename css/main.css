@@ -1792,13 +1792,14 @@ body.qv-open {
   opacity: 1;
 }
 
-/* iOS 26 Liquid Glass — затемнение под панелью вкладок Safari */
-.qv-fill-area {
+/* iOS 26 Liquid Glass — заливка под панелью вкладок Safari */
+.safari-toolbar-fill {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 8px;
+  width: 100%;
+  height: 12px;
   background: #14181c;
   pointer-events: none;
   z-index: 9999;
@@ -1806,26 +1807,13 @@ body.qv-open {
   transition: opacity 0.2s ease;
 }
 
-.qv-modal--visible .qv-fill-area {
+body.qv-open .safari-toolbar-fill {
   opacity: 1;
 }
 
 @media (min-width: 641px) {
-  .qv-fill-area {
+  .safari-toolbar-fill {
     display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .qv-fill-area {
-    height: 34px;
-    background: #14181c;
-    z-index: 9998;
-  }
-
-  .qv-dialog {
-    position: relative;
-    z-index: 10000;
   }
 }
 
