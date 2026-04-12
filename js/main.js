@@ -956,3 +956,18 @@ async function loadFavourites() {
     if (gridEl) gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><h2>Ошибка загрузки</h2><p>' + esc(e.message) + '</p></div>';
   }
 }
+
+// ── Управление theme-color для iOS Liquid Glass ──────────────────
+function setThemeColor(color) {
+  // Находим или создаём мета-тег theme-color
+  let meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute('content', color);
+}
+
+// Сохраняем исходный цвет при загрузке страницы
+const DEFAULT_THEME_COLOR = '#0a0c0f';

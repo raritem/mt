@@ -98,7 +98,6 @@ window.QuickView = (() => {
           <p id="qv-error-msg">Ошибка загрузки</p>
         </div>
       </div>
-      <div class="qv-fill-area"></div>
     `;
 
     document.body.appendChild(el);
@@ -599,6 +598,11 @@ window.QuickView = (() => {
     document.body.classList.add('qv-open');
     _modal.classList.add('qv-modal--visible');
 
+    // ✨ Меняем цвет панели вкладок для iOS Liquid Glass
+    if (typeof setThemeColor === 'function') {
+      setThemeColor('#14181c');
+    }
+
     // History API: обновляем URL
     const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
     if (history.pushState) {
@@ -638,6 +642,11 @@ window.QuickView = (() => {
     if (history.pushState && _prevUrl) {
       history.pushState(null, '', _prevUrl);
       _prevUrl = null;
+    }
+
+    // ✨ Возвращаем исходный цвет панели вкладок
+    if (typeof setThemeColor === 'function') {
+      setThemeColor(DEFAULT_THEME_COLOR);
     }
 
     // На мобиле: плавное скольжение вниз без отскока
