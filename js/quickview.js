@@ -98,6 +98,7 @@ window.QuickView = (() => {
           <p id="qv-error-msg">Ошибка загрузки</p>
         </div>
       </div>
+      <div class="qv-fill-area"></div>
     `;
 
     document.body.appendChild(el);
@@ -595,10 +596,8 @@ window.QuickView = (() => {
 
     // Показываем модалку
     _isOpen = true;
-    _modal.style.display = ''; // сбрасываем display:none после предыдущего закрытия
     document.body.classList.add('qv-open');
-    // rAF даёт браузеру один кадр чтобы отрисовать начальное состояние до анимации
-    requestAnimationFrame(() => { _modal.classList.add('qv-modal--visible'); });
+    _modal.classList.add('qv-modal--visible');
 
     // History API: обновляем URL
     const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
@@ -646,7 +645,7 @@ window.QuickView = (() => {
     if (isMobile && _modal) {
       const dialog = _modal.querySelector('.qv-dialog');
       if (dialog) {
-        dialog.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 1, 1)';
+        dialog.style.transition = 'transform 0.28s cubic-bezier(0.4, 0, 1, 1)';
         dialog.style.transform  = 'translateY(100%)';
       }
     }
@@ -654,7 +653,8 @@ window.QuickView = (() => {
     // Сначала убираем видимость (backdrop и pointer-events)
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
-    const closeDelay = isMobile ? 220 : 200;
+    // На мобиле: 280ms скольжение, на десктопе 200ms
+    const closeDelay = isMobile ? 300 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
@@ -663,14 +663,6 @@ window.QuickView = (() => {
       if (isMobile && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
         if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
-      }
-      // Плавно растворяем весь модал, затем скрываем
-      if (_modal) {
-        _modal.style.transition = 'opacity 0.18s ease';
-        _modal.style.opacity = '0';
-        setTimeout(() => {
-          if (_modal) { _modal.style.display = 'none'; _modal.style.transition = ''; _modal.style.opacity = ''; }
-        }, 190);
       }
     }, closeDelay);
   }
@@ -686,12 +678,12 @@ window.QuickView = (() => {
       if (isMobilePs && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
         if (dialog) {
-          dialog.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 1, 1)';
+          dialog.style.transition = 'transform 0.28s cubic-bezier(0.4, 0, 1, 1)';
           dialog.style.transform  = 'translateY(100%)';
         }
       }
       if (_modal) _modal.classList.remove('qv-modal--visible');
-      const closeDelay = isMobilePs ? 220 : 200;
+      const closeDelay = isMobilePs ? 300 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
@@ -699,13 +691,6 @@ window.QuickView = (() => {
         if (isMobilePs && _modal) {
           const dialog = _modal.querySelector('.qv-dialog');
           if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
-        }
-        if (_modal) {
-          _modal.style.transition = 'opacity 0.18s ease';
-          _modal.style.opacity = '0';
-          setTimeout(() => {
-            if (_modal) { _modal.style.display = 'none'; _modal.style.transition = ''; _modal.style.opacity = ''; }
-          }, 190);
         }
       }, closeDelay);
     }
