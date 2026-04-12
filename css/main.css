@@ -1794,6 +1794,19 @@ body.qv-open {
   opacity: 1;
 }
 
+/* Заливка safe-area снизу цветом шторки — показывается только через JS */
+.qv-fill-area {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  background: #14181c;
+  z-index: 1001;
+  pointer-events: none;
+}
+
 
 /* Диалог — фиксированный размер, не зависящий от контента */
 .qv-dialog {
