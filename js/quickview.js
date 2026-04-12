@@ -657,6 +657,10 @@ window.QuickView = (() => {
     const fillBlock = document.querySelector('.safari-toolbar-fill');
     if (fillBlock) fillBlock.style.display = 'none';
 
+    // Принудительно скрываем qv-fill-area
+    const fillArea = document.querySelector('.qv-fill-area');
+    if (fillArea) fillArea.style.display = 'none';
+
     // На мобиле: 280ms скольжение, на десктопе 200ms
     const closeDelay = isMobile ? 300 : 200;
     setTimeout(() => {
@@ -665,6 +669,7 @@ window.QuickView = (() => {
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
       // Убираем inline display чтобы следующее открытие сработало через CSS
       if (fillBlock) fillBlock.style.display = '';
+      if (fillArea) fillArea.style.display = '';
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
       if (isMobile && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
