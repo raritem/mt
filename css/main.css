@@ -1798,12 +1798,12 @@ body.qv-open {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100px;
+  height: 8px;
   background: #14181c;
   pointer-events: none;
-  z-index: 0;
+  z-index: 9999;
   opacity: 0;
-  transition: none;
+  transition: opacity 0.2s ease;
 }
 
 .qv-modal--visible .qv-fill-area {
@@ -1813,6 +1813,19 @@ body.qv-open {
 @media (min-width: 641px) {
   .qv-fill-area {
     display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .qv-fill-area {
+    height: 34px;
+    background: #14181c;
+    z-index: 9998;
+  }
+
+  .qv-dialog {
+    position: relative;
+    z-index: 10000;
   }
 }
 
