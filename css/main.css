@@ -1760,8 +1760,6 @@ body.qv-open {
   right: 0;
   width: 100%;
   overflow-y: scroll; /* держим скроллбар видимым, чтобы не было сдвига */
-  /* iOS Safari: закрашиваем safe-area снизу чтобы не было чёрной полосы */
-  background-color: var(--bg, #0a0c0f);
 }
 
 /* Оверлей */
@@ -1779,13 +1777,6 @@ body.qv-open {
 
 .qv-modal--visible {
   pointer-events: auto;
-  visibility: visible;
-}
-
-/* После закрытия — скрываем полностью после transition */
-.qv-modal:not(.qv-modal--visible) {
-  visibility: hidden;
-  transition: visibility 0s linear 0.2s;
 }
 
 /* Фон-затемнение — без blur для сохранения качества текста */
@@ -2234,7 +2225,7 @@ body.qv-open {
   text-decoration: none;
   transition: background 0.15s, transform 0.12s;
   border: none;
-  margin: 0px 20px 0px 20px;
+  margin: 30px 20px 0px 20px;
 }
 
 .qv-btn-buy:hover,
@@ -2276,15 +2267,6 @@ body.qv-open {
   .qv-modal {
     padding: 0;
     align-items: flex-end;
-  }
-
-  /* На мобилке низ backdrop красим в цвет шторки — убирает полосу под ней */
-  .qv-backdrop {
-    background: linear-gradient(
-      to bottom,
-      rgb(0 0 0 / 72%) 70%,
-      #14181c 100%
-    );
   }
 
   /* Шторка — единый вертикальный контейнер со скроллом */
