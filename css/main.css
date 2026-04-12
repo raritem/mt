@@ -1798,12 +1798,12 @@ body.qv-open {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100px;
+  height: 5px;
   background: #14181c;
   pointer-events: none;
-  z-index: 999;
+  z-index: 0;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: none;
 }
 
 .qv-modal--visible .qv-fill-area {
@@ -1990,7 +1990,7 @@ body.qv-open {
 .qv-thumb-skeleton {
   flex-shrink: 0;
   width: 68px;
-  height: 50px;
+  height: 5px;
   border-radius: 12px;
   background: var(--bg-card, #1a1e24);
   position: relative;
@@ -2144,7 +2144,7 @@ body.qv-open {
 .qv-thumb {
   flex-shrink: 0;
   width: 68px;
-  height: 50px;
+  height: 5px;
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
