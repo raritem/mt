@@ -1792,6 +1792,30 @@ body.qv-open {
   opacity: 1;
 }
 
+/* iOS 26 Liquid Glass — затемнение под панелью вкладок Safari */
+.qv-fill-area {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: #14181c;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: none;
+}
+
+.qv-modal--visible .qv-fill-area {
+  opacity: 1;
+}
+
+@media (min-width: 641px) {
+  .qv-fill-area {
+    display: none;
+  }
+}
+
 /* Диалог — фиксированный размер, не зависящий от контента */
 .qv-dialog {
   position: relative;
