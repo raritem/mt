@@ -1798,7 +1798,7 @@ body.qv-open {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100px;
+  height: 5px;
   background: #14181c;
   pointer-events: none;
   z-index: 0;
