@@ -597,6 +597,7 @@ window.QuickView = (() => {
     // Показываем модалку
     _isOpen = true;
     document.body.classList.add('qv-open');
+    document.body.style.background = '#14181c'; // match dialog bg for Safari safe-area
     _modal.classList.add('qv-modal--visible');
 
     // History API: обновляем URL
@@ -657,6 +658,7 @@ window.QuickView = (() => {
     const closeDelay = isMobile ? 300 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
+      document.body.style.background = ''; // restore original background
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
@@ -686,6 +688,7 @@ window.QuickView = (() => {
       const closeDelay = isMobilePs ? 300 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
+        document.body.style.background = ''; // restore original background
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
         if (isMobilePs && _modal) {
