@@ -9,6 +9,7 @@ window.QuickView = (() => {
 
   // ── Состояние ────────────────────────────────────────────────
   let _modal        = null;   // DOM-узел модалки (создаётся один раз)
+  let _tintStrip    = null;   // Safari 26: полоса для тинтинга нижней панели
   let _currentLotId = null;
   let _prevUrl      = null;   // URL до открытия (для History API)
   let _scrollY      = 0;      // Позиция скролла страницы
@@ -107,6 +108,15 @@ window.QuickView = (() => {
     // Только так position:fixed элемент исключается из алгоритма тинтинга панели.
     // display:flex вернём при открытии, display:none — после анимации закрытия.
     el.style.display = 'none';
+
+    // Тинт-полоса: отдельный position:fixed элемент у нижнего края.
+    // Safari семплирует тинт именно отсюда. Живёт рядом с modal,
+    // скрывается вместе с ним. Бэкдроп перекрывает её — пользователь не видит.
+    const tintStrip = document.createElement('div');
+    tintStrip.className = 'qv-tint-strip';
+    tintStrip.style.display = 'none';
+    document.body.appendChild(tintStrip);
+    _tintStrip = tintStrip;
 
     // Закрытие по бекдропу
     el.querySelector('#qv-backdrop').addEventListener('click', close);
@@ -606,6 +616,7 @@ window.QuickView = (() => {
     // Класс --visible добавляем в следующем кадре через requestAnimationFrame —
     // иначе браузер схлопывает оба изменения в один paint и анимация не запускается.
     _modal.style.display = 'flex';
+    if (_tintStrip) _tintStrip.style.display = 'block';
     requestAnimationFrame(() => {
       _modal.classList.add('qv-modal--visible');
     });
@@ -674,6 +685,7 @@ window.QuickView = (() => {
       // Только display:none гарантированно исключает position:fixed элемент
       // из алгоритма тинтинга нижней панели. opacity/pointer-events не помогают.
       if (_modal) _modal.style.display = 'none';
+      if (_tintStrip) _tintStrip.style.display = 'none';
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
       if (isMobile && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
@@ -705,6 +717,7 @@ window.QuickView = (() => {
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
         // Safari 26: прячем после анимации — только display:none исключает из тинтинга
         if (_modal) _modal.style.display = 'none';
+        if (_tintStrip) _tintStrip.style.display = 'none';
         if (isMobilePs && _modal) {
           const dialog = _modal.querySelector('.qv-dialog');
           if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
