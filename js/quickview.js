@@ -602,9 +602,8 @@ window.QuickView = (() => {
     // Показываем модалку
     _isOpen = true;
     document.body.classList.add('qv-open');
-    // Safari 26: display:flex и --visible одновременно.
-    // Бэкдроп стартует opacity:1 без transition — мгновенно перекрывает
-    // background-color modal до первого paint. Вспышки нет.
+    // Safari 26: сначала display:flex чтобы элемент был в render tree,
+    // потом класс --visible запускает анимацию появления
     _modal.style.display = 'flex';
     _modal.classList.add('qv-modal--visible');
 
@@ -659,8 +658,7 @@ window.QuickView = (() => {
       }
     }
 
-    // --closing даёт бэкдропу transition для плавного исчезновения
-    if (_modal) _modal.classList.add('qv-modal--closing');
+    // Сначала убираем видимость (backdrop и pointer-events)
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
     // На мобиле: 280ms скольжение, на десктопе 200ms
@@ -669,8 +667,9 @@ window.QuickView = (() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
-      if (_modal) _modal.classList.remove('qv-modal--closing');
-      // Safari 26: display:none после анимации исключает modal из тинтинга
+      // Safari 26 Liquid Glass: прячем modal через display:none ПОСЛЕ анимации.
+      // Только display:none гарантированно исключает position:fixed элемент
+      // из алгоритма тинтинга нижней панели. opacity/pointer-events не помогают.
       if (_modal) _modal.style.display = 'none';
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
       if (isMobile && _modal) {
@@ -695,14 +694,13 @@ window.QuickView = (() => {
           dialog.style.transform  = 'translateY(100%)';
         }
       }
-      if (_modal) _modal.classList.add('qv-modal--closing');
       if (_modal) _modal.classList.remove('qv-modal--visible');
       const closeDelay = isMobilePs ? 300 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
-        if (_modal) _modal.classList.remove('qv-modal--closing');
+        // Safari 26: прячем после анимации — только display:none исключает из тинтинга
         if (_modal) _modal.style.display = 'none';
         if (isMobilePs && _modal) {
           const dialog = _modal.querySelector('.qv-dialog');

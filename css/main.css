@@ -1773,10 +1773,6 @@ body.qv-open {
   padding: 16px;
   box-sizing: border-box;
   pointer-events: none;
-  /* Safari 26 Liquid Glass: background-color даёт алгоритму тинтинга правильный
-     цвет. Визуально перекрывается бэкдропом который стартует opacity:1 без
-     transition — вспышки нет. */
-  background-color: #14181c;
 }
 
 .qv-modal--visible {
@@ -1788,19 +1784,12 @@ body.qv-open {
   position: absolute;
   inset: 0;
   background: rgb(0 0 0 / 72%);
-  /* Стартует opacity:1 — мгновенно перекрывает background-color modal.
-     Transition на закрытие добавляется классом --closing. */
-  opacity: 1;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .qv-modal--visible .qv-backdrop {
   opacity: 1;
-}
-
-/* Transition только при закрытии — чтобы бэкдроп плавно исчезал */
-.qv-modal--closing .qv-backdrop {
-  opacity: 0;
-  transition: opacity 0.2s ease;
 }
 
 /* iOS 26 Liquid Glass: тинтинг нижней панели управляется через body.style.backgroundColor
