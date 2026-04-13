@@ -103,6 +103,11 @@ window.QuickView = (() => {
 
     document.body.appendChild(el);
 
+    // Safari 26 Liquid Glass: сразу скрываем через display:none.
+    // Только так position:fixed элемент исключается из алгоритма тинтинга панели.
+    // display:flex вернём при открытии, display:none — после анимации закрытия.
+    el.style.display = 'none';
+
     // Закрытие по бекдропу
     el.querySelector('#qv-backdrop').addEventListener('click', close);
     el.querySelector('#qv-close').addEventListener('click', close);
@@ -597,14 +602,10 @@ window.QuickView = (() => {
     // Показываем модалку
     _isOpen = true;
     document.body.classList.add('qv-open');
+    // Safari 26: сначала display:flex чтобы элемент был в render tree,
+    // потом класс --visible запускает анимацию появления
+    _modal.style.display = 'flex';
     _modal.classList.add('qv-modal--visible');
-
-    // Safari 26 Liquid Glass: управляем тинтингом нижней панели через body.backgroundColor.
-    // Safari живо наблюдает за body.background-color и обновляет тинт инструментальной панели.
-    // #14181c — цвет фона шторки (.qv-dialog background).
-    if (window.innerWidth <= 640) {
-      document.body.style.backgroundColor = '#14181c';
-    }
 
     // History API: обновляем URL
     const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
@@ -664,12 +665,12 @@ window.QuickView = (() => {
     const closeDelay = isMobile ? 300 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
-      // Safari 26 Liquid Glass: возвращаем body.backgroundColor к исходному
-      // (CSS-переменная --bg = #0a0c0f). Safari живо наблюдает за этим свойством
-      // и мгновенно обновляет тинт нижней панели обратно к цвету страницы.
-      document.body.style.removeProperty('background-color');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
+      // Safari 26 Liquid Glass: прячем modal через display:none ПОСЛЕ анимации.
+      // Только display:none гарантированно исключает position:fixed элемент
+      // из алгоритма тинтинга нижней панели. opacity/pointer-events не помогают.
+      if (_modal) _modal.style.display = 'none';
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
       if (isMobile && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
@@ -697,10 +698,10 @@ window.QuickView = (() => {
       const closeDelay = isMobilePs ? 300 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
-        // Safari 26 Liquid Glass: возвращаем тинт к цвету страницы
-        document.body.style.removeProperty('background-color');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
+        // Safari 26: прячем после анимации — только display:none исключает из тинтинга
+        if (_modal) _modal.style.display = 'none';
         if (isMobilePs && _modal) {
           const dialog = _modal.querySelector('.qv-dialog');
           if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
