@@ -1773,21 +1773,10 @@ body.qv-open {
   padding: 16px;
   box-sizing: border-box;
   pointer-events: none;
-}
-
-/* Safari 26 Liquid Glass: тонкая полоса у нижнего края с цветом шторки.
-   Safari семплирует тинт из position:fixed элементов у нижнего края viewport.
-   Полоса скрыта вместе с modal (display:none), появляется только пока шторка
-   открыта. Бэкдроп перекрывает её визуально — пользователь её не видит. */
-.qv-tint-strip {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 8px;
+  /* Safari 26 Liquid Glass: background-color даёт алгоритму тинтинга правильный
+     цвет. Визуально перекрывается бэкдропом который стартует opacity:1 без
+     transition — вспышки нет. */
   background-color: #14181c;
-  pointer-events: none;
-  z-index: 999;
 }
 
 .qv-modal--visible {
@@ -1799,12 +1788,19 @@ body.qv-open {
   position: absolute;
   inset: 0;
   background: rgb(0 0 0 / 72%);
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  /* Стартует opacity:1 — мгновенно перекрывает background-color modal.
+     Transition на закрытие добавляется классом --closing. */
+  opacity: 1;
 }
 
 .qv-modal--visible .qv-backdrop {
   opacity: 1;
+}
+
+/* Transition только при закрытии — чтобы бэкдроп плавно исчезал */
+.qv-modal--closing .qv-backdrop {
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 /* iOS 26 Liquid Glass: тинтинг нижней панели управляется через body.style.backgroundColor

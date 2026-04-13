@@ -9,7 +9,6 @@ window.QuickView = (() => {
 
   // ── Состояние ────────────────────────────────────────────────
   let _modal        = null;   // DOM-узел модалки (создаётся один раз)
-  let _tintStrip    = null;   // Safari 26: полоса для тинтинга нижней панели
   let _currentLotId = null;
   let _prevUrl      = null;   // URL до открытия (для History API)
   let _scrollY      = 0;      // Позиция скролла страницы
@@ -108,15 +107,6 @@ window.QuickView = (() => {
     // Только так position:fixed элемент исключается из алгоритма тинтинга панели.
     // display:flex вернём при открытии, display:none — после анимации закрытия.
     el.style.display = 'none';
-
-    // Тинт-полоса: отдельный position:fixed элемент у нижнего края.
-    // Safari семплирует тинт именно отсюда. Живёт рядом с modal,
-    // скрывается вместе с ним. Бэкдроп перекрывает её — пользователь не видит.
-    const tintStrip = document.createElement('div');
-    tintStrip.className = 'qv-tint-strip';
-    tintStrip.style.display = 'none';
-    document.body.appendChild(tintStrip);
-    _tintStrip = tintStrip;
 
     // Закрытие по бекдропу
     el.querySelector('#qv-backdrop').addEventListener('click', close);
@@ -612,14 +602,11 @@ window.QuickView = (() => {
     // Показываем модалку
     _isOpen = true;
     document.body.classList.add('qv-open');
-    // Safari 26: сначала display:flex чтобы элемент попал в render tree.
-    // Класс --visible добавляем в следующем кадре через requestAnimationFrame —
-    // иначе браузер схлопывает оба изменения в один paint и анимация не запускается.
+    // Safari 26: display:flex и --visible одновременно.
+    // Бэкдроп стартует opacity:1 без transition — мгновенно перекрывает
+    // background-color modal до первого paint. Вспышки нет.
     _modal.style.display = 'flex';
-    if (_tintStrip) _tintStrip.style.display = 'block';
-    requestAnimationFrame(() => {
-      _modal.classList.add('qv-modal--visible');
-    });
+    _modal.classList.add('qv-modal--visible');
 
     // History API: обновляем URL
     const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
@@ -672,7 +659,8 @@ window.QuickView = (() => {
       }
     }
 
-    // Сначала убираем видимость (backdrop и pointer-events)
+    // --closing даёт бэкдропу transition для плавного исчезновения
+    if (_modal) _modal.classList.add('qv-modal--closing');
     if (_modal) _modal.classList.remove('qv-modal--visible');
 
     // На мобиле: 280ms скольжение, на десктопе 200ms
@@ -681,11 +669,9 @@ window.QuickView = (() => {
       document.body.classList.remove('qv-open');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
-      // Safari 26 Liquid Glass: прячем modal через display:none ПОСЛЕ анимации.
-      // Только display:none гарантированно исключает position:fixed элемент
-      // из алгоритма тинтинга нижней панели. opacity/pointer-events не помогают.
+      if (_modal) _modal.classList.remove('qv-modal--closing');
+      // Safari 26: display:none после анимации исключает modal из тинтинга
       if (_modal) _modal.style.display = 'none';
-      if (_tintStrip) _tintStrip.style.display = 'none';
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
       if (isMobile && _modal) {
         const dialog = _modal.querySelector('.qv-dialog');
@@ -709,15 +695,15 @@ window.QuickView = (() => {
           dialog.style.transform  = 'translateY(100%)';
         }
       }
+      if (_modal) _modal.classList.add('qv-modal--closing');
       if (_modal) _modal.classList.remove('qv-modal--visible');
       const closeDelay = isMobilePs ? 300 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
-        // Safari 26: прячем после анимации — только display:none исключает из тинтинга
+        if (_modal) _modal.classList.remove('qv-modal--closing');
         if (_modal) _modal.style.display = 'none';
-        if (_tintStrip) _tintStrip.style.display = 'none';
         if (isMobilePs && _modal) {
           const dialog = _modal.querySelector('.qv-dialog');
           if (dialog) { dialog.style.transition = ''; dialog.style.transform = ''; }
