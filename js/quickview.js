@@ -602,10 +602,13 @@ window.QuickView = (() => {
     // Показываем модалку
     _isOpen = true;
     document.body.classList.add('qv-open');
-    // Safari 26: сначала display:flex чтобы элемент был в render tree,
-    // потом класс --visible запускает анимацию появления
+    // Safari 26: сначала display:flex чтобы элемент попал в render tree.
+    // Класс --visible добавляем в следующем кадре через requestAnimationFrame —
+    // иначе браузер схлопывает оба изменения в один paint и анимация не запускается.
     _modal.style.display = 'flex';
-    _modal.classList.add('qv-modal--visible');
+    requestAnimationFrame(() => {
+      _modal.classList.add('qv-modal--visible');
+    });
 
     // History API: обновляем URL
     const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
