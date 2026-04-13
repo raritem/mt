@@ -1773,6 +1773,11 @@ body.qv-open {
   padding: 16px;
   box-sizing: border-box;
   pointer-events: none;
+  /* Safari 26 Liquid Glass: даём modal собственный background-color равный цвету
+     шторки. Safari читает background-color ближайшего fixed-элемента у нижнего
+     края — это сам .qv-modal. Без этого он смотрит сквозь прозрачный modal на
+     body (#0a0c0f) и тинтит панель почти чёрным вместо цвета шторки. */
+  background-color: #14181c;
 }
 
 .qv-modal--visible {
