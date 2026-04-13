@@ -599,6 +599,13 @@ window.QuickView = (() => {
     document.body.classList.add('qv-open');
     _modal.classList.add('qv-modal--visible');
 
+    // Safari 26 Liquid Glass: управляем тинтингом нижней панели через body.backgroundColor.
+    // Safari живо наблюдает за body.background-color и обновляет тинт инструментальной панели.
+    // #14181c — цвет фона шторки (.qv-dialog background).
+    if (window.innerWidth <= 640) {
+      document.body.style.backgroundColor = '#14181c';
+    }
+
     // History API: обновляем URL
     const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
     if (history.pushState) {
@@ -657,11 +664,10 @@ window.QuickView = (() => {
     const closeDelay = isMobile ? 300 : 200;
     setTimeout(() => {
       document.body.classList.remove('qv-open');
-      // Safari 26 Liquid Glass: после снятия qv-open CSS автоматически применяет
-      // display: none к .safari-toolbar-fill — никакого ручного управления display
-      // не нужно. Любой inline style.display сбрасываем, чтобы CSS работал чисто.
-      const fillBlock = document.querySelector('.safari-toolbar-fill');
-      if (fillBlock) fillBlock.style.removeProperty('display');
+      // Safari 26 Liquid Glass: возвращаем body.backgroundColor к исходному
+      // (CSS-переменная --bg = #0a0c0f). Safari живо наблюдает за этим свойством
+      // и мгновенно обновляет тинт нижней панели обратно к цвету страницы.
+      document.body.style.removeProperty('background-color');
       document.documentElement.style.removeProperty('--qv-scroll-top');
       window.scrollTo({ top: _scrollY, behavior: 'instant' });
       // Сбрасываем inline-стили чтобы следующее открытие анимировалось правильно
@@ -691,10 +697,8 @@ window.QuickView = (() => {
       const closeDelay = isMobilePs ? 300 : 200;
       setTimeout(() => {
         document.body.classList.remove('qv-open');
-        // Safari 26: снятие qv-open → CSS прячет fillBlock через display: none.
-        // Убираем любой оставшийся inline style, чтобы CSS работал без помех.
-        const fillBlockPs = document.querySelector('.safari-toolbar-fill');
-        if (fillBlockPs) fillBlockPs.style.removeProperty('display');
+        // Safari 26 Liquid Glass: возвращаем тинт к цвету страницы
+        document.body.style.removeProperty('background-color');
         document.documentElement.style.removeProperty('--qv-scroll-top');
         window.scrollTo({ top: _scrollY, behavior: 'instant' });
         if (isMobilePs && _modal) {
