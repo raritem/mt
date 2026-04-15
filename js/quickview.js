@@ -611,25 +611,36 @@ window.QuickView = (() => {
     });
 
     // History API: обновляем URL
-    const lotUrl = ROOT + 'lot/?shop=' + encodeURIComponent(shopId) + '&id=' + encodeURIComponent(lotId);
+    const catalogueId = 'lots';
+    const lotUrl = ROOT + 'view/?id=' + encodeURIComponent(lotId);
     if (history.pushState) {
       _prevUrl = window.location.href;
-      history.pushState({ quickview: true, shopId, lotId }, '', lotUrl);
+      history.pushState({ quickview: true, shopId: catalogueId, lotId }, '', lotUrl);
     }
 
     // Ленивая загрузка данных
     try {
       const rawBase = getGhRawBase();
-      const data = rawBase
-        ? await fetchJSON(rawBase + 'data/' + shopId + '.json')
-        : await fetchJSON(ROOT + 'data/' + shopId + '.json');
+      const csvUrl = rawBase
+        ? rawBase + 'data/accounts.csv'
+        : ROOT + 'data/accounts.csv';
+      const configUrl = rawBase
+        ? rawBase + 'config.json'
+        : ROOT + 'config.json';
+      
+      // Fallback URLs (always local files)
+      const fallbackCsvUrl = ROOT + 'data/accounts.csv';
+      const fallbackConfigUrl = ROOT + 'config.json';
+      
+      const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
 
       if (!_isOpen || _currentLotId !== lotId) return; // закрыли пока грузили
 
-      const lot = (data.lots || []).find(l => l.id === lotId);
+      const _cleanId = lotId.replace(/^lot_/, '');
+      const lot = (data.lots || []).find(l => l.id === _cleanId || l.id === lotId);
       if (!lot) throw new Error('Лот не найден');
 
-      _renderContent(lot, data, shopId, lotUrl);
+      _renderContent(lot, data, catalogueId, lotUrl);
     } catch (e) {
       if (!_isOpen || _currentLotId !== lotId) return;
       spinnerEl.style.display = 'none';

@@ -18,7 +18,8 @@
   --text-muted:   #6b7280;
   --text-dim:     #9ca3af;
 
-  --accent:       rgba(0, 91, 255, 1);
+  --accent:       rgb(204 255 0);
+  --accent2:       rgba(0, 91, 255, 1);
   --accent-dim:   rgba(245,197,24,0.12);
   --accent-hover: rgba(0, 79, 222, 1);
   --danger:       #ef4444;
@@ -116,11 +117,18 @@ input, textarea { font-family: var(--font-body); }
   font-family: var(--font-display);
   font-size: 24px;
   font-weight: 700;
-  color: var(--text);
+  color: #ffffff;
   letter-spacing: -0.02em;
 }
 
 .logo-accent { color: var(--accent); }
+
+.logo-img {
+  margin-top: 5px;
+  height: 110px;
+  width: auto;
+  display: block;
+}
 
 /* ── Хлебные крошки ──────────────────────────────────────────── */
 .breadcrumb {
@@ -778,9 +786,9 @@ input, textarea { font-family: var(--font-body); }
   background: var(--accent);
   border: 0px solid rgba(245,197,24,0.25);
   border-radius: 10px;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
+  color: #000000;
+  font-size: 16px;
+  font-weight: 600;
   text-decoration: none;
   transition: background var(--transition), border-color var(--transition);
 }
@@ -1057,11 +1065,11 @@ input, textarea { font-family: var(--font-body); }
 .funpay-logo-footer {
   display: inline-block;
   vertical-align: middle;
-  height: 20px;
+  height: 23px;
   width: auto;
   position: relative;
   top: 1px;
-  filter: brightness(0) invert(1);
+  filter: brightness(0) invert(0);
   padding: 0px 0px 0px 3px;
 }
 
@@ -1120,6 +1128,9 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #30343c, transparent 70%);
+  padding: 2px 46px 2px 8px;
+  border-radius: 8px;
 }
 
 /* Lot detail page: title + price on same row */
@@ -2221,7 +2232,7 @@ body.qv-open {
   gap: 3px;
   padding: 14px 18px;
   background: var(--accent, #4e73f8);
-  color: #fff;
+  color: #000000;
   border-radius: 16px;
   font-size: 16px;
   font-weight: 600;
@@ -2399,4 +2410,60 @@ body.qv-open {
     background: var(--bg-card);
     box-shadow: none;
   }
+}
+
+/* ── TANKNEXUS: Logo accent ─────────────────────────────────────── */
+.logo-accent { color: var(--accent); }
+
+/* ── TANKNEXUS: View toggle (grid/table) ────────────────────────── */
+.lots-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lots-view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #15191e;
+  border: 0px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.view-toggle-btn:hover {
+  background: rgba(255,255,255,0.07);
+  color: var(--text);
+}
+
+.view-toggle-btn.active {
+  background: rgb(47 51 59);
+  color: #f7f7f7;
+}
+
+/* Вторичная сетка лотов (в секции "Ещё аккаунты") */
+.lots-grid--secondary {
+  margin-top: 0;
+}
+
+/* Скрываем breadcrumb полностью */
+.breadcrumb {
+  display: none !important;
 }

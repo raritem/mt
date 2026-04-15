@@ -72,30 +72,30 @@
 /* ── Кнопка назад — левый верхний угол ──────────────────────── */
 .lb-back {
   position: absolute; top: 16px; left: 16px; z-index: 30;
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(255,255,255,0.18);
+  background: rgb(255 255 255 / 23%);
+  border: 0px solid rgba(255,255,255,0.18);
   border-radius: 50%;
   width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   color: white;
-  opacity: 0.75;
   outline: none;
   cursor: pointer;
+  backdrop-filter: blur(4px);
 }
 .lb-back:focus { outline: none; }
 
 /* ── Кнопка закрыть — всегда видима ─────────────────────────── */
 .lb-close {
   position: absolute; top: 16px; right: 16px; z-index: 30;
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(255,255,255,0.18);
+  background: rgb(255 255 255 / 12%);
+  border: 0px solid rgba(255,255,255,0.18);
   border-radius: 50%;
   width: 44px; height: 44px;
   display: flex; align-items: center; justify-content: center;
   color: white;
   transition: background 0.2s, opacity 0.2s;
-  opacity: 0.75;
   outline: none;
+  backdrop-filter: blur(4px);
 }
 .lb-close:focus { outline: none; }
 .lb-close:hover { background: rgba(255,255,255,0.18); opacity: 1; }
@@ -106,7 +106,7 @@
   top: 50%; transform: translateY(-50%);
   z-index: 20;
   background: none; border: none;
-  width: 56px; height: 56px;
+  width: 47px; height: 47px;
   display: flex; align-items: center; justify-content: center;
   color: white; cursor: pointer;
   -webkit-appearance: none;
@@ -121,14 +121,14 @@
   position: absolute; inset: 0;
   border-radius: 50%;
   background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.14);
+  border: 0px solid rgba(255,255,255,0.14);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 .lb-arrow:hover::after  { background: rgba(255,255,255,0.16); }
 .lb-arrow:active::after { background: rgba(255,255,255,0.22); }
 .lb-arrow:disabled      { opacity: 0.2; pointer-events: none; }
-.lb-arrow svg           { position: relative; z-index: 1; filter: drop-shadow(0 1px 4px rgba(0,0,0,0.9)); }
+.lb-arrow svg           { position: relative; z-index: 1; }
 .lightbox.ui-visible .lb-arrow::after { opacity: 1; }
 
 .lb-prev { left: 14px; }

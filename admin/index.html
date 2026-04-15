@@ -3,25 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Админка — WoT Shop</title>
+  <title>Админка — TANKNEXUS</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
   <link rel="stylesheet" href="../css/main.css?v=__CACHE_VER__">
   <link rel="stylesheet" href="../css/admin.css?v=__CACHE_VER__">
-  <!-- Lucide Icons -->
 </head>
 <body class="admin-body">
 
   <header class="admin-header">
     <div class="header-inner">
-      <a href="../index.html" class="logo">
+      <a href="../gallery/" class="logo">
         <span class="logo-icon">🎯</span>
-        <span class="logo-text">WoT<span class="logo-accent">Shop</span></span>
+        <img src="../logo.svg" alt="TANKNEXUS" class="logo-img">
       </a>
       <span class="admin-badge">Admin</span>
       <div class="admin-header-right">
-        <button class="sidebar-burger" id="sidebar-burger" aria-label="Открыть меню">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
         <span class="token-status" id="token-status">Не подключено</span>
         <button class="btn btn-ghost" id="settings-btn">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -54,7 +50,7 @@
       <div class="form-group">
         <label>Репозиторий</label>
         <p class="form-hint">Формат: <code>username/repo-name</code></p>
-        <input type="text" id="repo-input" placeholder="username/wot-shop">
+        <input type="text" id="repo-input" placeholder="username/tanknexus">
       </div>
       <div class="form-group">
         <label>Ветка</label>
@@ -67,61 +63,15 @@
     </div>
   </div>
 
-  <!-- Основной layout -->
-  <div class="admin-layout-wrap">
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
-  <div class="admin-layout">
-    <aside class="admin-sidebar">
-      <div class="sidebar-section">
-        <h3 class="sidebar-title">Витрины</h3>
-        <div id="shop-list" class="shop-list">
-          <div class="loading-spinner"><div class="spinner"></div></div>
-        </div>
-        <button class="btn btn-outline btn-full" id="add-shop-btn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Добавить витрину
-        </button>
-      </div>
-    </aside>
-
-    <main class="admin-main" id="admin-main">
+  <!-- Основной layout — без sidebar -->
+  <div class="admin-layout-wrap admin-layout-wrap--nosidebar">
+    <main class="admin-main admin-main--full" id="admin-main">
       <div class="empty-state" id="empty-state">
-        <div class="empty-icon">🏪</div>
-        <h2>Выберите витрину</h2>
-        <p>Выберите витрину слева или создайте новую</p>
+        <div class="empty-icon">📦</div>
+        <h2>Галерея</h2>
+        <p>Загружаем лоты…</p>
       </div>
     </main>
-  </div>
-  </div>
-
-  <!-- Модалка: витрина -->
-  <div class="modal-overlay" id="shop-modal-overlay"></div>
-  <div class="modal" id="shop-modal">
-    <div class="modal-header">
-      <h2 id="shop-modal-title">Новая витрина</h2>
-      <button class="modal-close" id="shop-modal-close">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>ID витрины (латиница, без пробелов)</label>
-        <input type="text" id="shop-id-input" placeholder="shop1" pattern="[a-z0-9_-]+">
-      </div>
-      <div class="form-group">
-        <label>Название витрины</label>
-        <input type="text" id="shop-name-input" placeholder="Мой магазин">
-      </div>
-      <div class="form-group">
-        <label>Описание (необязательно)</label>
-        <input type="text" id="shop-desc-input" placeholder="Продаю аккаунты WoT">
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="shop-modal-cancel">Отмена</button>
-        <button class="btn btn-primary" id="shop-modal-save">Сохранить</button>
-      </div>
-      <div class="status-msg" id="shop-modal-status"></div>
-    </div>
   </div>
 
   <!-- Модалка: лот -->
@@ -196,12 +146,12 @@
         <p class="form-hint">Оставьте поле пустым — ресурс не будет показан</p>
       </div>
       <div class="form-group">
-        <label>Показывать в профиле FunPay</label>
+        <label>Показывать в верхней сетке</label>
         <div class="toggle-row">
           <input type="checkbox" id="lot-onfunpay-input">
           <label for="lot-onfunpay-input" class="toggle-label">
             <span class="toggle-ui" aria-hidden="true"></span>
-            <span class="toggle-text">Если выключено — лот попадёт в таблицу “ещё аккаунты”</span>
+            <span class="toggle-text">Если выключено — лот попадёт в раздел "ещё аккаунты"</span>
           </label>
         </div>
       </div>
@@ -233,19 +183,9 @@
 
   <script src="../js/main.js?v=__CACHE_VER__"></script>
   <script src="../js/resources.js?v=__CACHE_VER__"></script>
+  <script src="../js/csv-loader.js?v=__CACHE_VER__"></script>
   <script src="../js/github-api.js?v=__CACHE_VER__"></script>
   <script src="../js/image-convert.js?v=__CACHE_VER__"></script>
   <script src="../js/admin.js?v=__CACHE_VER__"></script>
-  <!-- Инициализация Lucide после рендера -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      if (window.lucide) lucide.createIcons();
-      // Перерисовываем иконки при динамических обновлениях DOM
-      const obs = new MutationObserver(() => {
-        if (window.lucide) lucide.createIcons();
-      });
-      obs.observe(document.body, { childList: true, subtree: true });
-    });
-  </script>
 </body>
 </html>
