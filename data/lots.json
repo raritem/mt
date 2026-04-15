@@ -433,10 +433,8 @@
         "bonds": "3",
         "silver": "7M"
       },
-      "images": [
-        "images/lots/0018/001.webp"
-      ],
-      "thumb": "images/lots/0018/thumb.webp",
+      "images": [],
+      "thumb": null,
       "meta": {
         "username": "RenamedUser_120531740",
         "year": "",
