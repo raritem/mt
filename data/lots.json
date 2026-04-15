@@ -12,10 +12,8 @@
       "premcount": 8,
       "tanks10": "ИС-7, Т-62А, AMX 50 B, AMX 30 B",
       "resources": {},
-      "images": [
-        "images/lots/0003/001.webp"
-      ],
-      "thumb": "images/lots/0003/thumb.webp",
+      "images": [],
+      "thumb": null,
       "meta": {
         "username": "Meow349",
         "year": "",
@@ -435,8 +433,10 @@
         "bonds": "3",
         "silver": "7M"
       },
-      "images": [],
-      "thumb": null,
+      "images": [
+        "images/lots/0018/001.webp"
+      ],
+      "thumb": "images/lots/0018/thumb.webp",
       "meta": {
         "username": "RenamedUser_120531740",
         "year": "",
