@@ -145,10 +145,18 @@ window.CSVLoader = (() => {
 
   // ── Parse a single account row to lot object ─────────────────────
   function parseAccountRow(row, config, index) {
+    const id = getFieldValue(row, 'id', config);
     const username = getFieldValue(row, 'username', config);    
-    // Skip rows without username
+
+    // Skip rows without ID or username
+    if (!id || id.trim() === '') return null;
     if (!username || username.trim() === '') return null;
-        const visibility = getFieldValue(row, 'visibility', config);
+
+    // TEMP FIX: Skip visibility check for now - load all with username
+    // const visibility = getFieldValue(row, 'visibility', config);
+    // if (!visibility || visibility.trim() === '') return null;
+
+    const visibility = getFieldValue(row, 'visibility', config);
     const price = getFieldValue(row, 'price', config);
     const prems8_9 = getFieldValue(row, 'prems_8_9', config);
     const tanks10 = getFieldValue(row, 'tanks_10', config);
@@ -165,12 +173,6 @@ window.CSVLoader = (() => {
     const camo = getFieldValue(row, 'camo', config);
     const styles3d = getFieldValue(row, '3dstyles', config);
 
-    // Filter: Skip if no visibility marker (any non-empty value counts as visible)
-    // This is more flexible than checking for specific emoji
-    if (!visibility || visibility.trim() === '') {
-      return null;
-    }
-
     // Detect FunPay status
     const { onFunpay, funpay } = detectFunpayStatus(funpay_link);
 
@@ -181,22 +183,18 @@ window.CSVLoader = (() => {
     const bonusLotList = parseTankList(bonus_tanks);
 
     // Build title from key info
-    // Priority: premium tanks 8-9 first, then tier 10 tanks
-    // Pass all tanks (not sliced) - let CSS handle the wrapping/truncation
     const titleTanks = premsList.length > 0 ? premsList : tanks10List;
     const title = titleTanks.length > 0 
-      ? titleTanks.join(', ')  // Pass ALL tanks, not just first 2
+      ? titleTanks.join(', ')
       : username;
 
     // Calculate tier 10 and prem counts
     const t10count = tanks10List.length;
-    // Premium count: all premium tanks (8-9 + 6-7) + bonus tanks
     const premcount = premsList.length + prems6_7List.length + bonusLotList.length;
 
     // Build resources object
     const resources = {};
     if (bons && bons !== '0' && bons.trim()) {
-      // Remove emoji and special characters, keep only digits
       const bonsClean = bons.replace(/[^\d]/g, '').trim();
       if (bonsClean) resources.bonds = bonsClean;
     }
@@ -212,9 +210,7 @@ window.CSVLoader = (() => {
       }
     }
 
-    // Generate unique ID from username + index
-    const id = String(index + 1).padStart(4, '0');
-
+    // Use ID from CSV, don't generate
     return {
       id: id,
       title: title,
@@ -223,11 +219,11 @@ window.CSVLoader = (() => {
       price: price || null,
       t10count: t10count,
       premcount: premcount,
-      tanks10: tanks10List.join(', ') || null,  // Always show tier 10 tanks, not premiums
+      tanks10: tanks10List.join(', ') || null,
       resources: resources,
-      images: [], // No images from CSV (can be added later)
-      thumb: null, // No thumbnail from CSV (can be added later)
-      // Additional metadata (for future use)
+      images: [],
+      thumb: null,
+      // CSV-only metadata
       meta: {
         username: username,
         year: year,
@@ -368,16 +364,83 @@ window.CSVLoader = (() => {
     }
   }
 
-  // ── Build catalogue data (compatible with existing lot format) ──────
-  async function buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl) {
-    const accounts = await loadAccounts(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
+  // ── Load and merge CSV with JSON metadata ───────────────────────────
+  // New architecture:
+  // - CSV = base products (id, username, visibility, tanks, etc.)
+  // - JSON (lots.json) = display metadata (images, thumb, sort_order, is_hidden)
+  // - Filter by: visibility (CSV) + is_hidden (JSON)
+  // - Sort by: sort_order (JSON)
+  async function mergeWithMetadata(csvAccounts, lotsJsonUrl, fallbackUrl) {
+    let fullLots;
+    try {
+      const res = await fetch(lotsJsonUrl);
+      fullLots = res.ok ? await res.json() : {};
+    } catch (e) {
+      console.warn('⚠️ Failed to load lots.json from primary:', e.message);
+      try {
+        const res = await fetch(fallbackUrl);
+        fullLots = res.ok ? await res.json() : {};
+        console.log('✓ Loaded lots.json from fallback');
+      } catch (e2) {
+        console.warn('⚠️ Failed to load lots.json from fallback, using empty metadata');
+        fullLots = {};
+      }
+    }
+
+    // Convert lots.json array format to map by ID (if needed)
+    let lotsMap = {};
+    if (Array.isArray(fullLots)) {
+      fullLots.forEach(lot => {
+        if (lot && lot.id) lotsMap[lot.id] = lot;
+      });
+    } else if (fullLots && typeof fullLots === 'object') {
+      lotsMap = fullLots;
+    }
+
+    console.log('📦 Merging ' + csvAccounts.length + ' CSV items with metadata');
+
+    // Merge CSV data with JSON metadata
+    const merged = csvAccounts.map(lot => {
+      const meta = lotsMap[lot.id] || {};
+      return {
+        ...lot,
+        images: meta.images || [],
+        thumb: meta.thumb || null,
+        sort_order: meta.sort_order || 0,
+        is_hidden: meta.is_hidden || false
+      };
+    });
+
+    // Filter: Hide items marked as hidden in JSON
+    const filtered = merged.filter(lot => !lot.is_hidden);
+
+    // Sort: by sort_order (ascending), then by id for stability
+    filtered.sort((a, b) => {
+      const orderDiff = (a.sort_order || 0) - (b.sort_order || 0);
+      if (orderDiff !== 0) return orderDiff;
+      return String(a.id).localeCompare(String(b.id));
+    });
+
+    console.log('✓ ' + filtered.length + ' products visible (after filtering is_hidden)');
+    return filtered;
+  }
+
+  // ── Build catalogue data (NEW architecture with CSV + JSON) ──────
+  async function buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl, lotsJsonUrl, fallbackLotsUrl) {
+    const csvAccounts = await loadAccounts(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
+    
+    // Use provided URLs or construct defaults
+    const lotsUrl = lotsJsonUrl || (csvUrl.substring(0, csvUrl.lastIndexOf('/')) + '/lots.json');
+    const lotsUrlFallback = fallbackLotsUrl || (fallbackCsvUrl.substring(0, fallbackCsvUrl.lastIndexOf('/')) + '/lots.json');
+
+    const lots = await mergeWithMetadata(csvAccounts, lotsUrl, lotsUrlFallback);
 
     return {
       id: 'tanknexus',
       name: 'TANKNEXUS Accounts',
       description: '',
       seller: 'tanknexus',
-      lots: accounts
+      lots: lots
     };
   }
 

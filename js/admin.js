@@ -1,12 +1,12 @@
 /* ================================================================
    TANKNEXUS — Админ панель (admin.js)
-   Единая галерея: data/lots.json
+   Новая архитектура: CSV (база товаров) + JSON (метаданные)
+   Админ работает ТОЛЬКО с JSON (images, thumb, sort_order, is_hidden)
    ================================================================ */
 
 'use strict';
 
-// CATALOGUE_ID уже объявлена в main.js, не дублируем
-// const CATALOGUE_ID = 'lots';
+const CATALOGUE_ID = 'catalogue';
 
 // ── GitHub RAW ───────────────────────────────────────────────────
 function getGhRawBase() {
@@ -25,6 +25,39 @@ function assetUrl(path) {
   const base = getGhRawBase();
   const p = String(path || '').replace(/^\/+/, '');
   return base ? (base + p) : ('../' + p);
+}
+
+// ── Load catalogue from CSV + JSON metadata ────────────────────
+async function loadCatalogueDataFromCSV() {
+  if (!window.CSVLoader) {
+    throw new Error('CSVLoader не загружен. Убедитесь, что csv-loader.js подключен.');
+  }
+  
+  // Assuming we'll use GitHub API to read CSV and JSON
+  // For now, we'll load from local/GitHub as needed
+  const cfg = (window.GH && GH.getConfig) ? GH.getConfig() : { repo: '', branch: 'main' };
+  const ghBase = cfg.repo ? ('https://raw.githubusercontent.com/' + cfg.repo.replace(/\/+$/, '') + '/' + (cfg.branch || 'main') + '/') : null;
+  
+  if (ghBase) {
+    const dataPath = ghBase + 'data/';
+    return await window.CSVLoader.buildCatalogue(
+      dataPath + 'accounts.csv',
+      dataPath + '../config.json',
+      '../data/accounts.csv',       // fallback local
+      '../config.json',
+      dataPath + 'lots.json',
+      '../data/lots.json'
+    );
+  } else {
+    return await window.CSVLoader.buildCatalogue(
+      '../data/accounts.csv',
+      '../config.json',
+      '../data/accounts.csv',
+      '../config.json',
+      '../data/lots.json',
+      '../data/lots.json'
+    );
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -203,89 +236,39 @@ async function onSettingsSave() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  ДАННЫЕ — единый каталог
+//  ДАННЫЕ — CSV (база) + JSON (метаданные)
 // ════════════════════════════════════════════════════════════════
 async function loadCatalogueData() {
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    console.log('💾 Loading catalogue data...');
-    
-    // Try to load from CSV first (new approach)
-    if (window.CSVLoader) {
-      console.log('📄 Attempting CSV load...');
-      try {
-        const csvUrl = ROOT + 'data/accounts.csv';
-        const configUrl = ROOT + 'config.json';
-        console.log('📍 CSV URL:', csvUrl);
-        const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, csvUrl, configUrl);
-        console.log('✅ CSV loaded successfully, lots:', data.lots.length);
-        state.activeLots = Array.isArray(data.lots) ? data.lots : [];
-        renderCataloguePanel();
-        return;
-      } catch (csvErr) {
-        console.warn('❌ CSV load failed:', csvErr.message);
-      }
-    } else {
-      console.warn('⚠️ CSVLoader not available');
-    }
-    
-    console.log('🔄 Falling back to JSON...');
-    // Fallback to JSON from GitHub
-    const { data } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
-    if (data === null) {
-      console.log('📝 Creating new lots.json...');
-      await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
-        id: CATALOGUE_ID, name: 'Галерея', lots: []
-      }, 'Init lots.json');
-      state.activeLots = [];
-    } else {
-      state.activeLots = Array.isArray(data.lots) ? data.lots : [];
-    }
+    // Load merged catalogue from CSV + JSON
+    const catalogueData = await loadCatalogueDataFromCSV();
+    state.activeLots = Array.isArray(catalogueData.lots) ? catalogueData.lots : [];
     renderCataloguePanel();
   } catch (e) {
-    console.error('💥 Error:', e);
-    // Fallback for local development without GitHub
-    console.log('🏠 Trying local fallback...');
-    try {
-      const cached = localStorage.getItem('wotshop-local-lots');
-      if (cached) {
-        const data = JSON.parse(cached);
-        state.activeLots = Array.isArray(data.lots) ? data.lots : [];
-      } else {
-        state.activeLots = [];
-      }
-      console.log('✅ Local fallback loaded, lots:', state.activeLots.length);
-      renderCataloguePanel();
-    } catch (_) {
-      console.error('Local load error:', _);
-      state.activeLots = [];
-      renderCataloguePanel();
-    }
+    console.error('loadCatalogueData error:', e);
+    dom.adminMain.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h2>' + esc(e.message) + '</h2></div>';
   }
 }
 
 // ════════════════════════════════════════════════════════════════
-//  CATALOGUE PANEL
+// CATALOGUE PANEL
 // ════════════════════════════════════════════════════════════════
 function renderCataloguePanel() {
   dom.adminMain.innerHTML = `
     <div class="shop-panel">
       <div class="shop-panel-header">
-        <div class="shop-panel-title">Галерея</div>
+        <div class="shop-panel-title">Каталог</div>
         <div class="shop-panel-actions">
-          <a href="../gallery/" target="_blank" class="btn btn-ghost">
+          <a href="../catalogue/" target="_blank" class="btn btn-ghost">
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span> Открыть
           </a>
-          <button class="btn btn-primary" id="add-lot-btn">
-            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> Добавить лот
-          </button>
         </div>
       </div>
       <div class="admin-lots-list" id="admin-lots-list"></div>
     </div>
   `;
 
-  $('add-lot-btn').addEventListener('click', () => openLotModal(null));
   renderLots();
 }
 
@@ -351,52 +334,62 @@ function renderLots() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  LOT MODAL
+//  LOT MODAL (NEW ARCHITECTURE: CSV-based lot info, JSON-based editing)
 // ════════════════════════════════════════════════════════════════
 function openLotModal(editLotId) {
   const lot = editLotId ? state.activeLots.find(l => l.id === editLotId) : null;
   state.editingLot = editLotId;
-  dom.lotModalTitle.textContent = lot ? 'Редактировать лот' : 'Новый лот';
-  dom.lotTitleInput.value       = lot ? lot.title          : '';
-  if (dom.lotTanks10Input)   dom.lotTanks10Input.value   = lot ? (lot.tanks10 || '') : '';
-  if (dom.lotT10CountInput)  dom.lotT10CountInput.value  = lot ? (lot.t10count  !== undefined && lot.t10count  !== null ? lot.t10count  : '') : '';
-  if (dom.lotPremCountInput) dom.lotPremCountInput.value = lot ? (lot.premcount !== undefined && lot.premcount !== null ? lot.premcount : '') : '';
-  dom.lotFunpayInput.value      = lot ? (lot.funpay || '') : '';
-  if (dom.lotPriceInput)    dom.lotPriceInput.value    = lot ? (lot.price  || '') : '';
-  if (dom.lotOnFunpayInput) dom.lotOnFunpayInput.checked = lot ? (lot.onFunpay !== false) : false;
-
-  document.querySelectorAll('.wrap-toggle-btn').forEach(btn => {
-    const target = btn.dataset.target;
-    const active = target === 'lot-title-input'  ? !!(lot && lot.titleWrap)
-                 : target === 'lot-tanks10-input' ? !!(lot && lot.tanks10Wrap)
-                 : false;
-    btn.disabled = false;
-    btn.classList.toggle('is-active', active);
-    btn.title = active ? 'Перенос разрешён' : 'Разрешить перенос строки';
-  });
-
-  const res = (lot && lot.resources) ? lot.resources : {};
-  const bondsEl  = $('lot-bonds-input');
-  const goldEl   = $('lot-gold-input');
-  const silverEl = $('lot-silver-input');
-  if (bondsEl)  bondsEl.value  = res.bonds  !== undefined ? res.bonds  : '';
-  if (goldEl)   goldEl.value   = res.gold   !== undefined ? res.gold   : '';
-  if (silverEl) silverEl.value = res.silver !== undefined ? res.silver : '';
-
-  if (typeof RESOURCE_ICONS !== 'undefined') {
-    const iconBonds  = $('res-icon-bonds');
-    const iconGold   = $('res-icon-gold');
-    const iconSilver = $('res-icon-silver');
-    if (iconBonds)  iconBonds.src  = RESOURCE_ICONS.bonds;
-    if (iconGold)   iconGold.src   = RESOURCE_ICONS.gold;
-    if (iconSilver) iconSilver.src = RESOURCE_ICONS.silver;
+  
+  // Title: from CSV (read-only)
+  dom.lotModalTitle.textContent = lot ? 'Редактировать лот: ' + (lot.title || lot.id) : 'Новый лот';
+  
+  // Title input: read-only (from CSV)
+  dom.lotTitleInput.value = lot ? lot.title : '';
+  dom.lotTitleInput.readOnly = !!lot; // Read-only if editing existing lot
+  dom.lotTitleInput.disabled = !!lot;
+  
+  // Other CSV fields: read-only or hidden
+  if (dom.lotTanks10Input) {
+    dom.lotTanks10Input.value = lot ? (lot.tanks10 || '') : '';
+    dom.lotTanks10Input.readOnly = true;
+    dom.lotTanks10Input.disabled = true;
+  }
+  if (dom.lotT10CountInput) {
+    dom.lotT10CountInput.value = lot ? (lot.t10count !== undefined ? lot.t10count : '') : '';
+    dom.lotT10CountInput.readOnly = true;
+    dom.lotT10CountInput.disabled = true;
+  }
+  if (dom.lotPremCountInput) {
+    dom.lotPremCountInput.value = lot ? (lot.premcount !== undefined ? lot.premcount : '') : '';
+    dom.lotPremCountInput.readOnly = true;
+    dom.lotPremCountInput.disabled = true;
+  }
+  dom.lotFunpayInput.value = lot ? (lot.funpay || '') : '';
+  dom.lotFunpayInput.readOnly = true;
+  dom.lotFunpayInput.disabled = true;
+  
+  if (dom.lotPriceInput) {
+    dom.lotPriceInput.value = lot ? (lot.price || '') : '';
+    dom.lotPriceInput.readOnly = true;
+    dom.lotPriceInput.disabled = true;
+  }
+  if (dom.lotOnFunpayInput) {
+    dom.lotOnFunpayInput.checked = lot ? (lot.onFunpay !== false) : false;
+    dom.lotOnFunpayInput.disabled = true;
   }
 
-  if (typeof VEHICLE_ICONS !== 'undefined') {
-    const iconT10  = $('veh-icon-t10');
-    const iconPrem = $('veh-icon-prem');
-    if (iconT10)  iconT10.src  = VEHICLE_ICONS.t10;
-    if (iconPrem) iconPrem.src = VEHICLE_ICONS.prem;
+  // JSON editable fields
+  if (lot) {
+    // Add sort_order and is_hidden controls if they don't exist
+    let sortOrderInput = $('lot-sort-order-input');
+    let isHiddenToggle = $('lot-is-hidden-toggle');
+    
+    if (sortOrderInput) {
+      sortOrderInput.value = lot.sort_order || 0;
+    }
+    if (isHiddenToggle) {
+      isHiddenToggle.checked = lot.is_hidden === true;
+    }
   }
 
   dom.lotModalStatus.className = 'status-msg';
@@ -404,52 +397,29 @@ function openLotModal(editLotId) {
 }
 
 async function onLotSave() {
-  const title       = dom.lotTitleInput.value.trim();
-  const tanks10     = (dom.lotTanks10Input   ? dom.lotTanks10Input.value.trim()   : '');
-  const t10countRaw  = (dom.lotT10CountInput  ? dom.lotT10CountInput.value.trim()  : '');
-  const premcountRaw = (dom.lotPremCountInput ? dom.lotPremCountInput.value.trim() : '');
-  const funpay      = dom.lotFunpayInput.value.trim();
-  const price       = dom.lotPriceInput   ? dom.lotPriceInput.value.trim()   : '';
-  const onFunpay    = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked  : false;
-  const titleWrap   = !!document.querySelector('.wrap-toggle-btn[data-target="lot-title-input"]')?.classList.contains('is-active');
-  const tanks10Wrap = !!document.querySelector('.wrap-toggle-btn[data-target="lot-tanks10-input"]')?.classList.contains('is-active');
-
-  if (!title) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
-
-  const bondsRaw  = ($('lot-bonds-input')  ? $('lot-bonds-input').value  : '').replace(/\s+/g, '');
-  const goldRaw   = ($('lot-gold-input')   ? $('lot-gold-input').value   : '').replace(/\s+/g, '');
-  const silverRaw = ($('lot-silver-input') ? $('lot-silver-input').value : '').replace(/\s+/g, '');
-
-  const resources = {};
-  if (bondsRaw  !== '') resources.bonds  = bondsRaw;
-  if (goldRaw   !== '') resources.gold   = goldRaw;
-  if (silverRaw !== '') resources.silver = silverRaw;
-
+  // NEW ARCHITECTURE: Only JSON fields are editable (sort_order, is_hidden)
+  // CSV fields are read-only
+  
+  const sortOrderInput = $('lot-sort-order-input');
+  const isHiddenToggle = $('lot-is-hidden-toggle');
+  
   setStatus(dom.lotModalStatus, 'Сохраняю…', 'info');
   try {
     if (state.editingLot) {
       const lot = state.activeLots.find(l => l.id === state.editingLot);
       if (lot) {
-        lot.title = title; lot.funpay = funpay; lot.onFunpay = onFunpay;
-        lot.price     = price    || undefined;
-        lot.tanks10   = tanks10  || undefined;
-        lot.t10count  = t10countRaw  !== '' ? t10countRaw  : undefined;
-        lot.premcount = premcountRaw !== '' ? premcountRaw : undefined;
-        lot.resources = Object.keys(resources).length ? resources : undefined;
-        lot.titleWrap   = titleWrap   || undefined;
-        lot.tanks10Wrap = tanks10Wrap || undefined;
+        // Update only JSON-editable fields
+        if (sortOrderInput) {
+          const sortOrder = parseInt(sortOrderInput.value) || 0;
+          lot.sort_order = sortOrder;
+        }
+        if (isHiddenToggle) {
+          lot.is_hidden = isHiddenToggle.checked;
+        }
       }
-    } else {
-      const newLot = { id: String(Date.now()).slice(-9), title, funpay, onFunpay, images: [] };
-      if (price)      newLot.price     = price;
-      if (tanks10)    newLot.tanks10   = tanks10;
-      if (t10countRaw  !== '') newLot.t10count  = t10countRaw;
-      if (premcountRaw !== '') newLot.premcount = premcountRaw;
-      if (Object.keys(resources).length) newLot.resources = resources;
-      if (titleWrap)   newLot.titleWrap   = titleWrap;
-      if (tanks10Wrap) newLot.tanks10Wrap = tanks10Wrap;
-      state.activeLots.push(newLot);
     }
+    // Note: Creating new lots is not allowed - they must be added to CSV only
+    
     await saveCatalogueJSON();
     setStatus(dom.lotModalStatus, 'Сохранено', 'ok');
     setTimeout(() => { closeModal('lotModal'); renderLots(); }, 500);
@@ -799,11 +769,23 @@ async function uploadFiles(files) {
 //  СОХРАНЕНИЕ JSON
 // ════════════════════════════════════════════════════════════════
 async function saveCatalogueJSON() {
-  await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
-    id:   CATALOGUE_ID,
-    name: 'Галерея',
-    lots: state.activeLots,
-  }, 'Update lots');
+  // Extract only metadata fields from state.activeLots
+  // New architecture: JSON only stores { id: { images, thumb, sort_order, is_hidden } }
+  const lotsMetadata = {};
+  
+  state.activeLots.forEach(lot => {
+    if (lot && lot.id) {
+      lotsMetadata[lot.id] = {
+        images: lot.images || [],
+        thumb: lot.thumb || null,
+        sort_order: typeof lot.sort_order === 'number' ? lot.sort_order : 0,
+        is_hidden: lot.is_hidden === true
+      };
+    }
+  });
+
+  // Save only metadata to lots.json via GitHub API
+  await GH.writeJSON('data/lots.json', lotsMetadata, 'Update lot metadata');
 }
 
 // ════════════════════════════════════════════════════════════════

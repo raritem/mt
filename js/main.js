@@ -7,16 +7,16 @@
 // ── Feature flags ────────────────────────────────────────────────
 const STARS_BG_ENABLED = false;
 
-// ── Галерея ─────────────────────────────────────────────────────
-// TANKNEXUS использует единую галерею: data/lots.json
-// (совместимость: также читает data/shop1.json если id задан через ?id=)
-const CATALOGUE_ID = 'lots';
+// ── Каталог ─────────────────────────────────────────────────────
+// TANKNEXUS архитектура: CSV (база товаров) + JSON (метаданные)
+// CSV → Мержится с JSON по ID → Фильтруется (is_hidden) → Сортируется (sort_order)
+const CATALOGUE_ID = 'catalogue';
 
 // ── Конфиг ──────────────────────────────────────────────────────
 const BASE_URL = (() => {
   const p = window.location.pathname;
   const parts = p.split('/').filter(Boolean);
-  if (parts.length >= 1 && ['admin','gallery','view','favourites'].includes(parts[parts.length - 1])) {
+  if (parts.length >= 1 && ['admin','catalogue','lot','favourites'].includes(parts[parts.length - 1])) {
     return window.location.origin + '/' + parts.slice(0, -1).join('/');
   }
   return window.location.origin;
@@ -25,7 +25,7 @@ const BASE_URL = (() => {
 function getRoot() {
   const parts = window.location.pathname.split('/').filter(Boolean);
   const last  = parts[parts.length - 1] || '';
-  if (['admin', 'gallery', 'view', 'favourites', 'shop'].includes(last)) return '../';
+  if (['admin', 'catalogue', 'lot', 'favourites', 'shop'].includes(last)) return '../';
   return './';
 }
 
@@ -46,6 +46,38 @@ function getGhRawBase() {
 function assetUrl(path) {
   const base = getGhRawBase();
   return base ? (base + String(path || '').replace(/^\/+/, '')) : (ROOT + path);
+}
+
+// ── Load catalogue from CSV + JSON metadata ────────────────────
+async function loadCatalogueData() {
+  const rawBase = getGhRawBase();
+  
+  if (!window.CSVLoader) {
+    throw new Error('CSVLoader не загружен. Убедитесь, что csv-loader.js подключен.');
+  }
+  
+  if (rawBase) {
+    // GitHub raw URLs
+    const ghDataPath = rawBase + 'data/';
+    return await window.CSVLoader.buildCatalogue(
+      ghDataPath + 'accounts.csv',
+      ghDataPath + '../config.json',
+      ROOT + 'data/accounts.csv',      // fallback local
+      ROOT + 'config.json',             // fallback local
+      ghDataPath + 'lots.json',
+      ROOT + 'data/lots.json'
+    );
+  } else {
+    // Local URLs only
+    return await window.CSVLoader.buildCatalogue(
+      ROOT + 'data/accounts.csv',
+      ROOT + 'config.json',
+      ROOT + 'data/accounts.csv',
+      ROOT + 'config.json',
+      ROOT + 'data/lots.json',
+      ROOT + 'data/lots.json'
+    );
+  }
 }
 
 // ── Fade-up cleanup ──────────────────────────────────────────────
@@ -265,7 +297,7 @@ function buildLotCard(lot, catalogueId) {
     ? `<img class="lot-card-thumb" src="${assetUrl(previewSrc)}" alt="${esc(lot.title)}" loading="lazy">`
     : `<div class="lot-card-thumb-placeholder">🎯</div>`;
 
-  const lotUrl = ROOT + 'view/?id=' + encodeURIComponent(lot.id);
+  const lotUrl = ROOT + 'lot/?id=' + encodeURIComponent(lot.id);
   const title  = normalizeLotTitle(lot.title);
   const titleClass  = lot.titleWrap   ? 'lot-card-title lot-card-title--wrap'   : 'lot-card-title';
   const tanks10Class = lot.tanks10Wrap ? 'lot-card-tanks10 lot-card-tanks10--wrap' : 'lot-card-tanks10';
@@ -374,37 +406,24 @@ async function loadCatalogue() {
   if (viewBtnGrid)  viewBtnGrid.addEventListener('click',  () => applyView('grid'));
   if (viewBtnTable) viewBtnTable.addEventListener('click', () => applyView('table'));
 
-  document.title = 'Галерея — TANKNEXUS';
+  document.title = 'Каталог — TANKNEXUS';
   ensureHeaderFavBtn();
 
   try {
-    const rawBase = getGhRawBase();
-    // Загружаем данные из CSV
-    const csvUrl = rawBase
-      ? rawBase + 'data/accounts.csv'
-      : ROOT + 'data/accounts.csv';
-    const configUrl = rawBase
-      ? rawBase + 'config.json'
-      : ROOT + 'config.json';
-    
-    // Fallback URLs (always local files)
-    const fallbackCsvUrl = ROOT + 'data/accounts.csv';
-    const fallbackConfigUrl = ROOT + 'config.json';
-    
-    const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
+    // Загружаем каталог из CSV + JSON метаданных
+    const data = await loadCatalogueData();
 
     if (!gridEl) return;
 
     if (!data.lots || data.lots.length === 0) {
-      gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📦</div><h2>Лоты не найдены</h2><p>Галерея пока пуста</p></div>';
+      gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📦</div><h2>Лоты не найдены</h2><p>Каталог пока пуст</p></div>';
       if (tableSectionEl) tableSectionEl.style.display = 'none';
       return;
     }
 
     const allLots   = Array.isArray(data.lots) ? data.lots : [];
-    // Split by FunPay link status
-    const topLots    = allLots.filter(l => l && l.onFunpay === true);  // Has /lots/ link
-    const hiddenLots = allLots.filter(l => l && l.onFunpay !== true); // Empty or /users/ link
+    const topLots    = allLots.filter(l => l && l.onFunpay !== false);
+    const hiddenLots = allLots.filter(l => l && l.onFunpay === false);
 
     gridEl.innerHTML = '';
     topLots.forEach((lot) => {
@@ -413,8 +432,6 @@ async function loadCatalogue() {
     applyFadeUpStagger(gridEl, '.lot-card', 0.06);
 
     // ── Нижняя секция «Ещё аккаунты» ────────────────────────────
-    // With CSV, all visible accounts are shown in main gallery
-    // Hide this section if no additional accounts
     if (tableSectionEl && tableGridEl && tableRowsEl) {
       if (hiddenLots.length === 0) {
         tableSectionEl.style.display = 'none';
@@ -495,7 +512,7 @@ async function loadCatalogue() {
               </div>
             `;
 
-            const lotUrl = ROOT + 'view/?id=' + encodeURIComponent(lot.id);
+            const lotUrl = ROOT + 'lot/?id=' + encodeURIComponent(lot.id);
             row.addEventListener('click', () => { window.location.href = lotUrl; });
             tableRowsEl.appendChild(row);
           });
@@ -523,7 +540,7 @@ async function loadCatalogue() {
 
   } catch (e) {
     if (gridEl) {
-      gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><h2>Не удалось загрузить галерею</h2><p>' + esc(e.message) + '</p></div>';
+      gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><h2>Не удалось загрузить каталог</h2><p>' + esc(e.message) + '</p></div>';
     }
     if (tableSectionEl) tableSectionEl.style.display = 'none';
   }
@@ -536,7 +553,7 @@ async function loadLot() {
   const lotId = getParam('id');
 
   if (!lotId) {
-    window.location.href = ROOT + 'gallery/';
+    window.location.href = ROOT + 'catalogue/';
     return;
   }
 
@@ -544,22 +561,9 @@ async function loadLot() {
   const gridEl   = document.getElementById('gallery-grid');
 
   try {
-    const rawBase = getGhRawBase();
-    // Загружаем данные из CSV
-    const csvUrl = rawBase
-      ? rawBase + 'data/accounts.csv'
-      : ROOT + 'data/accounts.csv';
-    const configUrl = rawBase
-      ? rawBase + 'config.json'
-      : ROOT + 'config.json';
-    
-    // Fallback URLs (always local files)
-    const fallbackCsvUrl = ROOT + 'data/accounts.csv';
-    const fallbackConfigUrl = ROOT + 'config.json';
-    
-    const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
-    const _cleanId = lotId.replace(/^lot_/, '');
-    const lot  = (data.lots || []).find(l => l.id === _cleanId || l.id === lotId);
+    // Загружаем каталог из CSV + JSON метаданных
+    const data = await loadCatalogueData();
+    const lot  = (data.lots || []).find(l => l.id === lotId);
 
     if (!lot) throw new Error('Лот не найден');
 
@@ -580,9 +584,9 @@ async function loadLot() {
         </button>`;
       headerEl.innerHTML = `
         <div class="lot-header-top">
-          <a href="${ROOT}gallery/" class="btn btn-ghost back-btn">
+          <a href="${ROOT}catalogue/" class="btn btn-ghost back-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-            Галерея
+            Каталог
           </a>
           <div style="display:flex;align-items:center;gap:18px;">
             ${favBtnHtml}
@@ -683,20 +687,8 @@ async function loadFavourites() {
   document.title = 'Избранное — TANKNEXUS';
 
   try {
-    const rawBase = getGhRawBase();
-    // Загружаем данные из CSV
-    const csvUrl = rawBase
-      ? rawBase + 'data/accounts.csv'
-      : ROOT + 'data/accounts.csv';
-    const configUrl = rawBase
-      ? rawBase + 'config.json'
-      : ROOT + 'config.json';
-    
-    // Fallback URLs (always local files)
-    const fallbackCsvUrl = ROOT + 'data/accounts.csv';
-    const fallbackConfigUrl = ROOT + 'config.json';
-    
-    const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
+    // Загружаем каталог из CSV + JSON метаданных
+    const data = await loadCatalogueData();
 
     const allLots = Array.isArray(data.lots) ? data.lots : [];
     const favLots = allLots.filter(l => l && favIds.includes(String(l.id)));
