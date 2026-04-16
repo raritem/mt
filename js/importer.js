@@ -35,16 +35,10 @@ window.Importer = (() => {
       const res = await fetch(url);
       if (!res.ok) throw new Error('Не удалось загрузить config.json');
       config = await res.json();
-      
-      // Проверяем наличие поля id
-      if (config.id === undefined) {
-        throw new Error('config.json должен содержать поле "id" (индекс колонки с ID)');
-      }
-      
       return config;
     } catch (e) {
       console.error('Ошибка загрузки config.json:', e);
-      throw new Error('config.json не найден или повреждён. Убедитесь, что файл существует в корне репозитория и содержит поле "id".');
+      throw new Error('config.json не найден или повреждён. Убедитесь, что файл существует в корне репозитория.');
     }
   }
 
@@ -119,17 +113,16 @@ window.Importer = (() => {
     const lower = link.toLowerCase();
     if (lower.includes('funpay.com/lots/')) return true;
     if (lower.includes('funpay.com/users/')) return false;
-    // Если ссылка есть, но не подходит под шаблоны — считаем что это ссылка на лот
-    return lower.includes('funpay.com');
+    return false;
   }
 
   // ── Собрать data из строки CSV ─────────────────────────────────
   function extractDataFromRow(row, mapping) {
     const data = {};
     
-    // Копируем все поля из маппинга, кроме id (он ключ объекта) и pagination
+    // Копируем все поля из маппинга, кроме id (он ключ объекта)
     Object.keys(mapping).forEach(fieldName => {
-      if (fieldName === 'id' || fieldName === 'pagination') return;
+      if (fieldName === 'id') return;
       const value = getFieldValue(row, fieldName, mapping);
       if (value !== null && value !== '') {
         data[fieldName] = value;
@@ -142,15 +135,21 @@ window.Importer = (() => {
       data.premcount = premcount;
     }
     
+    // Добавляем цену как price, если есть
+    if (data.price) {
+      // Оставляем как есть
+    }
+    
     return data;
   }
 
   // ── Основная функция импорта ───────────────────────────────────
   async function importFromCSV(file, onProgress) {
-    const mapping = await loadMappingConfig();
+    const mappingConfig = await loadMappingConfig();
+    const mapping = mappingConfig.accounts;
     
-    if (!mapping || mapping.id === undefined) {
-      throw new Error('config.json должен содержать поле "id" (индекс колонки с ID)');
+    if (!mapping || !mapping.id) {
+      throw new Error('config.json должен содержать поле "id" в секции "accounts"');
     }
     
     // Читаем файл
@@ -195,13 +194,6 @@ window.Importer = (() => {
             resources: lot.resources || {}
           },
           ui: {
-            title: lot.title,
-            funpay: lot.funpay,
-            price: lot.price,
-            tanks10: lot.tanks10,
-            premcount: lot.premcount,
-            t10count: lot.t10count,
-            resources: lot.resources || {},
             images: lot.images || [],
             thumb: lot.thumb || null,
             isHidden: (lot.onFunpay === false)
@@ -221,11 +213,9 @@ window.Importer = (() => {
     let startIndex = 0;
     if (rows.length > 0) {
       const firstRow = rows[0];
-      if (firstRow.length > idColumnIndex) {
-        const firstCell = firstRow[idColumnIndex];
-        if (firstCell && String(firstCell).toLowerCase().includes('id')) {
-          startIndex = 1;
-        }
+      const firstCell = firstRow[idColumnIndex];
+      if (firstCell && firstCell.toLowerCase() === 'id') {
+        startIndex = 1;
       }
     }
     
@@ -236,21 +226,14 @@ window.Importer = (() => {
     
     for (let i = startIndex; i < rows.length; i++) {
       const row = rows[i];
-      
-      // Проверяем, что строка имеет достаточно колонок
-      if (row.length <= idColumnIndex) {
-        errors.push(`Строка ${i + 1}: недостаточно колонок (нет ID)`);
-        continue;
-      }
-      
-      const rawId = row[idColumnIndex];
+      const rawId = getFieldValue(row, 'id', mapping);
       
       if (!rawId || rawId === '') {
         errors.push(`Строка ${i + 1}: отсутствует ID`);
         continue;
       }
       
-      const id = String(rawId).trim();
+      const id = String(rawId);
       csvIds.add(id);
       
       // Извлекаем data из CSV
@@ -288,12 +271,13 @@ window.Importer = (() => {
         lotsObj[id].lastSeenInCsv = today;
         lotsObj[id].inactiveSince = null;
         lotsObj[id].data = extractedData;
-        // Обновляем UI данные, сохраняя images и thumb
+        // Обновляем UI данные
         lotsObj[id].ui = {
-          ...(lotsObj[id].ui || { images: [], thumb: null }),
+          ...(lotsObj[id].ui || { images: [], thumb: null, isHidden: false }),
           ...uiData
         };
-        // Синхронизируем isHidden с onFunpay (если не задано вручную)
+        // Синхронизируем isHidden с onFunpay (если не задано вручную, можно добавить флаг ручного управления)
+        // По умолчанию isHidden = !onFunpay
         if (lotsObj[id].ui.isHidden === undefined) {
           lotsObj[id].ui.isHidden = !onFunpay;
         }
@@ -367,19 +351,18 @@ window.Importer = (() => {
     catalogue.lots = lotsObj;
     await GH.writeJSON('data/' + CATALOGUE_ID + '.json', catalogue, 'Import from CSV');
     
-    // Считаем статистику
-    const newLots = Object.values(lotsObj).filter(l => l.lastSeenInCsv === today && !l.inactiveSince).length;
-    const updatedLots = processed - newLots;
-    
     const stats = {
       total: rows.length - startIndex,
       processed: processed,
-      new: Math.max(0, newLots),
-      updated: Math.max(0, updatedLots),
+      new: Object.keys(lotsObj).filter(id => !csvIds.has(id) ? false : (lotsObj[id].lastSeenInCsv === today && lotsObj[id].inactiveSince === null)).length,
+      updated: 0,
       inactive: allIds.filter(id => lotsObj[id]?.status === 'inactive').length,
       deleted: idsToDelete.length,
       errors: errors
     };
+    
+    // Считаем updated
+    stats.updated = stats.processed - stats.new;
     
     return stats;
   }

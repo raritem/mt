@@ -421,8 +421,7 @@ async function loadCatalogue() {
       const configRes = await fetch(configUrl);
       if (configRes.ok) {
         const config = await configRes.json();
-        // Проверяем оба варианта структуры конфига
-        lotsPerPage = config.pagination?.lotsPerPage || config.lotsPerPage || 100;
+        lotsPerPage = config.pagination?.lotsPerPage || 100;
       }
     } catch (e) {
       console.warn('Не удалось загрузить config.json, используется 100 лотов на страницу');
