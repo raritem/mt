@@ -31,8 +31,6 @@ window.GH = (() => {
     const cfg = getConfig();
     if (!cfg.token || !cfg.repo) throw new Error('GitHub не настроен');
 
-    // Cache-bust GET-запросы: GitHub Contents API агрессивно кэшируется
-    // браузером и CDN, из-за чего после записи читается старая версия файла
     let url = API + '/repos/' + cfg.repo + path;
     if (method === 'GET') {
       const sep = url.includes('?') ? '&' : '?';
@@ -45,9 +43,6 @@ window.GH = (() => {
         'Authorization': 'Bearer ' + cfg.token,
         'Accept': 'application/vnd.github+json',
         'Content-Type': 'application/json',
-        // Cache-Control намеренно убран: GitHub API не разрешает этот заголовок
-        // в preflight (Access-Control-Allow-Headers), что вызывает CORS-ошибку.
-        // Cache-bust уже реализован через параметр _t= в URL для GET-запросов.
       },
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -148,6 +143,13 @@ window.GH = (() => {
 
   const shaCache = {};
 
+  // ========== НОВЫЙ МЕТОД: ОЧИСТКА КЭША ==========
+  function clearCache() {
+    for (let k in shaCache) {
+      delete shaCache[k];
+    }
+  }
+
   async function readJSON(path) {
     const { sha, content } = await getFile(path);
     if (!content || content.trim() === '') {
@@ -161,6 +163,12 @@ window.GH = (() => {
     }
   }
 
+  // ========== НОВЫЙ МЕТОД: ЧТЕНИЕ С ПРИНУДИТЕЛЬНЫМ СБРОСОМ КЭША ==========
+  async function readJSONWithRefresh(path) {
+    clearCache();  // Очищаем кэш перед чтением
+    return readJSON(path);
+  }
+
   async function writeJSON(path, data, message) {
     const content = JSON.stringify(data, null, 2);
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -171,8 +179,6 @@ window.GH = (() => {
       }
       try {
         const res = await putFile(path, content, message || 'Update', sha || undefined);
-        // Сохраняем свежий SHA после успешной записи — putFile уже делает это,
-        // но явно дублируем чтобы writeJSON всегда оставлял кэш актуальным
         if (res?.content?.sha) shaCache[path] = res.content.sha;
         return res;
       } catch (e) {
@@ -186,12 +192,15 @@ window.GH = (() => {
     }
   }
 
+  // ========== ВОЗВРАЩАЕМ НОВЫЕ МЕТОДЫ ==========
   return {
     getConfig, saveConfig, isConfigured, ping,
     getFile, getFileBytes, getFileSha,
     putFile, putBinaryFile,
     deleteFile, deleteFiles,
     readJSON, writeJSON,
+    clearCache,           // <--- НОВЫЙ МЕТОД
+    readJSONWithRefresh,  // <--- НОВЫЙ МЕТОД
   };
 
 })();
