@@ -10,6 +10,33 @@ window.Importer = (() => {
   const CONFIG_PATH = 'config.json';
   const INACTIVE_DAYS_THRESHOLD = 7;
 
+  // ЖЁСТКИЙ СПИСОК РАЗРЕШЁННЫХ ПОЛЕЙ ДЛЯ ИМПОРТА В data
+  // Только эти поля будут взяты из CSV и сохранены в lot.data
+  const ALLOWED_DATA_FIELDS = [
+    'price',
+    'prems_8_9_count',
+    'prems_8_9',
+    'tanks_10_count',
+    'tanks_10',
+    'funpay_link',
+    'prems_6_7_count',
+    'prems_6_7',
+    'bonus_tanks_count',
+    'bonus_tanks',
+    'year',
+    'bons',
+    'gold',
+    'silver',
+    'spg',
+    'boosters',
+    'crew',
+    'camo',
+    '3dstyles'
+  ];
+
+  // Поля, которые вычисляются автоматически (не берутся из CSV)
+  const COMPUTED_FIELDS = ['premcount'];
+
   let config = null;
 
   // ── Загрузить конфиг маппинга колонок ──────────────────────────
@@ -35,10 +62,16 @@ window.Importer = (() => {
       const res = await fetch(url);
       if (!res.ok) throw new Error('Не удалось загрузить config.json');
       config = await res.json();
+      
+      // Проверяем наличие поля id
+      if (config.id === undefined) {
+        throw new Error('config.json должен содержать поле "id" (индекс колонки с ID)');
+      }
+      
       return config;
     } catch (e) {
       console.error('Ошибка загрузки config.json:', e);
-      throw new Error('config.json не найден или повреждён. Убедитесь, что файл существует в корне репозитория.');
+      throw new Error('config.json не найден или повреждён. Убедитесь, что файл существует в корне репозитория и содержит поле "id".');
     }
   }
 
@@ -89,6 +122,7 @@ window.Importer = (() => {
   function getFieldValue(row, fieldName, mapping) {
     const colIndex = mapping[fieldName];
     if (colIndex === undefined || colIndex === null) return null;
+    if (colIndex >= row.length) return null; // Защита от выхода за границы
     const val = row[colIndex];
     return (val !== undefined && val !== null) ? String(val).trim() : null;
   }
@@ -99,7 +133,7 @@ window.Importer = (() => {
     const fields = ['prems_8_9_count', 'prems_6_7_count', 'bonus_tanks_count'];
     fields.forEach(field => {
       const val = data[field];
-      if (val !== undefined && val !== null) {
+      if (val !== undefined && val !== null && val !== '') {
         const num = parseInt(String(val).replace(/\s+/g, ''), 10);
         if (!isNaN(num)) sum += num;
       }
@@ -113,43 +147,35 @@ window.Importer = (() => {
     const lower = link.toLowerCase();
     if (lower.includes('funpay.com/lots/')) return true;
     if (lower.includes('funpay.com/users/')) return false;
-    return false;
+    // Если ссылка есть, но не подходит под шаблоны — считаем что это ссылка на лот
+    return lower.includes('funpay.com');
   }
 
-  // ── Собрать data из строки CSV ─────────────────────────────────
+  // ── Собрать data из строки CSV (ТОЛЬКО РАЗРЕШЁННЫЕ ПОЛЯ) ───────
   function extractDataFromRow(row, mapping) {
     const data = {};
     
-    // Копируем все поля из маппинга, кроме id (он ключ объекта)
-    Object.keys(mapping).forEach(fieldName => {
-      if (fieldName === 'id') return;
-      const value = getFieldValue(row, fieldName, mapping);
-      if (value !== null && value !== '') {
-        data[fieldName] = value;
+    // Берём ТОЛЬКО поля из ALLOWED_DATA_FIELDS, которые есть в mapping
+    ALLOWED_DATA_FIELDS.forEach(fieldName => {
+      // Проверяем, что поле есть в конфиге
+      if (mapping.hasOwnProperty(fieldName)) {
+        const value = getFieldValue(row, fieldName, mapping);
+        // Сохраняем только непустые значения
+        if (value !== null && value !== '') {
+          data[fieldName] = value;
+        }
       }
     });
-    
-    // Вычисляем premcount
-    const premcount = calculatePremcount(data);
-    if (premcount) {
-      data.premcount = premcount;
-    }
-    
-    // Добавляем цену как price, если есть
-    if (data.price) {
-      // Оставляем как есть
-    }
     
     return data;
   }
 
   // ── Основная функция импорта ───────────────────────────────────
   async function importFromCSV(file, onProgress) {
-    const mappingConfig = await loadMappingConfig();
-    const mapping = mappingConfig.accounts;
+    const mapping = await loadMappingConfig();
     
-    if (!mapping || !mapping.id) {
-      throw new Error('config.json должен содержать поле "id" в секции "accounts"');
+    if (!mapping || mapping.id === undefined) {
+      throw new Error('config.json должен содержать поле "id" (индекс колонки с ID)');
     }
     
     // Читаем файл
@@ -194,6 +220,13 @@ window.Importer = (() => {
             resources: lot.resources || {}
           },
           ui: {
+            title: lot.title,
+            funpay: lot.funpay,
+            price: lot.price,
+            tanks10: lot.tanks10,
+            premcount: lot.premcount,
+            t10count: lot.t10count,
+            resources: lot.resources || {},
             images: lot.images || [],
             thumb: lot.thumb || null,
             isHidden: (lot.onFunpay === false)
@@ -213,9 +246,11 @@ window.Importer = (() => {
     let startIndex = 0;
     if (rows.length > 0) {
       const firstRow = rows[0];
-      const firstCell = firstRow[idColumnIndex];
-      if (firstCell && firstCell.toLowerCase() === 'id') {
-        startIndex = 1;
+      if (firstRow.length > idColumnIndex) {
+        const firstCell = firstRow[idColumnIndex];
+        if (firstCell && String(firstCell).toLowerCase().includes('id')) {
+          startIndex = 1;
+        }
       }
     }
     
@@ -226,18 +261,31 @@ window.Importer = (() => {
     
     for (let i = startIndex; i < rows.length; i++) {
       const row = rows[i];
-      const rawId = getFieldValue(row, 'id', mapping);
+      
+      // Проверяем, что строка имеет достаточно колонок
+      if (row.length <= idColumnIndex) {
+        errors.push(`Строка ${i + 1}: недостаточно колонок (нет ID)`);
+        continue;
+      }
+      
+      const rawId = row[idColumnIndex];
       
       if (!rawId || rawId === '') {
         errors.push(`Строка ${i + 1}: отсутствует ID`);
         continue;
       }
       
-      const id = String(rawId);
+      const id = String(rawId).trim();
       csvIds.add(id);
       
-      // Извлекаем data из CSV
+      // Извлекаем data из CSV (ТОЛЬКО РАЗРЕШЁННЫЕ ПОЛЯ)
       const extractedData = extractDataFromRow(row, mapping);
+      
+      // Вычисляем premcount
+      const premcount = calculatePremcount(extractedData);
+      if (premcount) {
+        extractedData.premcount = premcount;
+      }
       
       // Определяем onFunpay
       const funpayLink = extractedData.funpay_link || '';
@@ -248,13 +296,13 @@ window.Importer = (() => {
       // Ограничиваем длину
       if (title.length > 60) title = title.substring(0, 57) + '...';
       
-      // Ресурсы
+      // Ресурсы (только те, что есть в данных)
       const resources = {};
       if (extractedData.bons) resources.bonds = extractedData.bons;
       if (extractedData.gold) resources.gold = extractedData.gold;
       if (extractedData.silver) resources.silver = extractedData.silver;
       
-      // Данные для отображения
+      // Данные для UI (отображение)
       const uiData = {
         title: title,
         funpay: funpayLink || null,
@@ -270,14 +318,16 @@ window.Importer = (() => {
         lotsObj[id].status = 'active';
         lotsObj[id].lastSeenInCsv = today;
         lotsObj[id].inactiveSince = null;
+        
+        // СОХРАНЯЕМ ТОЛЬКО РАЗРЕШЁННЫЕ ПОЛЯ В data
         lotsObj[id].data = extractedData;
-        // Обновляем UI данные
+        
+        // Обновляем UI данные, сохраняя images и thumb
         lotsObj[id].ui = {
-          ...(lotsObj[id].ui || { images: [], thumb: null, isHidden: false }),
+          ...(lotsObj[id].ui || { images: [], thumb: null }),
           ...uiData
         };
-        // Синхронизируем isHidden с onFunpay (если не задано вручную, можно добавить флаг ручного управления)
-        // По умолчанию isHidden = !onFunpay
+        // Синхронизируем isHidden с onFunpay (если не задано вручную)
         if (lotsObj[id].ui.isHidden === undefined) {
           lotsObj[id].ui.isHidden = !onFunpay;
         }
@@ -287,7 +337,7 @@ window.Importer = (() => {
           status: 'active',
           lastSeenInCsv: today,
           inactiveSince: null,
-          data: extractedData,
+          data: extractedData,  // ТОЛЬКО РАЗРЕШЁННЫЕ ПОЛЯ
           ui: {
             ...uiData,
             images: [],
@@ -312,7 +362,6 @@ window.Importer = (() => {
           lot.status = 'inactive';
           lot.inactiveSince = today;
         }
-        // Если уже inactive, не трогаем inactiveSince
       }
     });
     
@@ -351,18 +400,19 @@ window.Importer = (() => {
     catalogue.lots = lotsObj;
     await GH.writeJSON('data/' + CATALOGUE_ID + '.json', catalogue, 'Import from CSV');
     
+    // Считаем статистику
+    const newLots = Object.values(lotsObj).filter(l => l.lastSeenInCsv === today && !l.inactiveSince).length;
+    const updatedLots = processed - newLots;
+    
     const stats = {
       total: rows.length - startIndex,
       processed: processed,
-      new: Object.keys(lotsObj).filter(id => !csvIds.has(id) ? false : (lotsObj[id].lastSeenInCsv === today && lotsObj[id].inactiveSince === null)).length,
-      updated: 0,
+      new: Math.max(0, newLots),
+      updated: Math.max(0, updatedLots),
       inactive: allIds.filter(id => lotsObj[id]?.status === 'inactive').length,
       deleted: idsToDelete.length,
       errors: errors
     };
-    
-    // Считаем updated
-    stats.updated = stats.processed - stats.new;
     
     return stats;
   }
@@ -408,7 +458,8 @@ window.Importer = (() => {
   return {
     importFromCSV,
     getFilteredLots,
-    loadMappingConfig
+    loadMappingConfig,
+    ALLOWED_DATA_FIELDS  // Экспортируем для отладки
   };
 
 })();
