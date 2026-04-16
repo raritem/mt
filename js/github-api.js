@@ -1,5 +1,5 @@
 /* ================================================================
-   TANKNEXUS — GitHub Contents API
+   TANKNEXUS — GitHub Contents API (исправленная версия)
    ================================================================ */
 
 'use strict';
@@ -32,9 +32,12 @@ window.GH = (() => {
     if (!cfg.token || !cfg.repo) throw new Error('GitHub не настроен');
 
     let url = API + '/repos/' + cfg.repo + path;
+    
+    // Более агрессивный обход кэша
     if (method === 'GET') {
       const sep = url.includes('?') ? '&' : '?';
-      url += sep + '_t=' + Date.now();
+      // Используем и _t, и _nocache для гарантии
+      url += sep + '_t=' + Date.now() + '&_nocache=' + Math.random().toString(36).substring(2);
     }
 
     const res = await fetch(url, {
@@ -43,8 +46,11 @@ window.GH = (() => {
         'Authorization': 'Bearer ' + cfg.token,
         'Accept': 'application/vnd.github+json',
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate', // Добавляем явно
+        'Pragma': 'no-cache',
       },
       body: body ? JSON.stringify(body) : undefined,
+      cache: 'no-store', // Важно!
     });
 
     if (!res.ok) {
@@ -67,15 +73,19 @@ window.GH = (() => {
     return res.json();
   }
 
-  async function getRaw(path) {
+  async function getRaw(path, forceRefresh = false) {
     const cfg = getConfig();
+    // Если forceRefresh, сначала очищаем кэш
+    if (forceRefresh) {
+      delete shaCache[path];
+    }
     const res = await request('GET', '/contents/' + path + '?ref=' + cfg.branch);
     return { sha: res.sha, b64: res.content.replace(/\n/g, '') };
   }
 
-  async function getFile(path) {
+  async function getFile(path, forceRefresh = false) {
     try {
-      const { sha, b64 } = await getRaw(path);
+      const { sha, b64 } = await getRaw(path, forceRefresh);
       const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
       const content = new TextDecoder('utf-8').decode(bytes);
       shaCache[path] = sha;
@@ -143,15 +153,14 @@ window.GH = (() => {
 
   const shaCache = {};
 
-  // ========== НОВЫЙ МЕТОД: ОЧИСТКА КЭША ==========
   function clearCache() {
     for (let k in shaCache) {
       delete shaCache[k];
     }
   }
 
-  async function readJSON(path) {
-    const { sha, content } = await getFile(path);
+  async function readJSON(path, forceRefresh = false) {
+    const { sha, content } = await getFile(path, forceRefresh);
     if (!content || content.trim() === '') {
       return { data: { id: 'lots', name: 'Галерея', lots: {} }, sha };
     }
@@ -163,10 +172,10 @@ window.GH = (() => {
     }
   }
 
-  // ========== НОВЫЙ МЕТОД: ЧТЕНИЕ С ПРИНУДИТЕЛЬНЫМ СБРОСОМ КЭША ==========
-  async function readJSONWithRefresh(path) {
-    clearCache();  // Очищаем кэш перед чтением
-    return readJSON(path);
+  // Обёртка для принудительного обновления
+  async function readJSONForce(path) {
+    clearCache();
+    return readJSON(path, true);
   }
 
   async function writeJSON(path, data, message) {
@@ -174,7 +183,7 @@ window.GH = (() => {
     for (let attempt = 0; attempt < 3; attempt++) {
       let sha = shaCache[path];
       if (!sha) {
-        const r = await readJSON(path);
+        const r = await readJSON(path, true); // force refresh
         sha = r.sha;
       }
       try {
@@ -192,15 +201,13 @@ window.GH = (() => {
     }
   }
 
-  // ========== ВОЗВРАЩАЕМ НОВЫЕ МЕТОДЫ ==========
   return {
     getConfig, saveConfig, isConfigured, ping,
     getFile, getFileBytes, getFileSha,
     putFile, putBinaryFile,
     deleteFile, deleteFiles,
     readJSON, writeJSON,
-    clearCache,           // <--- НОВЫЙ МЕТОД
-    readJSONWithRefresh,  // <--- НОВЫЙ МЕТОД
+    clearCache, readJSONForce,  // добавляем новый метод
   };
 
 })();
