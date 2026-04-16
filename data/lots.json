@@ -299,7 +299,11 @@
         "tanks_10": "T57 Heavy, Об. 268, Т-62А",
         "funpay_link": "https://funpay.com/users/2854472/",
         "bonds": "19845",
-        "gold": "9578"
+        "gold": "9578",
+        "tanks_10_count": "",
+        "premcount": "",
+        "price": "",
+        "silver": ""
       },
       "ui": {
         "images": [
@@ -313,7 +317,7 @@
           "images/xmode/1773739012044/002.webp"
         ],
         "thumb": "images/xmode/1773739012044/thumb.webp",
-        "isHidden": true
+        "isHidden": false
       }
     },
     "1773761393864": {
