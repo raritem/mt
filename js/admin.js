@@ -32,6 +32,7 @@ function assetUrl(path) {
 // ════════════════════════════════════════════════════════════════
 const state = {
   lots: {},
+  meta: { id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '' },
   activeTab: 'active', // 'active' | 'hidden' | 'inactive'
   editingLot: null,
 };
@@ -198,13 +199,29 @@ async function onSettingsSave() {
 async function loadCatalogueData() {
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    const { data } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
+    let data = null;
+    // Retry до 3 раз с задержкой — GitHub CDN иногда отдаёт старый кеш
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const result = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
+      data = result.data;
+      // Если получили непустой объект с лотами — выходим
+      if (data && data.lots && typeof data.lots === 'object' && !Array.isArray(data.lots) && Object.keys(data.lots).length > 0) break;
+      if (data && Array.isArray(data.lots) && data.lots.length > 0) break;
+      if (attempt < 2) await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+    }
     if (data === null) {
       await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
         id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '', lots: {}
       }, 'Init lots.json');
       state.lots = {};
     } else {
+      // Сохраняем метаданные в state.meta чтобы не читать файл при каждом сохранении
+      state.meta = {
+        id:          data.id          || CATALOGUE_ID,
+        name:        data.name        || 'Галерея',
+        description: data.description || '',
+        seller:      data.seller      || '',
+      };
       state.lots = Array.isArray(data.lots)
         ? migrateLotsArray(data.lots)
         : (data.lots && typeof data.lots === 'object' ? data.lots : {});
@@ -309,9 +326,15 @@ async function onCSVFileSelected(file) {
 
   try {
     const text = await file.text();
-    const { data: currentJson } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
-    const base = currentJson || { id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '', lots: {} };
-    if (Array.isArray(base.lots)) base.lots = migrateLotsArray(base.lots);
+
+    // Используем state.lots и state.meta вместо повторного чтения с GitHub
+    const base = {
+      id:          (state.meta && state.meta.id)          || CATALOGUE_ID,
+      name:        (state.meta && state.meta.name)        || 'Галерея',
+      description: (state.meta && state.meta.description) || '',
+      seller:      (state.meta && state.meta.seller)      || '',
+      lots:        { ...state.lots },
+    };
 
     const { updatedJson, stats } = await CSVImporter.importCSV(
       text, base,
@@ -320,7 +343,7 @@ async function onCSVFileSelected(file) {
 
     state.lots = updatedJson.lots;
     bar.textContent = 'Сохраняю на GitHub…';
-    await GH.writeJSON('data/' + CATALOGUE_ID + '.json', updatedJson, 'CSV import ' + new Date().toISOString().slice(0, 10));
+    await saveCatalogueJSON();
 
     bar.className = 'import-status-bar ok';
     bar.textContent = `✓ Готово — добавлено: ${stats.added}, обновлено: ${stats.updated}, неактивных: ${stats.markedInactive}, удалено: ${stats.deleted}`;
@@ -842,13 +865,12 @@ async function uploadFiles(files) {
 //  СОХРАНЕНИЕ
 // ════════════════════════════════════════════════════════════════
 async function saveCatalogueJSON() {
-  const { data: current } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
-  const base = current || { id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '' };
+  const m = state.meta || {};
   await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
-    id:          base.id          || CATALOGUE_ID,
-    name:        base.name        || 'Галерея',
-    description: base.description || '',
-    seller:      base.seller      || '',
+    id:          m.id          || CATALOGUE_ID,
+    name:        m.name        || 'Галерея',
+    description: m.description || '',
+    seller:      m.seller      || '',
     lots:        state.lots,
   }, 'Update lots');
 }
