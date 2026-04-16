@@ -200,20 +200,35 @@ async function loadCatalogueData() {
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
     let data = null;
+    let fileExists = false;
     // Retry до 3 раз с задержкой — GitHub CDN иногда отдаёт старый кеш
     for (let attempt = 0; attempt < 3; attempt++) {
       const result = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
       data = result.data;
+      // Если файл вернул хоть что-то (даже пустые lots) — файл существует
+      if (result.sha) fileExists = true;
       // Если получили непустой объект с лотами — выходим
       if (data && data.lots && typeof data.lots === 'object' && !Array.isArray(data.lots) && Object.keys(data.lots).length > 0) break;
       if (data && Array.isArray(data.lots) && data.lots.length > 0) break;
       if (attempt < 2) await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
     }
-    if (data === null) {
+
+    // Проверяем, есть ли реальные лоты в полученных данных
+    const hasLots = data && data.lots && (
+      (Array.isArray(data.lots) && data.lots.length > 0) ||
+      (!Array.isArray(data.lots) && typeof data.lots === 'object' && Object.keys(data.lots).length > 0)
+    );
+
+    if (data === null || !fileExists) {
+      // Файл не существует — инициализируем новый
       await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
         id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '', lots: {}
       }, 'Init lots.json');
       state.lots = {};
+    } else if (!hasLots && Object.keys(state.lots || {}).length > 0) {
+      // Файл существует, но вернул пустые lots — скорее всего GitHub CDN кэш.
+      // Уже есть данные в state (от предыдущей операции) — используем их, не сбрасываем.
+      console.warn('loadCatalogueData: GitHub вернул пустые lots (вероятно кэш CDN). Используем текущий state.lots.');
     } else {
       // Сохраняем метаданные в state.meta чтобы не читать файл при каждом сохранении
       state.meta = {
