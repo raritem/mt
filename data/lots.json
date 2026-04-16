@@ -1,8 +1,6 @@
 {
-  "id": "xmode",
-  "name": "XMODE",
-  "description": "",
-  "seller": "xmode",
+  "id": "lots",
+  "name": "Галерея",
   "lots": [
     {
       "id": "1773309676444",
@@ -109,36 +107,6 @@
       "tanks10": "AMX 30 B, Type 5 H...",
       "premcount": "15",
       "price": "4947",
-      "t10count": "3"
-    },
-    {
-      "id": "1773309726201",
-      "title": "Дуплeт, Зaщитник",
-      "funpay": "https://funpay.com/lots/offer?id=33494200",
-      "images": [
-        "images/xmode/1773309726201/009.webp",
-        "images/xmode/1773309726201/011.webp",
-        "images/xmode/1773309726201/007.webp",
-        "images/xmode/1773309726201/013.webp",
-        "images/xmode/1773309726201/012.webp",
-        "images/xmode/1773309726201/008.webp",
-        "images/xmode/1773309726201/006.webp",
-        "images/xmode/1773309726201/010.webp",
-        "images/xmode/1773309726201/004.webp",
-        "images/xmode/1773309726201/005.webp",
-        "images/xmode/1773309726201/001.webp",
-        "images/xmode/1773309726201/002.webp",
-        "images/xmode/1773309726201/003.webp"
-      ],
-      "thumb": "images/xmode/1773309726201/thumb.webp",
-      "onFunpay": true,
-      "resources": {
-        "bonds": "19923",
-        "gold": "9443"
-      },
-      "tanks10": "Type 5 H, AMX 50 B...",
-      "premcount": "11",
-      "price": "3945",
       "t10count": "3"
     },
     {
