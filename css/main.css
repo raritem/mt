@@ -123,12 +123,6 @@ input, textarea { font-family: var(--font-body); }
 
 .logo-accent { color: var(--accent); }
 
-.logo-img {
-  height: 36px;
-  width: auto;
-  display: block;
-}
-
 /* ── Хлебные крошки ──────────────────────────────────────────── */
 .breadcrumb {
   order: 2;
