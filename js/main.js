@@ -34,8 +34,8 @@ const ROOT = getRoot();
 // ── GitHub RAW ───────────────────────────────────────────────────
 function getGhRawBase() {
   try {
-    const repo = (localStorage.getItem('wotshop-gh-repo') || '').trim().replace(/\/+$/, '');
-    const branch = (localStorage.getItem('wotshop-gh-branch') || 'main').trim() || 'main';
+    const repo = (localStorage.getItem('tanknexus-gh-repo') || '').trim().replace(/\/+$/, '');
+    const branch = (localStorage.getItem('tanknexus-gh-branch') || 'main').trim() || 'main';
     if (!repo) return null;
     return 'https://raw.githubusercontent.com/' + repo + '/' + branch + '/';
   } catch (_) {
@@ -424,8 +424,10 @@ async function loadCatalogue() {
       return;
     }
 
-    const topLotsAll = rawLots.filter(l => !l.isHidden && l.onFunpay !== false);
-    const hiddenLots = rawLots.filter(l => l.isHidden  || l.onFunpay === false);
+    // Главная сетка: все не-скрытые лоты (и funpay, и остальные) — до PAGE_LIMIT штук.
+    // Секция «Ещё аккаунты»: только явно скрытые (isHidden), независимо от onFunpay.
+    const topLotsAll = rawLots.filter(l => !l.isHidden);
+    const hiddenLots = rawLots.filter(l => l.isHidden);
 
     // Показываем лоты порциями по PAGE_LIMIT, остальные — по кнопке
     let topShown = 0;
@@ -464,34 +466,22 @@ async function loadCatalogue() {
         tableSectionEl.style.display = '';
         applyView(currentView); // применяем сохранённый/дефолтный вид
 
-        const renderSecondary = () => {
-          const q = (qEl ? qEl.value : '').trim().toLowerCase();
-          const filtered = !q
-            ? hiddenLots
-            : hiddenLots.filter(l => normalizeLotTitle(l.title || '').toLowerCase().includes(q));
+        const SECONDARY_PAGE = PAGE_LIMIT;
+        let secondaryShown = 0;
+        let secondaryFiltered = [];
 
-          // Очищаем оба контейнера
-          tableGridEl.innerHTML = '';
-          tableRowsEl.innerHTML = '';
-
-          if (filtered.length === 0) {
-            const empty = '<div class="empty-state" style="padding:36px 16px"><div class="empty-icon">🔎</div><h2>Ничего не найдено</h2><p>Попробуйте другой запрос</p></div>';
-            tableGridEl.innerHTML = empty;
-            tableRowsEl.innerHTML = empty;
-            return;
-          }
-
+        const appendSecondaryChunk = () => {
           const alreadySeen = tableSectionEl.dataset.seen === '1';
+          const chunk = secondaryFiltered.slice(secondaryShown, secondaryShown + SECONDARY_PAGE);
+          secondaryShown += chunk.length;
 
-          // ── Карточки (grid view) ─────────────────────────────
-          filtered.forEach((lot) => {
+          chunk.forEach((lot) => {
             const card = buildLotCard(lot, CATALOGUE_ID);
             if (!alreadySeen) card.classList.add('fade-prep');
             tableGridEl.appendChild(card);
           });
 
-          // ── Строки (table view) ──────────────────────────────
-          filtered.forEach((lot, i) => {
+          chunk.forEach((lot) => {
             const row = document.createElement('div');
             row.className = alreadySeen ? 'lot-row-card' : 'lot-row-card fade-prep';
 
@@ -541,7 +531,40 @@ async function loadCatalogue() {
             row.addEventListener('click', () => { window.location.href = lotUrl; });
             tableRowsEl.appendChild(row);
           });
+
+          // Обновляем кнопку «Показать ещё»
+          const existingBtn = tableSectionEl.querySelector('.load-more-btn-secondary');
+          if (existingBtn) existingBtn.remove();
+          if (secondaryShown < secondaryFiltered.length) {
+            const btn = document.createElement('button');
+            btn.className = 'load-more-btn load-more-btn-secondary';
+            btn.textContent = 'Показать ещё (' + (secondaryFiltered.length - secondaryShown) + ')';
+            btn.addEventListener('click', appendSecondaryChunk);
+            tableSectionEl.appendChild(btn);
+          }
         };
+
+        const renderSecondary = () => {
+          const q = (qEl ? qEl.value : '').trim().toLowerCase();
+          secondaryFiltered = !q
+            ? hiddenLots
+            : hiddenLots.filter(l => normalizeLotTitle(l.title || '').toLowerCase().includes(q));
+          secondaryShown = 0;
+
+          tableGridEl.innerHTML = '';
+          tableRowsEl.innerHTML = '';
+          const existingBtn2 = tableSectionEl.querySelector('.load-more-btn-secondary');
+          if (existingBtn2) existingBtn2.remove();
+
+          if (secondaryFiltered.length === 0) {
+            const empty = '<div class="empty-state" style="padding:36px 16px"><div class="empty-icon">🔎</div><h2>Ничего не найдено</h2><p>Попробуйте другой запрос</p></div>';
+            tableGridEl.innerHTML = empty;
+            tableRowsEl.innerHTML = empty;
+            return;
+          }
+
+          appendSecondaryChunk();
+        }
 
         if (qEl) qEl.oninput = () => renderSecondary();
         renderSecondary();
