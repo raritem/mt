@@ -424,15 +424,37 @@ async function loadCatalogue() {
       return;
     }
 
-    const allLots    = rawLots.slice(0, PAGE_LIMIT);
-    const topLots    = allLots.filter(l => !l.isHidden && l.onFunpay !== false);
-    const hiddenLots = allLots.filter(l => l.isHidden || l.onFunpay === false);
+    const topLotsAll = rawLots.filter(l => !l.isHidden && l.onFunpay !== false);
+    const hiddenLots = rawLots.filter(l => l.isHidden  || l.onFunpay === false);
+
+    // Показываем лоты порциями по PAGE_LIMIT, остальные — по кнопке
+    let topShown = 0;
+
+    function renderTopChunk() {
+      const chunk = topLotsAll.slice(topShown, topShown + PAGE_LIMIT);
+      chunk.forEach(lot => gridEl.appendChild(buildLotCard(lot, CATALOGUE_ID)));
+      if (topShown === 0) applyFadeUpStagger(gridEl, '.lot-card', 0.06);
+      topShown += chunk.length;
+
+      const oldBtn = document.getElementById('show-more-top-btn');
+      if (oldBtn) oldBtn.remove();
+
+      if (topShown < topLotsAll.length) {
+        const btn = document.createElement('button');
+        btn.id = 'show-more-top-btn';
+        btn.className = 'btn btn-ghost';
+        btn.style.cssText = 'display:block;margin:28px auto 8px;padding:10px 32px;font-size:15px;';
+        btn.textContent = 'Показать ещё (' + (topLotsAll.length - topShown) + ')';
+        btn.addEventListener('click', renderTopChunk);
+        gridEl.parentElement.insertBefore(btn, gridEl.nextSibling);
+      }
+    }
 
     gridEl.innerHTML = '';
-    topLots.forEach((lot) => {
-      gridEl.appendChild(buildLotCard(lot, CATALOGUE_ID));
-    });
-    applyFadeUpStagger(gridEl, '.lot-card', 0.06);
+    renderTopChunk();
+
+    // для обратной совместимости с кодом ниже
+    const topLots = topLotsAll;
 
     // ── Нижняя секция «Ещё аккаунты» ────────────────────────────
     if (tableSectionEl && tableGridEl && tableRowsEl) {

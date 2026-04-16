@@ -31,12 +31,21 @@ window.GH = (() => {
     const cfg = getConfig();
     if (!cfg.token || !cfg.repo) throw new Error('GitHub не настроен');
 
-    const res = await fetch(API + '/repos/' + cfg.repo + path, {
+    // Cache-bust GET-запросы: GitHub Contents API агрессивно кэшируется
+    // браузером и CDN, из-за чего после записи читается старая версия файла
+    let url = API + '/repos/' + cfg.repo + path;
+    if (method === 'GET') {
+      const sep = url.includes('?') ? '&' : '?';
+      url += sep + '_t=' + Date.now();
+    }
+
+    const res = await fetch(url, {
       method,
       headers: {
         'Authorization': 'Bearer ' + cfg.token,
         'Accept': 'application/vnd.github+json',
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
       },
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -159,7 +168,11 @@ window.GH = (() => {
         sha = r.sha;
       }
       try {
-        return await putFile(path, content, message || 'Update', sha || undefined);
+        const res = await putFile(path, content, message || 'Update', sha || undefined);
+        // Сохраняем свежий SHA после успешной записи — putFile уже делает это,
+        // но явно дублируем чтобы writeJSON всегда оставлял кэш актуальным
+        if (res?.content?.sha) shaCache[path] = res.content.sha;
+        return res;
       } catch (e) {
         if (e.status === 409) {
           delete shaCache[path];
