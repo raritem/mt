@@ -45,7 +45,9 @@ window.GH = (() => {
         'Authorization': 'Bearer ' + cfg.token,
         'Accept': 'application/vnd.github+json',
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',
+        // Cache-Control намеренно убран: GitHub API не разрешает этот заголовок
+        // в preflight (Access-Control-Allow-Headers), что вызывает CORS-ошибку.
+        // Cache-bust уже реализован через параметр _t= в URL для GET-запросов.
       },
       body: body ? JSON.stringify(body) : undefined,
     });
