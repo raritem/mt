@@ -17,6 +17,7 @@
         "images/xmode/1773309676444/019.webp",
         "images/xmode/1773309676444/018.webp",
         "images/xmode/1773309676444/017.webp",
+        "images/xmode/1773309676444/014.webp",
         "images/xmode/1773309676444/013.webp",
         "images/xmode/1773309676444/014.webp",
         "images/xmode/1773309676444/010.webp",
@@ -205,6 +206,22 @@
         "gold": "9466"
       },
       "tanks10": "T57 Heavy, Об. 268, Т-62А"
+    },
+    {
+      "id": "317022183",
+      "title": "3ецеце",
+      "funpay": "",
+      "onFunpay": false,
+      "images": [],
+      "price": "2355",
+      "tanks10": "кгк6г6",
+      "t10count": "46436",
+      "premcount": "34535",
+      "resources": {
+        "bonds": "3534",
+        "gold": "4585",
+        "silver": "679780"
+      }
     }
   ]
 }
