@@ -63,7 +63,7 @@
     </div>
   </div>
 
-  <!-- Основной layout — без sidebar -->
+  <!-- Основной layout -->
   <div class="admin-layout-wrap admin-layout-wrap--nosidebar">
     <main class="admin-main admin-main--full" id="admin-main">
       <div class="empty-state" id="empty-state">
@@ -181,10 +181,34 @@
     </div>
   </div>
 
+  <!-- Модалка прогресса импорта -->
+  <div class="modal-overlay" id="import-progress-overlay"></div>
+  <div class="modal" id="import-progress-modal">
+    <div class="modal-header">
+      <h2>Импорт CSV</h2>
+    </div>
+    <div class="modal-body">
+      <div id="import-progress-content">
+        <p id="import-progress-message">Подготовка...</p>
+        <div class="progress-bar" style="margin-top: 16px;">
+          <div id="import-progress-fill" style="width: 0%; height: 4px; background: var(--accent); border-radius: 2px; transition: width 0.3s;"></div>
+        </div>
+      </div>
+      <div id="import-results" style="display: none;">
+        <h3>Результаты импорта</h3>
+        <div id="import-stats"></div>
+      </div>
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button class="btn btn-primary" id="import-progress-close">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../js/main.js?v=__CACHE_VER__"></script>
   <script src="../js/resources.js?v=__CACHE_VER__"></script>
   <script src="../js/github-api.js?v=__CACHE_VER__"></script>
   <script src="../js/image-convert.js?v=__CACHE_VER__"></script>
+  <script src="../js/importer.js?v=__CACHE_VER__"></script>
   <script src="../js/admin.js?v=__CACHE_VER__"></script>
 </body>
 </html>

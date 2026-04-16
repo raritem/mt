@@ -84,6 +84,25 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.22);
 }
 
 .sidebar-title {
@@ -136,6 +155,25 @@
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+.admin-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-main::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-main::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+}
+
+.admin-main::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.22);
 }
 
 /* ── Shop panel ──────────────────────────────────────────────── */
@@ -283,12 +321,11 @@
 .toggle-ui::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 2px;
   left: 3px;
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  transform: translateY(-50%);
   background: #0d1117;
   border: 1px solid rgba(255,255,255,0.14);
   transition: left var(--transition), background var(--transition), border-color var(--transition);
@@ -352,6 +389,25 @@
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+.image-manager-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.image-manager-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.image-manager-body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+}
+
+.image-manager-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.22);
 }
 
 /* ── Dropzone ────────────────────────────────────────────────── */
@@ -726,10 +782,91 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 16px;
+  /* Снимаем ограничения базового класса — страница скроллится нативно */
+  height: auto;
+  overflow: visible;
 }
 
 .admin-main--full {
   width: 100%;
   max-width: 100%;
   padding: 24px 0;
+  /* Скролл идёт через body, overflow из базового .admin-main сбрасываем */
+  overflow-y: visible;
+  height: auto;
+}
+
+/* ── Filter tabs ────────────────────────────────────────────── */
+.filter-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-tab {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transition: all var(--transition);
+  position: relative;
+}
+
+.filter-tab:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.04);
+}
+
+.filter-tab.active {
+  color: var(--accent);
+}
+
+.filter-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px 2px 0 0;
+}
+
+/* ── Progress bar ───────────────────────────────────────────── */
+.progress-bar {
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#import-progress-fill {
+  height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* ── Pagination message ─────────────────────────────────────── */
+.pagination-message {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.pagination-message a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.pagination-message a:hover {
+  text-decoration: underline;
 }

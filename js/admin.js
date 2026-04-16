@@ -3,6 +3,7 @@
    Единая галерея: data/lots.json
    ================================================================ */
 
+(function() {
 'use strict';
 
 const CATALOGUE_ID = 'lots';
@@ -30,8 +31,9 @@ function assetUrl(path) {
 //  СОСТОЯНИЕ
 // ════════════════════════════════════════════════════════════════
 const state = {
-  activeLots: [],
-  editingLot: null,
+  lotsObj: {},
+  editingLotId: null,
+  currentFilter: 'active',
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -67,6 +69,14 @@ const dom = {
   confirmModal:     $('confirm-modal'),
   confirmText:      $('confirm-text'),
   confirmOk:        $('confirm-ok'),
+
+  importProgressOverlay: $('import-progress-overlay'),
+  importProgressModal:   $('import-progress-modal'),
+  importProgressMessage: $('import-progress-message'),
+  importProgressFill:    $('import-progress-fill'),
+  importResults:         $('import-results'),
+  importStats:           $('import-stats'),
+  importProgressClose:   $('import-progress-close'),
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -76,6 +86,7 @@ const MODALS = {
   settings: { overlay: dom.settingsOverlay, modal: dom.settingsModal },
   lotModal: { overlay: dom.lotModalOvl,     modal: dom.lotModal      },
   confirm:  { overlay: dom.confirmOverlay,  modal: dom.confirmModal  },
+  importProgress: { overlay: dom.importProgressOverlay, modal: dom.importProgressModal },
 };
 
 function openModal(name) {
@@ -146,6 +157,11 @@ function bindAllEvents() {
   $('confirm-cancel').addEventListener('click', () => closeModal('confirm'));
   dom.confirmOverlay.addEventListener('click',  () => closeModal('confirm'));
 
+  // Import progress close
+  if (dom.importProgressClose) {
+    dom.importProgressClose.addEventListener('click', () => closeModal('importProgress'));
+  }
+
   // ESC
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
@@ -202,7 +218,7 @@ async function onSettingsSave() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  ДАННЫЕ — единый каталог
+//  ДАННЫЕ
 // ════════════════════════════════════════════════════════════════
 async function loadCatalogueData() {
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
@@ -210,11 +226,46 @@ async function loadCatalogueData() {
     const { data } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
     if (data === null) {
       await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
-        id: CATALOGUE_ID, name: 'Галерея', lots: []
+        id: CATALOGUE_ID, name: 'Галерея', lots: {}
       }, 'Init lots.json');
-      state.activeLots = [];
+      state.lotsObj = {};
     } else {
-      state.activeLots = Array.isArray(data.lots) ? data.lots : [];
+      // Конвертация старого формата
+      if (Array.isArray(data.lots)) {
+        const oldLots = data.lots;
+        data.lots = {};
+        oldLots.forEach(lot => {
+          const id = String(lot.id);
+          data.lots[id] = {
+            status: 'active',
+            lastSeenInCsv: null,
+            inactiveSince: null,
+            data: {
+              title: lot.title,
+              funpay_link: lot.funpay,
+              price: lot.price,
+              tanks_10: lot.tanks10,
+              premcount: lot.premcount,
+              t10count: lot.t10count,
+              resources: lot.resources || {}
+            },
+            ui: {
+              title: lot.title,
+              funpay: lot.funpay,
+              price: lot.price,
+              tanks10: lot.tanks10,
+              premcount: lot.premcount,
+              t10count: lot.t10count,
+              resources: lot.resources || {},
+              images: lot.images || [],
+              thumb: lot.thumb || null,
+              isHidden: (lot.onFunpay === false)
+            }
+          };
+        });
+        await GH.writeJSON('data/' + CATALOGUE_ID + '.json', data, 'Migrate to new format');
+      }
+      state.lotsObj = data.lots || {};
     }
     renderCataloguePanel();
   } catch (e) {
@@ -226,6 +277,10 @@ async function loadCatalogueData() {
 //  CATALOGUE PANEL
 // ════════════════════════════════════════════════════════════════
 function renderCataloguePanel() {
+  const activeCount = Object.values(state.lotsObj).filter(l => l.status === 'active' && !l.ui?.isHidden).length;
+  const hiddenCount = Object.values(state.lotsObj).filter(l => l.status === 'active' && l.ui?.isHidden).length;
+  const inactiveCount = Object.values(state.lotsObj).filter(l => l.status === 'inactive').length;
+
   dom.adminMain.innerHTML = `
     <div class="shop-panel">
       <div class="shop-panel-header">
@@ -234,62 +289,178 @@ function renderCataloguePanel() {
           <a href="../gallery/" target="_blank" class="btn btn-ghost">
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span> Открыть
           </a>
+          <button class="btn btn-primary" id="import-csv-btn">
+            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Импорт CSV
+          </button>
           <button class="btn btn-primary" id="add-lot-btn">
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> Добавить лот
           </button>
         </div>
       </div>
+      <div class="filter-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+        <button class="filter-tab ${state.currentFilter === 'active' ? 'active' : ''}" data-filter="active">Активные (${activeCount})</button>
+        <button class="filter-tab ${state.currentFilter === 'hidden' ? 'active' : ''}" data-filter="hidden">Скрытые (${hiddenCount})</button>
+        <button class="filter-tab ${state.currentFilter === 'inactive' ? 'active' : ''}" data-filter="inactive">Неактивные (${inactiveCount})</button>
+      </div>
       <div class="admin-lots-list" id="admin-lots-list"></div>
     </div>
   `;
 
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      state.currentFilter = tab.dataset.filter;
+      renderCataloguePanel();
+    });
+  });
+
   $('add-lot-btn').addEventListener('click', () => openLotModal(null));
+  $('import-csv-btn').addEventListener('click', triggerCsvImport);
+
   renderLots();
+}
+
+function triggerCsvImport() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv,text/csv';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    openModal('importProgress');
+    dom.importResults.style.display = 'none';
+    dom.importProgressMessage.textContent = 'Начинаем импорт...';
+    dom.importProgressFill.style.width = '0%';
+    
+    try {
+      const stats = await Importer.importFromCSV(file, (progress) => {
+        if (progress.phase === 'parse') {
+          dom.importProgressMessage.textContent = progress.message;
+        } else if (progress.phase === 'process') {
+          const percent = Math.round((progress.current / progress.total) * 100);
+          dom.importProgressMessage.textContent = `Обработано ${progress.current} из ${progress.total} строк`;
+          dom.importProgressFill.style.width = percent + '%';
+        }
+      });
+      
+      // Показываем результаты
+      dom.importProgressMessage.textContent = 'Импорт завершён!';
+      dom.importProgressFill.style.width = '100%';
+      
+      let statsHtml = `
+        <p>✅ Обработано строк: ${stats.processed}</p>
+        <p>🆕 Новых лотов: ${stats.new || 0}</p>
+        <p>🔄 Обновлено: ${stats.updated || 0}</p>
+        <p>⏸️ Неактивных: ${stats.inactive || 0}</p>
+        <p>🗑️ Удалено: ${stats.deleted || 0}</p>
+      `;
+      
+      if (stats.errors && stats.errors.length > 0) {
+        statsHtml += `<p style="color: var(--danger); margin-top: 12px;">⚠️ Ошибки:</p>`;
+        statsHtml += `<ul style="color: var(--danger); font-size: 12px; max-height: 150px; overflow-y: auto;">`;
+        stats.errors.slice(0, 20).forEach(err => {
+          statsHtml += `<li>${esc(err)}</li>`;
+        });
+        if (stats.errors.length > 20) {
+          statsHtml += `<li>... и ещё ${stats.errors.length - 20}</li>`;
+        }
+        statsHtml += `</ul>`;
+      }
+      
+      dom.importStats.innerHTML = statsHtml;
+      dom.importResults.style.display = 'block';
+      
+      // Перезагружаем данные
+      await loadCatalogueData();
+      
+    } catch (e) {
+      dom.importProgressMessage.textContent = 'Ошибка импорта';
+      dom.importStats.innerHTML = `<p style="color: var(--danger);">${esc(e.message)}</p>`;
+      dom.importResults.style.display = 'block';
+    }
+  };
+  input.click();
 }
 
 // ════════════════════════════════════════════════════════════════
 //  LOTS
 // ════════════════════════════════════════════════════════════════
+function getFilteredLots() {
+  const result = [];
+  Object.entries(state.lotsObj).forEach(([id, lot]) => {
+    let include = false;
+    switch (state.currentFilter) {
+      case 'active':
+        include = (lot.status === 'active' && !lot.ui?.isHidden);
+        break;
+      case 'hidden':
+        include = (lot.status === 'active' && lot.ui?.isHidden === true);
+        break;
+      case 'inactive':
+        include = (lot.status === 'inactive');
+        break;
+      default:
+        include = true;
+    }
+    if (include) {
+      result.push({ id, ...lot });
+    }
+  });
+  return result;
+}
+
 function renderLots() {
   const list = $('admin-lots-list');
   if (!list) return;
 
-  if (state.activeLots.length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><h2>Нет лотов</h2><p>Нажмите «+ Добавить лот»</p></div>';
+  const filteredLots = getFilteredLots();
+
+  if (filteredLots.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><h2>Нет лотов</h2><p>Нажмите «+ Добавить лот» или «Импорт CSV»</p></div>';
     return;
   }
 
   list.innerHTML = '';
-  state.activeLots.forEach(lot => {
-    const preview = lot.thumb || (lot.images && lot.images[0]);
-    const thumb   = preview
+  filteredLots.forEach(lot => {
+    const lotId = lot.id;
+    const ui = lot.ui || {};
+    const preview = ui.thumb || (ui.images && ui.images[0]);
+    const thumb = preview
       ? `<img class="admin-lot-thumb" src="${assetUrl(preview)}" alt="" loading="lazy">`
       : `<div class="admin-lot-thumb-placeholder">🎯</div>`;
 
-    const onFunpay = (lot.onFunpay !== false);
-    const badge = onFunpay
+    const isHidden = ui.isHidden === true;
+    const badge = !isHidden
       ? `<span class="admin-lot-badge admin-lot-badge-funpay">Верх</span>`
-      : `<span class="admin-lot-badge admin-lot-badge-hidden">Доп</span>`;
+      : `<span class="admin-lot-badge admin-lot-badge-hidden">Скрыт</span>`;
+    
+    const inactiveBadge = lot.status === 'inactive' 
+      ? `<span class="admin-lot-badge" style="background: rgba(239,68,68,0.15); color: var(--danger);">Неактивен</span>` 
+      : '';
 
     const card = document.createElement('div');
     card.className = 'admin-lot-card';
     card.innerHTML = `
       ${thumb}
       <div class="admin-lot-info">
-        <div class="admin-lot-title">${escWithBr(lot.title)} ${badge}</div>
+        <div class="admin-lot-title">${escWithBr(ui.title || lotId)} ${badge} ${inactiveBadge}</div>
         <div class="admin-lot-meta">
-          <span>${(lot.images || []).length} фото</span>
-          ${lot.funpay ? `<a href="${lot.funpay}" target="_blank" style="color:var(--accent)">FunPay <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg style="display:inline-block;vertical-align:middle" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span></a>` : ''}
+          <span>${(ui.images || []).length} фото</span>
+          ${ui.funpay ? `<a href="${ui.funpay}" target="_blank" style="color:var(--accent)">FunPay <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg style="display:inline-block;vertical-align:middle" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span></a>` : ''}
+          ${lot.status === 'inactive' && lot.inactiveSince ? `<span style="color: var(--text-muted);">неактивен с ${lot.inactiveSince}</span>` : ''}
         </div>
       </div>
       <div class="admin-lot-actions">
-        <button class="btn btn-ghost btn-no-border" data-action="images" data-lot="${lot.id}" title="Фото">
+        <button class="btn btn-ghost btn-no-border" data-action="toggle-visibility" data-lot="${lotId}" title="${isHidden ? 'Показать' : 'Скрыть'}">
+          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+        </button>
+        <button class="btn btn-ghost btn-no-border" data-action="images" data-lot="${lotId}" title="Фото">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
         </button>
-        <button class="btn btn-ghost btn-no-border" data-action="edit" data-lot="${lot.id}" title="Изменить">
+        <button class="btn btn-ghost btn-no-border" data-action="edit" data-lot="${lotId}" title="Изменить">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
         </button>
-        <button class="btn btn-ghost btn-no-border" style="color:var(--danger)" data-action="delete" data-lot="${lot.id}" title="Удалить">
+        <button class="btn btn-ghost btn-no-border" style="color:var(--danger)" data-action="delete" data-lot="${lotId}" title="Удалить">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
         </button>
       </div>
@@ -300,46 +471,52 @@ function renderLots() {
   list.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
-    const lotId  = btn.dataset.lot;
+    const lotId = btn.dataset.lot;
     const action = btn.dataset.action;
-    if (action === 'edit')   openLotModal(lotId);
+    if (action === 'edit') openLotModal(lotId);
     if (action === 'delete') confirmDeleteLot(lotId);
     if (action === 'images') openImageManager(lotId);
+    if (action === 'toggle-visibility') toggleLotVisibility(lotId);
   });
+}
+
+async function toggleLotVisibility(lotId) {
+  const lot = state.lotsObj[lotId];
+  if (!lot) return;
+  lot.ui.isHidden = !lot.ui.isHidden;
+  await saveCatalogueJSON();
+  renderLots();
 }
 
 // ════════════════════════════════════════════════════════════════
 //  LOT MODAL
 // ════════════════════════════════════════════════════════════════
 function openLotModal(editLotId) {
-  const lot = editLotId ? state.activeLots.find(l => l.id === editLotId) : null;
-  state.editingLot = editLotId;
+  const lot = editLotId ? state.lotsObj[editLotId] : null;
+  state.editingLotId = editLotId;
+  
+  const ui = lot?.ui || {};
+  
   dom.lotModalTitle.textContent = lot ? 'Редактировать лот' : 'Новый лот';
-  dom.lotTitleInput.value       = lot ? lot.title          : '';
-  if (dom.lotTanks10Input)   dom.lotTanks10Input.value   = lot ? (lot.tanks10 || '') : '';
-  if (dom.lotT10CountInput)  dom.lotT10CountInput.value  = lot ? (lot.t10count  !== undefined && lot.t10count  !== null ? lot.t10count  : '') : '';
-  if (dom.lotPremCountInput) dom.lotPremCountInput.value = lot ? (lot.premcount !== undefined && lot.premcount !== null ? lot.premcount : '') : '';
-  dom.lotFunpayInput.value      = lot ? (lot.funpay || '') : '';
-  if (dom.lotPriceInput)    dom.lotPriceInput.value    = lot ? (lot.price  || '') : '';
-  if (dom.lotOnFunpayInput) dom.lotOnFunpayInput.checked = lot ? (lot.onFunpay !== false) : false;
+  dom.lotTitleInput.value       = ui.title || '';
+  if (dom.lotTanks10Input)   dom.lotTanks10Input.value   = ui.tanks10 || '';
+  if (dom.lotT10CountInput)  dom.lotT10CountInput.value  = ui.t10count || '';
+  if (dom.lotPremCountInput) dom.lotPremCountInput.value = ui.premcount || '';
+  dom.lotFunpayInput.value      = ui.funpay || '';
+  if (dom.lotPriceInput)    dom.lotPriceInput.value    = ui.price || '';
+  if (dom.lotOnFunpayInput) dom.lotOnFunpayInput.checked = !ui.isHidden;
 
   document.querySelectorAll('.wrap-toggle-btn').forEach(btn => {
-    const target = btn.dataset.target;
-    const active = target === 'lot-title-input'  ? !!(lot && lot.titleWrap)
-                 : target === 'lot-tanks10-input' ? !!(lot && lot.tanks10Wrap)
-                 : false;
     btn.disabled = false;
-    btn.classList.toggle('is-active', active);
-    btn.title = active ? 'Перенос разрешён' : 'Разрешить перенос строки';
   });
 
-  const res = (lot && lot.resources) ? lot.resources : {};
+  const res = ui.resources || {};
   const bondsEl  = $('lot-bonds-input');
   const goldEl   = $('lot-gold-input');
   const silverEl = $('lot-silver-input');
-  if (bondsEl)  bondsEl.value  = res.bonds  !== undefined ? res.bonds  : '';
-  if (goldEl)   goldEl.value   = res.gold   !== undefined ? res.gold   : '';
-  if (silverEl) silverEl.value = res.silver !== undefined ? res.silver : '';
+  if (bondsEl)  bondsEl.value  = res.bonds  || '';
+  if (goldEl)   goldEl.value   = res.gold   || '';
+  if (silverEl) silverEl.value = res.silver || '';
 
   if (typeof RESOURCE_ICONS !== 'undefined') {
     const iconBonds  = $('res-icon-bonds');
@@ -368,9 +545,7 @@ async function onLotSave() {
   const premcountRaw = (dom.lotPremCountInput ? dom.lotPremCountInput.value.trim() : '');
   const funpay      = dom.lotFunpayInput.value.trim();
   const price       = dom.lotPriceInput   ? dom.lotPriceInput.value.trim()   : '';
-  const onFunpay    = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked  : false;
-  const titleWrap   = !!document.querySelector('.wrap-toggle-btn[data-target="lot-title-input"]')?.classList.contains('is-active');
-  const tanks10Wrap = !!document.querySelector('.wrap-toggle-btn[data-target="lot-tanks10-input"]')?.classList.contains('is-active');
+  const isNotHidden  = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked  : true;
 
   if (!title) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
 
@@ -385,28 +560,41 @@ async function onLotSave() {
 
   setStatus(dom.lotModalStatus, 'Сохраняю…', 'info');
   try {
-    if (state.editingLot) {
-      const lot = state.activeLots.find(l => l.id === state.editingLot);
+    if (state.editingLotId) {
+      const lot = state.lotsObj[state.editingLotId];
       if (lot) {
-        lot.title = title; lot.funpay = funpay; lot.onFunpay = onFunpay;
-        lot.price     = price    || undefined;
-        lot.tanks10   = tanks10  || undefined;
-        lot.t10count  = t10countRaw  !== '' ? t10countRaw  : undefined;
-        lot.premcount = premcountRaw !== '' ? premcountRaw : undefined;
-        lot.resources = Object.keys(resources).length ? resources : undefined;
-        lot.titleWrap   = titleWrap   || undefined;
-        lot.tanks10Wrap = tanks10Wrap || undefined;
+        lot.ui = {
+          ...lot.ui,
+          title,
+          funpay,
+          price: price || null,
+          tanks10: tanks10 || null,
+          t10count: t10countRaw || null,
+          premcount: premcountRaw || null,
+          resources: Object.keys(resources).length ? resources : null,
+          isHidden: !isNotHidden
+        };
       }
     } else {
-      const newLot = { id: String(Date.now()).slice(-9), title, funpay, onFunpay, images: [] };
-      if (price)      newLot.price     = price;
-      if (tanks10)    newLot.tanks10   = tanks10;
-      if (t10countRaw  !== '') newLot.t10count  = t10countRaw;
-      if (premcountRaw !== '') newLot.premcount = premcountRaw;
-      if (Object.keys(resources).length) newLot.resources = resources;
-      if (titleWrap)   newLot.titleWrap   = titleWrap;
-      if (tanks10Wrap) newLot.tanks10Wrap = tanks10Wrap;
-      state.activeLots.push(newLot);
+      const newId = String(Date.now()).slice(-9);
+      state.lotsObj[newId] = {
+        status: 'active',
+        lastSeenInCsv: null,
+        inactiveSince: null,
+        data: {},
+        ui: {
+          title,
+          funpay,
+          price: price || null,
+          tanks10: tanks10 || null,
+          t10count: t10countRaw || null,
+          premcount: premcountRaw || null,
+          resources: Object.keys(resources).length ? resources : null,
+          images: [],
+          thumb: null,
+          isHidden: !isNotHidden
+        }
+      };
     }
     await saveCatalogueJSON();
     setStatus(dom.lotModalStatus, 'Сохранено', 'ok');
@@ -430,20 +618,20 @@ function openConfirm(text, onOk) {
 }
 
 function confirmDeleteLot(lotId) {
-  const lot = state.activeLots.find(l => l.id === lotId);
-  openConfirm('Удалить лот «' + esc(lot ? lot.title : lotId) + '»?', () => deleteLot(lotId));
+  const lot = state.lotsObj[lotId];
+  openConfirm('Удалить лот «' + esc(lot?.ui?.title || lotId) + '»?', () => deleteLot(lotId));
 }
 
 // ════════════════════════════════════════════════════════════════
 //  УДАЛЕНИЕ
 // ════════════════════════════════════════════════════════════════
 async function deleteLot(lotId) {
-  const lot = state.activeLots.find(l => l.id === lotId);
+  const lot = state.lotsObj[lotId];
   if (!lot) return;
-  const files = [...(lot.images || [])];
-  if (lot.thumb) files.push(lot.thumb);
+  const files = [...(lot.ui?.images || [])];
+  if (lot.ui?.thumb) files.push(lot.ui.thumb);
   if (files.length > 0) await GH.deleteFiles(files, 'Delete lot ' + lotId);
-  state.activeLots = state.activeLots.filter(l => l.id !== lotId);
+  delete state.lotsObj[lotId];
   await saveCatalogueJSON();
   renderLots();
 }
@@ -456,8 +644,8 @@ let imImages = [];
 
 function openImageManager(lotId) {
   imLotId  = lotId;
-  const lot = state.activeLots.find(l => l.id === lotId);
-  imImages  = lot ? [...(lot.images || [])] : [];
+  const lot = state.lotsObj[lotId];
+  imImages  = lot?.ui?.images ? [...lot.ui.images] : [];
 
   let panel = $('image-manager');
   if (!panel) {
@@ -472,7 +660,7 @@ function openImageManager(lotId) {
       <button class="btn btn-ghost" id="im-back">
         <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Назад
       </button>
-      <div class="image-manager-title">${esc(lot ? lot.title : lotId)}</div>
+      <div class="image-manager-title">${esc(lot?.ui?.title || lotId)}</div>
       <button class="btn btn-ghost" id="im-refresh-thumb">
         <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span> Обновить превью
       </button>
@@ -582,8 +770,11 @@ function bindDragSort(card) {
 function swap(a, b) { [imImages[a], imImages[b]] = [imImages[b], imImages[a]]; renderManagedImages(); }
 
 async function saveOrder() {
-  const lot = state.activeLots.find(l => l.id === imLotId);
-  if (lot) lot.images = [...imImages];
+  const lot = state.lotsObj[imLotId];
+  if (lot) {
+    if (!lot.ui) lot.ui = {};
+    lot.ui.images = [...imImages];
+  }
   try { await saveCatalogueJSON(); } catch (e) { console.error('saveOrder:', e.message); }
 }
 
@@ -638,8 +829,11 @@ async function deleteImage(idx) {
   const savedIdx    = idx;
 
   imImages.splice(idx, 1);
-  const lot = state.activeLots.find(l => l.id === imLotId);
-  if (lot) lot.images = [...imImages];
+  const lot = state.lotsObj[imLotId];
+  if (lot) {
+    if (!lot.ui) lot.ui = {};
+    lot.ui.images = [...imImages];
+  }
   renderManagedImages();
   renderLots();
 
@@ -648,8 +842,11 @@ async function deleteImage(idx) {
   undoPending = { path, idx: savedIdx, savedImages };
   showUndoToast(`Фото ${savedIdx + 1} удалено`, async () => {
     imImages = [...savedImages];
-    const lot = state.activeLots.find(l => l.id === imLotId);
-    if (lot) lot.images = [...imImages];
+    const lot = state.lotsObj[imLotId];
+    if (lot) {
+      if (!lot.ui) lot.ui = {};
+      lot.ui.images = [...imImages];
+    }
     undoPending = null;
     renderManagedImages();
     renderLots();
@@ -672,8 +869,11 @@ async function regenerateThumb() {
     const thumbPath = 'images/' + CATALOGUE_ID + '/' + imLotId + '/thumb.' + ext;
     const sha = await GH.getFileSha(thumbPath);
     await GH.putBinaryFile(thumbPath, base64, 'Regenerate thumb', sha || undefined);
-    const lot = state.activeLots.find(l => l.id === imLotId);
-    if (lot) lot.thumb = thumbPath;
+    const lot = state.lotsObj[imLotId];
+    if (lot) {
+      if (!lot.ui) lot.ui = {};
+      lot.ui.thumb = thumbPath;
+    }
     await saveCatalogueJSON();
     if (btn) btn.textContent = '✓ Готово';
     setTimeout(() => { if (btn) { btn.textContent = '🖼 Обновить превью'; btn.disabled = false; } }, 2000);
@@ -731,13 +931,19 @@ async function uploadFiles(files) {
           const thumbPath = baseDir + '/thumb.' + tExt;
           const thumbSha  = await GH.getFileSha(thumbPath);
           await GH.putBinaryFile(thumbPath, tB64, 'Thumb for ' + imLotId, thumbSha || undefined);
-          const lot = state.activeLots.find(l => l.id === imLotId);
-          if (lot) lot.thumb = thumbPath;
+          const lot = state.lotsObj[imLotId];
+          if (lot) {
+            if (!lot.ui) lot.ui = {};
+            lot.ui.thumb = thumbPath;
+          }
         } catch (_) {}
       }
       imImages.push(repoPath);
-      const lot = state.activeLots.find(l => l.id === imLotId);
-      if (lot) lot.images = [...imImages];
+      const lot = state.lotsObj[imLotId];
+      if (lot) {
+        if (!lot.ui) lot.ui = {};
+        lot.ui.images = [...imImages];
+      }
       statusEl.textContent = '✓ Готово';
       statusEl.className   = 'upload-item-status ok';
     } catch (e) {
@@ -760,7 +966,7 @@ async function saveCatalogueJSON() {
   await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
     id:   CATALOGUE_ID,
     name: 'Галерея',
-    lots: state.activeLots,
+    lots: state.lotsObj,
   }, 'Update lots');
 }
 
@@ -789,3 +995,5 @@ function escWithBr(str) {
   d.textContent = String(str || '');
   return d.innerHTML.replace(/\n/g, '<br>');
 }
+
+})();
