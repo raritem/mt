@@ -1,9 +1,31 @@
 {
-  "id": "xmode",
-  "name": "XMODE",
+  "id": "lots",
+  "name": "Галерея",
   "description": "",
-  "seller": "xmode",
+  "seller": "",
   "lots": {
+    "349200682": {
+      "status": "active",
+      "lastSeenInCsv": null,
+      "inactiveSince": null,
+      "onFunpay": false,
+      "data": {
+        "prems_8_9": "впвап",
+        "tanks_10": "вапвпа",
+        "tanks_10_count": "346346",
+        "premcount": "43364",
+        "funpay_link": "",
+        "price": "346346",
+        "bonds": "346346",
+        "gold": "346346",
+        "silver": "34664"
+      },
+      "ui": {
+        "images": [],
+        "thumb": "",
+        "isHidden": false
+      }
+    },
     "1773309676444": {
       "status": "inactive",
       "lastSeenInCsv": null,
