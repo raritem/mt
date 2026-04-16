@@ -88,6 +88,12 @@ window.GH = (() => {
   // ── Получить файл как текст (UTF-8, для JSON) ─────────────────
   async function getFile(path) {
     const { sha, b64 } = await getRaw(path);
+    
+    // Проверяем, что b64 не пустой
+    if (!b64 || b64 === '') {
+      return { sha, content: '' };
+    }
+    
     const bytes   = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
     const content = new TextDecoder('utf-8').decode(bytes);
     cacheSha(path, sha);
@@ -113,24 +119,63 @@ window.GH = (() => {
     }
   }
 
+  // ── Кодирование строки в base64 (безопасное для UTF-8) ────────
+  function encodeBase64(str) {
+    if (!str) return '';
+    
+    const bytes = new TextEncoder().encode(str);
+    const CHUNK = 8190; // кратно 3
+    let b64 = '';
+    
+    for (let i = 0; i < bytes.length; i += CHUNK) {
+      const chunk = bytes.subarray(i, Math.min(i + CHUNK, bytes.length));
+      b64 += btoa(String.fromCharCode(...chunk));
+    }
+    
+    return b64;
+  }
+
   // ── Записать текстовый файл (UTF-8) ──────────────────────────
   async function putFile(path, content, message, sha) {
-    const cfg   = getConfig();
-    const bytes = new TextEncoder().encode(content);
-    const CHUNK = 8190;
-    let b64 = '';
-    for (let i = 0; i < bytes.length; i += CHUNK) {
-      b64 += btoa(String.fromCharCode(...bytes.subarray(i, i + CHUNK)));
+    const cfg = getConfig();
+    
+    // Проверяем, что контент не undefined
+    if (content === undefined || content === null) {
+      throw new Error('Контент не может быть undefined/null');
     }
-    const body = { message: message || 'Update ' + path, content: b64, branch: cfg.branch };
+    
+    const b64 = encodeBase64(String(content));
+    
+    // Проверяем, что b64 не пустой
+    if (!b64 || b64 === '') {
+      throw new Error('Не удалось закодировать контент в base64');
+    }
+    
+    const body = { 
+      message: message || 'Update ' + path, 
+      content: b64, 
+      branch: cfg.branch 
+    };
+    
     if (sha) body.sha = sha;
+    
     return request('PUT', '/contents/' + path, body);
   }
 
   // ── Записать бинарный файл (base64 строка от Canvas) ─────────
   async function putBinaryFile(path, base64Data, message, sha) {
     const cfg  = getConfig();
-    const body = { message: message || 'Upload ' + path, content: base64Data, branch: cfg.branch };
+    
+    if (!base64Data || base64Data === '') {
+      throw new Error('base64 данные пусты');
+    }
+    
+    const body = { 
+      message: message || 'Upload ' + path, 
+      content: base64Data, 
+      branch: cfg.branch 
+    };
+    
     if (sha) body.sha = sha;
     return request('PUT', '/contents/' + path, body);
   }
@@ -152,7 +197,9 @@ window.GH = (() => {
 
   async function deleteFiles(paths, message) {
     for (const p of paths) {
-      try { await deleteFile(p, message); } catch (e) { if (e.status !== 404) throw e; }
+      try { await deleteFile(p, message); } catch (e) { 
+        if (e.status !== 404) throw e; 
+      }
     }
   }
 
@@ -166,7 +213,26 @@ window.GH = (() => {
   async function readJSON(path) {
     try {
       const f = await getFile(path);
-      return { data: JSON.parse(f.content), sha: f.sha };
+      const content = f.content;
+      
+      // Проверяем, что контент не пустой
+      if (!content || content.trim() === '') {
+        console.warn(`Файл ${path} пуст, возвращаем структуру по умолчанию`);
+        return { 
+          data: { id: 'lots', name: 'Галерея', lots: {} }, 
+          sha: f.sha 
+        };
+      }
+      
+      try {
+        return { data: JSON.parse(content), sha: f.sha };
+      } catch (e) {
+        console.error(`Ошибка парсинга JSON в ${path}:`, e.message);
+        return { 
+          data: { id: 'lots', name: 'Галерея', lots: {} }, 
+          sha: f.sha 
+        };
+      }
     } catch (e) {
       if (e.status === 404) return { data: null, sha: null };
       throw e;
@@ -175,8 +241,24 @@ window.GH = (() => {
 
   // ── Записать JSON ────────────────────────────────────────────
   async function writeJSON(path, data, message) {
-    const content = JSON.stringify(data, null, 2);
-
+    // Проверяем данные перед сериализацией
+    if (!data || typeof data !== 'object') {
+      throw new Error('Данные должны быть объектом');
+    }
+    
+    let content;
+    try {
+      content = JSON.stringify(data, null, 2);
+    } catch (e) {
+      console.error('Ошибка сериализации JSON:', e);
+      throw new Error('Не удалось сериализовать данные в JSON');
+    }
+    
+    // Проверяем, что контент не пустой
+    if (!content || content === '{}' || content === '[]') {
+      console.warn('Контент пуст, но продолжаем сохранение');
+    }
+    
     for (let attempt = 0; attempt < 4; attempt++) {
       let sha = getCachedSha(path);
 
