@@ -466,43 +466,11 @@ async function loadCatalogue() {
         tableSectionEl.style.display = '';
         applyView(currentView); // применяем сохранённый/дефолтный вид
 
-        const SECONDARY_PAGE_SIZE = 100;
-        let secondaryPage = 0; // текущая страница (0-based)
-
-        // Контейнер пагинации — вставляем после tableSectionEl
-        let paginationEl = document.getElementById('secondary-pagination');
-        if (!paginationEl) {
-          paginationEl = document.createElement('div');
-          paginationEl.id = 'secondary-pagination';
-          paginationEl.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:24px 0 8px;';
-          tableSectionEl.appendChild(paginationEl);
-        }
-
-        const renderPagination = (totalFiltered) => {
-          paginationEl.innerHTML = '';
-          const totalPages = Math.ceil(totalFiltered / SECONDARY_PAGE_SIZE);
-          if (totalPages <= 1) return;
-          for (let i = 0; i < totalPages; i++) {
-            const btn = document.createElement('button');
-            btn.textContent = String(i + 1);
-            btn.className = 'btn ' + (i === secondaryPage ? 'btn-primary' : 'btn-ghost');
-            btn.style.cssText = 'min-width:36px;padding:6px 10px;font-size:14px;';
-            btn.addEventListener('click', () => {
-              secondaryPage = i;
-              renderSecondary(false);
-              tableSectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-            paginationEl.appendChild(btn);
-          }
-        };
-
-        const renderSecondary = (resetPage = true) => {
+        const renderSecondary = () => {
           const q = (qEl ? qEl.value : '').trim().toLowerCase();
           const filtered = !q
             ? hiddenLots
             : hiddenLots.filter(l => normalizeLotTitle(l.title || '').toLowerCase().includes(q));
-
-          if (resetPage) secondaryPage = 0;
 
           // Очищаем оба контейнера
           tableGridEl.innerHTML = '';
@@ -512,25 +480,20 @@ async function loadCatalogue() {
             const empty = '<div class="empty-state" style="padding:36px 16px"><div class="empty-icon">🔎</div><h2>Ничего не найдено</h2><p>Попробуйте другой запрос</p></div>';
             tableGridEl.innerHTML = empty;
             tableRowsEl.innerHTML = empty;
-            paginationEl.innerHTML = '';
             return;
           }
-
-          // Срез текущей страницы
-          const start = secondaryPage * SECONDARY_PAGE_SIZE;
-          const pageLots = filtered.slice(start, start + SECONDARY_PAGE_SIZE);
 
           const alreadySeen = tableSectionEl.dataset.seen === '1';
 
           // ── Карточки (grid view) ─────────────────────────────
-          pageLots.forEach((lot) => {
+          filtered.forEach((lot) => {
             const card = buildLotCard(lot, CATALOGUE_ID);
             if (!alreadySeen) card.classList.add('fade-prep');
             tableGridEl.appendChild(card);
           });
 
           // ── Строки (table view) ──────────────────────────────
-          pageLots.forEach((lot, i) => {
+          filtered.forEach((lot, i) => {
             const row = document.createElement('div');
             row.className = alreadySeen ? 'lot-row-card' : 'lot-row-card fade-prep';
 
@@ -580,12 +543,10 @@ async function loadCatalogue() {
             row.addEventListener('click', () => { window.location.href = lotUrl; });
             tableRowsEl.appendChild(row);
           });
-
-          renderPagination(filtered.length);
         };
 
-        if (qEl) qEl.oninput = () => renderSecondary(true);
-        renderSecondary(true);
+        if (qEl) qEl.oninput = () => renderSecondary();
+        renderSecondary();
 
         // IO запускает анимацию при появлении в viewport
         if (!tableSectionEl.dataset.ioBound) {
