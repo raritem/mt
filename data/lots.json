@@ -4,72 +4,6 @@
   "description": "",
   "seller": "xmode",
   "lots": {
-    "363251544": {
-      "status": "active",
-      "lastSeenInCsv": null,
-      "inactiveSince": null,
-      "onFunpay": false,
-      "data": {
-        "prems_8_9": "авовков454584588",
-        "tanks_10": "457458",
-        "tanks_10_count": "457457",
-        "premcount": "47457",
-        "funpay_link": "",
-        "price": "457457",
-        "bonds": "437457",
-        "gold": "347347",
-        "silver": "47347"
-      },
-      "ui": {
-        "images": [],
-        "thumb": "",
-        "isHidden": false
-      }
-    },
-    "363280881": {
-      "status": "active",
-      "lastSeenInCsv": null,
-      "inactiveSince": null,
-      "onFunpay": false,
-      "data": {
-        "prems_8_9": "36364",
-        "tanks_10": "45848585",
-        "tanks_10_count": "670670",
-        "premcount": "695670670",
-        "funpay_link": "",
-        "price": "670670",
-        "bonds": "670670",
-        "gold": "670",
-        "silver": "7843634"
-      },
-      "ui": {
-        "images": [],
-        "thumb": "",
-        "isHidden": false
-      }
-    },
-    "363295023": {
-      "status": "active",
-      "lastSeenInCsv": null,
-      "inactiveSince": null,
-      "onFunpay": false,
-      "data": {
-        "prems_8_9": "236237",
-        "tanks_10": "347347",
-        "tanks_10_count": "458458",
-        "premcount": "4358458",
-        "funpay_link": "",
-        "price": "458458",
-        "bonds": "458569",
-        "gold": "2332",
-        "silver": "47347"
-      },
-      "ui": {
-        "images": [],
-        "thumb": "",
-        "isHidden": false
-      }
-    },
     "1773309676444": {
       "status": "active",
       "lastSeenInCsv": null,
@@ -265,9 +199,7 @@
         "funpay_link": "https://funpay.com/users/2854472/",
         "bonds": "19654",
         "gold": "9789",
-        "tanks_10_count": "4",
-        "premcount": "",
-        "silver": ""
+        "tanks_10_count": "4"
       },
       "ui": {
         "images": [
@@ -286,7 +218,7 @@
           "images/xmode/1773738565427/004.webp"
         ],
         "thumb": "images/xmode/1773738565427/thumb.webp",
-        "isHidden": false
+        "isHidden": true
       }
     },
     "1773739012044": {
@@ -299,11 +231,7 @@
         "tanks_10": "T57 Heavy, Об. 268, Т-62А",
         "funpay_link": "https://funpay.com/users/2854472/",
         "bonds": "19845",
-        "gold": "9578",
-        "tanks_10_count": "",
-        "premcount": "",
-        "price": "",
-        "silver": ""
+        "gold": "9578"
       },
       "ui": {
         "images": [
@@ -317,7 +245,7 @@
           "images/xmode/1773739012044/002.webp"
         ],
         "thumb": "images/xmode/1773739012044/thumb.webp",
-        "isHidden": false
+        "isHidden": true
       }
     },
     "1773761393864": {
