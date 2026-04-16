@@ -5,8 +5,7 @@
 
 'use strict';
 
-// CATALOGUE_ID уже объявлена в main.js, не дублируем
-// const CATALOGUE_ID = 'lots';
+const CATALOGUE_ID = 'lots';
 
 // ── GitHub RAW ───────────────────────────────────────────────────
 function getGhRawBase() {
@@ -208,32 +207,8 @@ async function onSettingsSave() {
 async function loadCatalogueData() {
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    console.log('💾 Loading catalogue data...');
-    
-    // Try to load from CSV first (new approach)
-    if (window.CSVLoader) {
-      console.log('📄 Attempting CSV load...');
-      try {
-        const csvUrl = ROOT + 'data/accounts.csv';
-        const configUrl = ROOT + 'config.json';
-        console.log('📍 CSV URL:', csvUrl);
-        const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, csvUrl, configUrl);
-        console.log('✅ CSV loaded successfully, lots:', data.lots.length);
-        state.activeLots = Array.isArray(data.lots) ? data.lots : [];
-        renderCataloguePanel();
-        return;
-      } catch (csvErr) {
-        console.warn('❌ CSV load failed:', csvErr.message);
-      }
-    } else {
-      console.warn('⚠️ CSVLoader not available');
-    }
-    
-    console.log('🔄 Falling back to JSON...');
-    // Fallback to JSON from GitHub
     const { data } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
     if (data === null) {
-      console.log('📝 Creating new lots.json...');
       await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
         id: CATALOGUE_ID, name: 'Галерея', lots: []
       }, 'Init lots.json');
@@ -243,24 +218,7 @@ async function loadCatalogueData() {
     }
     renderCataloguePanel();
   } catch (e) {
-    console.error('💥 Error:', e);
-    // Fallback for local development without GitHub
-    console.log('🏠 Trying local fallback...');
-    try {
-      const cached = localStorage.getItem('wotshop-local-lots');
-      if (cached) {
-        const data = JSON.parse(cached);
-        state.activeLots = Array.isArray(data.lots) ? data.lots : [];
-      } else {
-        state.activeLots = [];
-      }
-      console.log('✅ Local fallback loaded, lots:', state.activeLots.length);
-      renderCataloguePanel();
-    } catch (_) {
-      console.error('Local load error:', _);
-      state.activeLots = [];
-      renderCataloguePanel();
-    }
+    dom.adminMain.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h2>' + esc(e.message) + '</h2></div>';
   }
 }
 

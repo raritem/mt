@@ -621,18 +621,9 @@ window.QuickView = (() => {
     // Ленивая загрузка данных
     try {
       const rawBase = getGhRawBase();
-      const csvUrl = rawBase
-        ? rawBase + 'data/accounts.csv'
-        : ROOT + 'data/accounts.csv';
-      const configUrl = rawBase
-        ? rawBase + 'config.json'
-        : ROOT + 'config.json';
-      
-      // Fallback URLs (always local files)
-      const fallbackCsvUrl = ROOT + 'data/accounts.csv';
-      const fallbackConfigUrl = ROOT + 'config.json';
-      
-      const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
+      const data = rawBase
+        ? await fetchJSON(rawBase + 'data/' + catalogueId + '.json')
+        : await fetchJSON(ROOT + 'data/' + catalogueId + '.json');
 
       if (!_isOpen || _currentLotId !== lotId) return; // закрыли пока грузили
 

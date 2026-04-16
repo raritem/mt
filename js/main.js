@@ -379,19 +379,10 @@ async function loadCatalogue() {
 
   try {
     const rawBase = getGhRawBase();
-    // Загружаем данные из CSV
-    const csvUrl = rawBase
-      ? rawBase + 'data/accounts.csv'
-      : ROOT + 'data/accounts.csv';
-    const configUrl = rawBase
-      ? rawBase + 'config.json'
-      : ROOT + 'config.json';
-    
-    // Fallback URLs (always local files)
-    const fallbackCsvUrl = ROOT + 'data/accounts.csv';
-    const fallbackConfigUrl = ROOT + 'config.json';
-    
-    const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
+    // Читаем единый файл каталога
+    const data = rawBase
+      ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
+      : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
 
     if (!gridEl) return;
 
@@ -402,9 +393,8 @@ async function loadCatalogue() {
     }
 
     const allLots   = Array.isArray(data.lots) ? data.lots : [];
-    // Split by FunPay link status
-    const topLots    = allLots.filter(l => l && l.onFunpay === true);  // Has /lots/ link
-    const hiddenLots = allLots.filter(l => l && l.onFunpay !== true); // Empty or /users/ link
+    const topLots    = allLots.filter(l => l && l.onFunpay !== false);
+    const hiddenLots = allLots.filter(l => l && l.onFunpay === false);
 
     gridEl.innerHTML = '';
     topLots.forEach((lot) => {
@@ -413,8 +403,6 @@ async function loadCatalogue() {
     applyFadeUpStagger(gridEl, '.lot-card', 0.06);
 
     // ── Нижняя секция «Ещё аккаунты» ────────────────────────────
-    // With CSV, all visible accounts are shown in main gallery
-    // Hide this section if no additional accounts
     if (tableSectionEl && tableGridEl && tableRowsEl) {
       if (hiddenLots.length === 0) {
         tableSectionEl.style.display = 'none';
@@ -545,19 +533,9 @@ async function loadLot() {
 
   try {
     const rawBase = getGhRawBase();
-    // Загружаем данные из CSV
-    const csvUrl = rawBase
-      ? rawBase + 'data/accounts.csv'
-      : ROOT + 'data/accounts.csv';
-    const configUrl = rawBase
-      ? rawBase + 'config.json'
-      : ROOT + 'config.json';
-    
-    // Fallback URLs (always local files)
-    const fallbackCsvUrl = ROOT + 'data/accounts.csv';
-    const fallbackConfigUrl = ROOT + 'config.json';
-    
-    const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
+    const data = rawBase
+      ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
+      : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
     const _cleanId = lotId.replace(/^lot_/, '');
     const lot  = (data.lots || []).find(l => l.id === _cleanId || l.id === lotId);
 
@@ -684,19 +662,9 @@ async function loadFavourites() {
 
   try {
     const rawBase = getGhRawBase();
-    // Загружаем данные из CSV
-    const csvUrl = rawBase
-      ? rawBase + 'data/accounts.csv'
-      : ROOT + 'data/accounts.csv';
-    const configUrl = rawBase
-      ? rawBase + 'config.json'
-      : ROOT + 'config.json';
-    
-    // Fallback URLs (always local files)
-    const fallbackCsvUrl = ROOT + 'data/accounts.csv';
-    const fallbackConfigUrl = ROOT + 'config.json';
-    
-    const data = await window.CSVLoader.buildCatalogue(csvUrl, configUrl, fallbackCsvUrl, fallbackConfigUrl);
+    const data = rawBase
+      ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
+      : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
 
     const allLots = Array.isArray(data.lots) ? data.lots : [];
     const favLots = allLots.filter(l => l && favIds.includes(String(l.id)));

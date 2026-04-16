@@ -124,8 +124,7 @@ input, textarea { font-family: var(--font-body); }
 .logo-accent { color: var(--accent); }
 
 .logo-img {
-  margin-top: 5px;
-  height: 110px;
+  height: 36px;
   width: auto;
   display: block;
 }
