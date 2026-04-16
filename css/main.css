@@ -18,8 +18,7 @@
   --text-muted:   #6b7280;
   --text-dim:     #9ca3af;
 
-  --accent:       rgb(204 255 0);
-  --accent2:       rgba(0, 91, 255, 1);
+  --accent:       rgba(0, 91, 255, 1);
   --accent-dim:   rgba(245,197,24,0.12);
   --accent-hover: rgba(0, 79, 222, 1);
   --danger:       #ef4444;
@@ -117,7 +116,7 @@ input, textarea { font-family: var(--font-body); }
   font-family: var(--font-display);
   font-size: 24px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text);
   letter-spacing: -0.02em;
 }
 
@@ -779,7 +778,7 @@ input, textarea { font-family: var(--font-body); }
   background: var(--accent);
   border: 0px solid rgba(245,197,24,0.25);
   border-radius: 10px;
-  color: #000000;
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
@@ -1062,7 +1061,7 @@ input, textarea { font-family: var(--font-body); }
   width: auto;
   position: relative;
   top: 1px;
-  filter: brightness(0) invert(0);
+  filter: brightness(0) invert(1);
   padding: 0px 0px 0px 3px;
 }
 
@@ -2225,7 +2224,7 @@ body.qv-open {
   gap: 3px;
   padding: 14px 18px;
   background: var(--accent, #4e73f8);
-  color: #000000;
+  color: #fff;
   border-radius: 16px;
   font-size: 16px;
   font-weight: 600;
@@ -2421,8 +2420,8 @@ body.qv-open {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #15191e;
-  border: 0px solid var(--border);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 3px;
 }
@@ -2447,8 +2446,8 @@ body.qv-open {
 }
 
 .view-toggle-btn.active {
-  background: rgb(47 51 59);
-  color: #f7f7f7;
+  background: var(--accent);
+  color: #000;
 }
 
 /* Вторичная сетка лотов (в секции "Ещё аккаунты") */

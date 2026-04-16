@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Избранное — TANKNEXUS</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤍</text></svg>">
+  <title>Каталог — TANKNEXUS</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
   <link rel="stylesheet" href="../css/main.css?v=__CACHE_VER__">
   <link rel="stylesheet" href="../css/gallery.css?v=__CACHE_VER__">
 </head>
@@ -28,6 +28,36 @@
         <div class="spinner"></div>
       </div>
     </div>
+
+    <section class="lots-table-section" id="lots-table-section" style="display:none">
+      <div class="lots-table-header">
+        <h2 class="lots-table-title">Ещё аккаунты</h2>
+        <div class="lots-view-toggle" id="lots-view-toggle">
+          <button class="view-toggle-btn active" id="view-btn-grid" data-view="grid" title="Карточки" aria-label="Вид карточками">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="view-toggle-btn" id="view-btn-table" data-view="table" title="Таблица" aria-label="Вид таблицей">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="lots-table-filters" id="lots-table-filters">
+        <div class="filter-row">
+          <input type="text" id="lots-filter-q" placeholder="Поиск" autocomplete="off">
+        </div>
+      </div>
+
+      <div id="lots-table-container">
+        <!-- Заполняется JS: либо lots-grid-secondary, либо lots-table -->
+        <div class="lots-grid lots-grid--secondary" id="lots-table" style="display:none">
+          <!-- Карточки лотов -->
+        </div>
+        <div class="lots-table-rows" id="lots-table-rows" style="display:none">
+          <!-- Строки таблицы -->
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -78,7 +108,7 @@
   <script src="../js/gallery.js?v=__CACHE_VER__"></script>
   <script src="../js/quickview.js?v=__CACHE_VER__"></script>
   <script>
-    loadFavourites();
+    loadCatalogue();
   </script>
 </body>
 </html>

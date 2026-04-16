@@ -1,11 +1,11 @@
 /* ================================================================
    TANKNEXUS — Админ панель (admin.js)
-   Единая галерея: data/lots.json
+   Единый каталог: data/catalogue.json
    ================================================================ */
 
 'use strict';
 
-const CATALOGUE_ID = 'lots';
+const CATALOGUE_ID = 'catalogue';
 
 // ── GitHub RAW ───────────────────────────────────────────────────
 function getGhRawBase() {
@@ -210,8 +210,8 @@ async function loadCatalogueData() {
     const { data } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
     if (data === null) {
       await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
-        id: CATALOGUE_ID, name: 'Галерея', lots: []
-      }, 'Init lots.json');
+        id: CATALOGUE_ID, name: 'Каталог', lots: []
+      }, 'Init catalogue.json');
       state.activeLots = [];
     } else {
       state.activeLots = Array.isArray(data.lots) ? data.lots : [];
@@ -229,9 +229,9 @@ function renderCataloguePanel() {
   dom.adminMain.innerHTML = `
     <div class="shop-panel">
       <div class="shop-panel-header">
-        <div class="shop-panel-title">Галерея</div>
+        <div class="shop-panel-title">Каталог</div>
         <div class="shop-panel-actions">
-          <a href="../gallery/" target="_blank" class="btn btn-ghost">
+          <a href="../catalogue/" target="_blank" class="btn btn-ghost">
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span> Открыть
           </a>
           <button class="btn btn-primary" id="add-lot-btn">
@@ -398,7 +398,7 @@ async function onLotSave() {
         lot.tanks10Wrap = tanks10Wrap || undefined;
       }
     } else {
-      const newLot = { id: String(Date.now()).slice(-9), title, funpay, onFunpay, images: [] };
+      const newLot = { id: 'lot_' + Date.now(), title, funpay, onFunpay, images: [] };
       if (price)      newLot.price     = price;
       if (tanks10)    newLot.tanks10   = tanks10;
       if (t10countRaw  !== '') newLot.t10count  = t10countRaw;
@@ -759,9 +759,9 @@ async function uploadFiles(files) {
 async function saveCatalogueJSON() {
   await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
     id:   CATALOGUE_ID,
-    name: 'Галерея',
+    name: 'Каталог',
     lots: state.activeLots,
-  }, 'Update lots');
+  }, 'Update catalogue');
 }
 
 // ════════════════════════════════════════════════════════════════
