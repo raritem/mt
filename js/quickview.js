@@ -611,8 +611,8 @@ window.QuickView = (() => {
     });
 
     // History API: обновляем URL
-    const catalogueId = 'catalogue';
-    const lotUrl = ROOT + 'lot/?id=' + encodeURIComponent(lotId);
+    const catalogueId = 'lots';
+    const lotUrl = ROOT + 'view/?id=' + encodeURIComponent(lotId);
     if (history.pushState) {
       _prevUrl = window.location.href;
       history.pushState({ quickview: true, shopId: catalogueId, lotId }, '', lotUrl);
@@ -627,7 +627,8 @@ window.QuickView = (() => {
 
       if (!_isOpen || _currentLotId !== lotId) return; // закрыли пока грузили
 
-      const lot = (data.lots || []).find(l => l.id === lotId);
+      const _cleanId = lotId.replace(/^lot_/, '');
+      const lot = (data.lots || []).find(l => l.id === _cleanId || l.id === lotId);
       if (!lot) throw new Error('Лот не найден');
 
       _renderContent(lot, data, catalogueId, lotUrl);
