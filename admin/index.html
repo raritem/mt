@@ -63,7 +63,7 @@
     </div>
   </div>
 
-  <!-- Основной layout -->
+  <!-- Основной layout — без sidebar -->
   <div class="admin-layout-wrap admin-layout-wrap--nosidebar">
     <main class="admin-main admin-main--full" id="admin-main">
       <div class="empty-state" id="empty-state">
@@ -177,29 +177,6 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           Удалить
         </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Модалка прогресса импорта -->
-  <div class="modal-overlay" id="import-progress-overlay"></div>
-  <div class="modal" id="import-progress-modal">
-    <div class="modal-header">
-      <h2>Импорт CSV</h2>
-    </div>
-    <div class="modal-body">
-      <div id="import-progress-content">
-        <p id="import-progress-message">Подготовка...</p>
-        <div class="progress-bar" style="margin-top: 16px;">
-          <div id="import-progress-fill" style="width: 0%; height: 4px; background: var(--accent); border-radius: 2px; transition: width 0.3s;"></div>
-        </div>
-      </div>
-      <div id="import-results" style="display: none;">
-        <h3>Результаты импорта</h3>
-        <div id="import-stats"></div>
-      </div>
-      <div class="modal-actions" style="margin-top: 20px;">
-        <button class="btn btn-primary" id="import-progress-close">Закрыть</button>
       </div>
     </div>
   </div>

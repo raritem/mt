@@ -352,12 +352,14 @@ async function loadCatalogue() {
 
   const gridEl         = document.getElementById('lots-grid');
   const tableSectionEl = document.getElementById('lots-table-section');
-  const tableGridEl    = document.getElementById('lots-table');
-  const tableRowsEl    = document.getElementById('lots-table-rows');
+  // Два контейнера: карточки (по умолчанию) и строки (таблица)
+  const tableGridEl    = document.getElementById('lots-table');       // карточки вторичной сетки
+  const tableRowsEl    = document.getElementById('lots-table-rows'); // строки-список
   const qEl            = document.getElementById('lots-filter-q');
   const viewBtnGrid    = document.getElementById('view-btn-grid');
   const viewBtnTable   = document.getElementById('view-btn-table');
 
+  // Текущий вид: 'grid' (карточки) или 'table' (строки)
   let currentView = localStorage.getItem('nexus-catalogue-view') || 'grid';
 
   function applyView(view) {
@@ -377,84 +379,60 @@ async function loadCatalogue() {
 
   try {
     const rawBase = getGhRawBase();
+    // Читаем единый файл каталога
     const data = rawBase
       ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
       : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
 
     if (!gridEl) return;
 
-    // Новая структура: lots — объект
-    const lotsObj = data.lots || {};
-    const allLots = Object.entries(lotsObj)
-      .filter(([_, lot]) => lot.status === 'active')
-      .map(([id, lot]) => {
-        const ui = lot.ui || {};
-        return {
-          id: id,
-          title: ui.title || id,
-          funpay: ui.funpay,
-          price: ui.price,
-          tanks10: ui.tanks10,
-          premcount: ui.premcount,
-          t10count: ui.t10count,
-          resources: ui.resources,
-          images: ui.images || [],
-          thumb: ui.thumb,
-          onFunpay: !ui.isHidden,
-          titleWrap: ui.titleWrap,
-          tanks10Wrap: ui.tanks10Wrap
-        };
-      });
+    // ── Нормализуем структуру: поддержка объекта и старого массива ──
+    const PAGE_LIMIT = 100;
 
-    if (allLots.length === 0) {
+    function normalizeLots(lotsRaw) {
+      const arr = [];
+      if (Array.isArray(lotsRaw)) {
+        for (const lot of lotsRaw) { if (lot) arr.push(lot); }
+      } else if (lotsRaw && typeof lotsRaw === 'object') {
+        for (const [id, lot] of Object.entries(lotsRaw)) {
+          if (!lot || lot.status === 'inactive') continue;
+          const d = lot.data || {};
+          const u = lot.ui  || {};
+          arr.push({
+            id,
+            title:     d.prems_8_9       || '',
+            tanks10:   d.tanks_10        || '',
+            price:     d.price           || '',
+            funpay:    d.funpay_link     || '',
+            onFunpay:  lot.onFunpay,
+            premcount: d.premcount       || '',
+            t10count:  d.tanks_10_count  || '',
+            resources: { bonds: d.bonds || '', gold: d.gold || '', silver: d.silver || '' },
+            images:    u.images || [],
+            thumb:     u.thumb  || '',
+            isHidden:  u.isHidden || false,
+          });
+        }
+      }
+      return arr;
+    }
+
+    const rawLots = normalizeLots(data.lots);
+    if (rawLots.length === 0) {
       gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📦</div><h2>Лоты не найдены</h2><p>Галерея пока пуста</p></div>';
       if (tableSectionEl) tableSectionEl.style.display = 'none';
       return;
     }
 
-    // Загружаем конфиг для пагинации
-    let lotsPerPage = 100;
-    try {
-      const configUrl = rawBase 
-        ? (rawBase + 'config.json?t=' + Date.now())
-        : (ROOT + 'config.json?t=' + Date.now());
-      const configRes = await fetch(configUrl);
-      if (configRes.ok) {
-        const config = await configRes.json();
-        // Проверяем оба варианта структуры конфига
-        lotsPerPage = config.pagination?.lotsPerPage || config.lotsPerPage || 100;
-      }
-    } catch (e) {
-      console.warn('Не удалось загрузить config.json, используется 100 лотов на страницу');
-    }
+    const allLots    = rawLots.slice(0, PAGE_LIMIT);
+    const topLots    = allLots.filter(l => !l.isHidden && l.onFunpay !== false);
+    const hiddenLots = allLots.filter(l => l.isHidden || l.onFunpay === false);
 
-    const topLots = allLots.filter(l => l.onFunpay !== false);
-    const hiddenLots = allLots.filter(l => l.onFunpay === false);
-
-    // Ограничиваем количество отображаемых лотов
-    const displayTopLots = topLots.slice(0, lotsPerPage);
-    
     gridEl.innerHTML = '';
-    displayTopLots.forEach((lot) => {
+    topLots.forEach((lot) => {
       gridEl.appendChild(buildLotCard(lot, CATALOGUE_ID));
     });
     applyFadeUpStagger(gridEl, '.lot-card', 0.06);
-
-    // Если лотов больше, чем lotsPerPage, показываем сообщение
-    if (topLots.length > lotsPerPage) {
-      const message = document.createElement('div');
-      message.className = 'pagination-message';
-      message.style.cssText = 'grid-column:1/-1; text-align:center; padding:20px; color:var(--text-muted);';
-      message.innerHTML = `Показано ${lotsPerPage} из ${topLots.length} лотов. <a href="#" id="show-all-link" style="color:var(--accent);">Показать все</a>`;
-      gridEl.appendChild(message);
-      
-      document.getElementById('show-all-link')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        gridEl.innerHTML = '';
-        topLots.forEach(lot => gridEl.appendChild(buildLotCard(lot, CATALOGUE_ID)));
-        applyFadeUpStagger(gridEl, '.lot-card', 0.06);
-      });
-    }
 
     // ── Нижняя секция «Ещё аккаунты» ────────────────────────────
     if (tableSectionEl && tableGridEl && tableRowsEl) {
@@ -462,7 +440,7 @@ async function loadCatalogue() {
         tableSectionEl.style.display = 'none';
       } else {
         tableSectionEl.style.display = '';
-        applyView(currentView);
+        applyView(currentView); // применяем сохранённый/дефолтный вид
 
         const renderSecondary = () => {
           const q = (qEl ? qEl.value : '').trim().toLowerCase();
@@ -470,6 +448,7 @@ async function loadCatalogue() {
             ? hiddenLots
             : hiddenLots.filter(l => normalizeLotTitle(l.title || '').toLowerCase().includes(q));
 
+          // Очищаем оба контейнера
           tableGridEl.innerHTML = '';
           tableRowsEl.innerHTML = '';
 
@@ -482,14 +461,14 @@ async function loadCatalogue() {
 
           const alreadySeen = tableSectionEl.dataset.seen === '1';
 
-          // Карточки
+          // ── Карточки (grid view) ─────────────────────────────
           filtered.forEach((lot) => {
             const card = buildLotCard(lot, CATALOGUE_ID);
             if (!alreadySeen) card.classList.add('fade-prep');
             tableGridEl.appendChild(card);
           });
 
-          // Строки
+          // ── Строки (table view) ──────────────────────────────
           filtered.forEach((lot, i) => {
             const row = document.createElement('div');
             row.className = alreadySeen ? 'lot-row-card' : 'lot-row-card fade-prep';
@@ -504,8 +483,8 @@ async function loadCatalogue() {
             const tanks10RowHtml = lot.tanks10 ? `<div class="lot-row-tanks10">${esc(lot.tanks10)}</div>` : '';
 
             const rowVehicleStatsHtml = (() => {
-              const t10count = lot.t10count;
-              const premcount = lot.premcount;
+              const t10count = lot.t10count !== undefined && lot.t10count !== null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
+              const premcount = lot.premcount !== undefined && lot.premcount !== null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
               if (!t10count && !premcount) return '';
               let badges = '';
               if (premcount) badges += `<span class="vstats__badge vstats__badge--prem"><span class="vstats__line">${esc(premcount)} PREM'ов</span></span>`;
@@ -516,6 +495,10 @@ async function loadCatalogue() {
             const isMobile = window.innerWidth < 640;
             const resIconsHtml = (typeof renderResourceIcons === 'function')
               ? renderResourceIcons(lot.resources, isMobile ? 'short' : 'full') : '';
+            const tags = Array.isArray(lot.tags) ? lot.tags : [];
+            const tagsHtml = resIconsHtml || (tags.length
+              ? tags.slice(0, 10).map(t => `<span class="lot-row-tag">${esc(String(t))}</span>`).join('')
+              : '');
 
             row.innerHTML = `
               <div class="lot-row-left">
@@ -527,7 +510,7 @@ async function loadCatalogue() {
                   </div>
                   ${tanks10RowHtml}
                   ${rowVehicleStatsHtml}
-                  <div class="lot-row-tags">${resIconsHtml}</div>
+                  <div class="lot-row-tags">${tagsHtml}</div>
                 </div>
               </div>
             `;
@@ -541,6 +524,7 @@ async function loadCatalogue() {
         if (qEl) qEl.oninput = () => renderSecondary();
         renderSecondary();
 
+        // IO запускает анимацию при появлении в viewport
         if (!tableSectionEl.dataset.ioBound) {
           tableSectionEl.dataset.ioBound = '1';
           const io = new IntersectionObserver((entries) => {
@@ -584,25 +568,26 @@ async function loadLot() {
     const data = rawBase
       ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
       : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
-    
-    const lotsObj = data.lots || {};
-    const lotData = lotsObj[lotId];
-    
-    if (!lotData || lotData.status !== 'active') throw new Error('Лот не найден или неактивен');
+    const _cleanId = lotId.replace(/^lot_/, '');
+    // Поддержка объектной структуры и старого массива
+    let lot = null;
+    if (Array.isArray(data.lots)) {
+      lot = data.lots.find(l => l.id === _cleanId || l.id === lotId) || null;
+    } else if (data.lots && typeof data.lots === 'object') {
+      const entry = data.lots[_cleanId] || data.lots[lotId];
+      if (entry && entry.status !== 'inactive') {
+        const d = entry.data || {}, u = entry.ui || {};
+        lot = {
+          id: _cleanId || lotId, title: d.prems_8_9 || '', tanks10: d.tanks_10 || '',
+          price: d.price || '', funpay: d.funpay_link || '', onFunpay: entry.onFunpay,
+          premcount: d.premcount || '', t10count: d.tanks_10_count || '',
+          resources: { bonds: d.bonds || '', gold: d.gold || '', silver: d.silver || '' },
+          images: u.images || [], thumb: u.thumb || '',
+        };
+      }
+    }
 
-    const ui = lotData.ui || {};
-    const lot = {
-      id: lotId,
-      title: ui.title || lotId,
-      funpay: ui.funpay,
-      price: ui.price,
-      tanks10: ui.tanks10,
-      premcount: ui.premcount,
-      t10count: ui.t10count,
-      resources: ui.resources,
-      images: ui.images || [],
-      thumb: ui.thumb
-    };
+    if (!lot) throw new Error('Лот не найден');
 
     const title = normalizeLotTitle(lot.title);
     document.title = title + ' — TANKNEXUS';
@@ -729,7 +714,23 @@ async function loadFavourites() {
       ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
       : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
 
-    const allLots = Array.isArray(data.lots) ? data.lots : [];
+    // Поддержка объектной структуры
+    const allLots = (() => {
+      if (Array.isArray(data.lots)) return data.lots;
+      const arr = [];
+      if (data.lots && typeof data.lots === 'object') {
+        for (const [id, lot] of Object.entries(data.lots)) {
+          if (!lot || lot.status === 'inactive') continue;
+          const d = lot.data || {}, u = lot.ui || {};
+          arr.push({ id, title: d.prems_8_9 || '', tanks10: d.tanks_10 || '',
+            price: d.price || '', funpay: d.funpay_link || '', onFunpay: lot.onFunpay,
+            premcount: d.premcount || '', t10count: d.tanks_10_count || '',
+            resources: { bonds: d.bonds||'', gold: d.gold||'', silver: d.silver||'' },
+            images: u.images||[], thumb: u.thumb||'' });
+        }
+      }
+      return arr;
+    })();
     const favLots = allLots.filter(l => l && favIds.includes(String(l.id)));
 
     if (favLots.length === 0) {

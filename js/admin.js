@@ -1,6 +1,6 @@
 /* ================================================================
    TANKNEXUS — Админ панель (admin.js)
-   Единая галерея: data/lots.json
+   Единая галерея: data/lots.json (объектная структура по id)
    ================================================================ */
 
 (function() {
@@ -31,9 +31,9 @@ function assetUrl(path) {
 //  СОСТОЯНИЕ
 // ════════════════════════════════════════════════════════════════
 const state = {
-  lotsObj: {},
-  editingLotId: null,
-  currentFilter: 'active',
+  lots: {},
+  activeTab: 'active', // 'active' | 'hidden' | 'inactive'
+  editingLot: null,
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -44,7 +44,6 @@ function $(id) { return document.getElementById(id); }
 const dom = {
   tokenStatus:      $('token-status'),
   adminMain:        $('admin-main'),
-
   settingsOverlay:  $('settings-overlay'),
   settingsModal:    $('settings-modal'),
   tokenInput:       $('token-input'),
@@ -52,7 +51,6 @@ const dom = {
   repoInput:        $('repo-input'),
   branchInput:      $('branch-input'),
   settingsStatus:   $('settings-status'),
-
   lotModalOvl:      $('lot-modal-overlay'),
   lotModal:         $('lot-modal'),
   lotModalTitle:    $('lot-modal-title'),
@@ -64,19 +62,10 @@ const dom = {
   lotPriceInput:    $('lot-price-input'),
   lotOnFunpayInput: $('lot-onfunpay-input'),
   lotModalStatus:   $('lot-modal-status'),
-
   confirmOverlay:   $('confirm-overlay'),
   confirmModal:     $('confirm-modal'),
   confirmText:      $('confirm-text'),
   confirmOk:        $('confirm-ok'),
-
-  importProgressOverlay: $('import-progress-overlay'),
-  importProgressModal:   $('import-progress-modal'),
-  importProgressMessage: $('import-progress-message'),
-  importProgressFill:    $('import-progress-fill'),
-  importResults:         $('import-results'),
-  importStats:           $('import-stats'),
-  importProgressClose:   $('import-progress-close'),
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -86,12 +75,11 @@ const MODALS = {
   settings: { overlay: dom.settingsOverlay, modal: dom.settingsModal },
   lotModal: { overlay: dom.lotModalOvl,     modal: dom.lotModal      },
   confirm:  { overlay: dom.confirmOverlay,  modal: dom.confirmModal  },
-  importProgress: { overlay: dom.importProgressOverlay, modal: dom.importProgressModal },
 };
 
 function openModal(name) {
   const m = MODALS[name];
-  if (!m) { console.error('[admin] openModal: unknown =', name); return; }
+  if (!m) return;
   m.overlay.classList.add('open');
   m.modal.style.display = 'block';
   requestAnimationFrame(() => requestAnimationFrame(() => m.modal.classList.add('open')));
@@ -122,16 +110,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 // ════════════════════════════════════════════════════════════════
-//  ВСЕ СОБЫТИЯ
+//  СОБЫТИЯ
 // ════════════════════════════════════════════════════════════════
 function bindAllEvents() {
-  // Settings
   $('settings-btn').addEventListener('click', () => { loadSettingsToForm(); openModal('settings'); });
   $('settings-close').addEventListener('click', () => closeModal('settings'));
   dom.settingsOverlay.addEventListener('click', () => closeModal('settings'));
   $('settings-save').addEventListener('click', onSettingsSave);
 
-  // Eye toggle
   let tokenVisible = false;
   dom.tokenEye.addEventListener('click', () => {
     tokenVisible = !tokenVisible;
@@ -139,13 +125,11 @@ function bindAllEvents() {
     dom.tokenEye.textContent = tokenVisible ? '🙈' : '👁';
   });
 
-  // Lot modal
   $('lot-modal-close').addEventListener('click',  () => closeModal('lotModal'));
   $('lot-modal-cancel').addEventListener('click', () => closeModal('lotModal'));
   dom.lotModalOvl.addEventListener('click',       () => closeModal('lotModal'));
   $('lot-modal-save').addEventListener('click',   onLotSave);
 
-  // Wrap-toggle buttons
   document.querySelectorAll('.wrap-toggle-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       btn.classList.toggle('is-active');
@@ -153,16 +137,9 @@ function bindAllEvents() {
     });
   });
 
-  // Confirm
   $('confirm-cancel').addEventListener('click', () => closeModal('confirm'));
   dom.confirmOverlay.addEventListener('click',  () => closeModal('confirm'));
 
-  // Import progress close
-  if (dom.importProgressClose) {
-    dom.importProgressClose.addEventListener('click', () => closeModal('importProgress'));
-  }
-
-  // ESC
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     const im = $('image-manager');
@@ -201,10 +178,8 @@ async function onSettingsSave() {
   const token  = dom.tokenInput.value.trim();
   const repo   = dom.repoInput.value.trim().replace(/\/+$/, '');
   const branch = dom.branchInput.value.trim() || 'main';
-
   if (!token) { setStatus(dom.settingsStatus, 'Введите токен', 'err'); return; }
   if (!repo)  { setStatus(dom.settingsStatus, 'Введите репозиторий', 'err'); return; }
-
   GH.saveConfig(token, repo, branch);
   setStatus(dom.settingsStatus, 'Проверяю подключение…', 'info');
   try {
@@ -218,7 +193,7 @@ async function onSettingsSave() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  ДАННЫЕ
+//  ЗАГРУЗКА ДАННЫХ
 // ════════════════════════════════════════════════════════════════
 async function loadCatalogueData() {
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
@@ -226,46 +201,13 @@ async function loadCatalogueData() {
     const { data } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
     if (data === null) {
       await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
-        id: CATALOGUE_ID, name: 'Галерея', lots: {}
+        id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '', lots: {}
       }, 'Init lots.json');
-      state.lotsObj = {};
+      state.lots = {};
     } else {
-      // Конвертация старого формата
-      if (Array.isArray(data.lots)) {
-        const oldLots = data.lots;
-        data.lots = {};
-        oldLots.forEach(lot => {
-          const id = String(lot.id);
-          data.lots[id] = {
-            status: 'active',
-            lastSeenInCsv: null,
-            inactiveSince: null,
-            data: {
-              title: lot.title,
-              funpay_link: lot.funpay,
-              price: lot.price,
-              tanks_10: lot.tanks10,
-              premcount: lot.premcount,
-              t10count: lot.t10count,
-              resources: lot.resources || {}
-            },
-            ui: {
-              title: lot.title,
-              funpay: lot.funpay,
-              price: lot.price,
-              tanks10: lot.tanks10,
-              premcount: lot.premcount,
-              t10count: lot.t10count,
-              resources: lot.resources || {},
-              images: lot.images || [],
-              thumb: lot.thumb || null,
-              isHidden: (lot.onFunpay === false)
-            }
-          };
-        });
-        await GH.writeJSON('data/' + CATALOGUE_ID + '.json', data, 'Migrate to new format');
-      }
-      state.lotsObj = data.lots || {};
+      state.lots = Array.isArray(data.lots)
+        ? migrateLotsArray(data.lots)
+        : (data.lots && typeof data.lots === 'object' ? data.lots : {});
     }
     renderCataloguePanel();
   } catch (e) {
@@ -273,14 +215,32 @@ async function loadCatalogueData() {
   }
 }
 
+function migrateLotsArray(arr) {
+  const obj = {};
+  for (const lot of arr) {
+    const id = String(lot.id);
+    const funpay = lot.funpay || '';
+    obj[id] = {
+      status: 'active', lastSeenInCsv: null, inactiveSince: null,
+      onFunpay: funpay.includes('lots/'),
+      data: {
+        prems_8_9: lot.title || '', tanks_10: lot.tanks10 || '',
+        price: lot.price || '', funpay_link: funpay,
+        bonds:  (lot.resources && lot.resources.bonds)  || '',
+        gold:   (lot.resources && lot.resources.gold)   || '',
+        silver: (lot.resources && lot.resources.silver) || '',
+        tanks_10_count: lot.t10count || '', premcount: lot.premcount || '',
+      },
+      ui: { images: lot.images || [], thumb: lot.thumb || '', isHidden: lot.onFunpay === false }
+    };
+  }
+  return obj;
+}
+
 // ════════════════════════════════════════════════════════════════
-//  CATALOGUE PANEL
+//  ГЛАВНАЯ ПАНЕЛЬ
 // ════════════════════════════════════════════════════════════════
 function renderCataloguePanel() {
-  const activeCount = Object.values(state.lotsObj).filter(l => l.status === 'active' && !l.ui?.isHidden).length;
-  const hiddenCount = Object.values(state.lotsObj).filter(l => l.status === 'active' && l.ui?.isHidden).length;
-  const inactiveCount = Object.values(state.lotsObj).filter(l => l.status === 'inactive').length;
-
   dom.adminMain.innerHTML = `
     <div class="shop-panel">
       <div class="shop-panel-header">
@@ -289,234 +249,216 @@ function renderCataloguePanel() {
           <a href="../gallery/" target="_blank" class="btn btn-ghost">
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span> Открыть
           </a>
-          <button class="btn btn-primary" id="import-csv-btn">
-            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span> Импорт CSV
-          </button>
+          <label class="btn btn-ghost" id="import-csv-label" title="Импорт accounts.csv" style="cursor:pointer">
+            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Импорт CSV
+            <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display:none">
+          </label>
           <button class="btn btn-primary" id="add-lot-btn">
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> Добавить лот
           </button>
         </div>
       </div>
-      <div class="filter-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
-        <button class="filter-tab ${state.currentFilter === 'active' ? 'active' : ''}" data-filter="active">Активные (${activeCount})</button>
-        <button class="filter-tab ${state.currentFilter === 'hidden' ? 'active' : ''}" data-filter="hidden">Скрытые (${hiddenCount})</button>
-        <button class="filter-tab ${state.currentFilter === 'inactive' ? 'active' : ''}" data-filter="inactive">Неактивные (${inactiveCount})</button>
+
+      <div class="admin-tabs" id="admin-tabs">
+        <button class="admin-tab ${state.activeTab === 'active'   ? 'is-active' : ''}" data-tab="active">
+          Активные <span class="admin-tab-count" id="tab-count-active"></span>
+        </button>
+        <button class="admin-tab ${state.activeTab === 'hidden'   ? 'is-active' : ''}" data-tab="hidden">
+          Скрытые <span class="admin-tab-count" id="tab-count-hidden"></span>
+        </button>
+        <button class="admin-tab ${state.activeTab === 'inactive' ? 'is-active' : ''}" data-tab="inactive">
+          Неактивные <span class="admin-tab-count" id="tab-count-inactive"></span>
+        </button>
       </div>
+
+      <div class="import-status-bar" id="import-status-bar" style="display:none"></div>
       <div class="admin-lots-list" id="admin-lots-list"></div>
     </div>
   `;
 
-  document.querySelectorAll('.filter-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      state.currentFilter = tab.dataset.filter;
-      renderCataloguePanel();
-    });
+  $('add-lot-btn').addEventListener('click', () => openLotModal(null));
+
+  const csvInput = $('csv-file-input');
+  csvInput.addEventListener('change', () => {
+    if (csvInput.files && csvInput.files[0]) {
+      onCSVFileSelected(csvInput.files[0]);
+      csvInput.value = '';
+    }
   });
 
-  $('add-lot-btn').addEventListener('click', () => openLotModal(null));
-  $('import-csv-btn').addEventListener('click', triggerCsvImport);
+  $('admin-tabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-tab]');
+    if (!btn) return;
+    state.activeTab = btn.dataset.tab;
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    renderLots();
+  });
 
   renderLots();
 }
 
-function triggerCsvImport() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv,text/csv';
-  input.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    openModal('importProgress');
-    dom.importResults.style.display = 'none';
-    dom.importProgressMessage.textContent = 'Начинаем импорт...';
-    dom.importProgressFill.style.width = '0%';
-    
-    try {
-      const stats = await Importer.importFromCSV(file, (progress) => {
-        if (progress.phase === 'parse') {
-          dom.importProgressMessage.textContent = progress.message;
-        } else if (progress.phase === 'process') {
-          const percent = Math.round((progress.current / progress.total) * 100);
-          dom.importProgressMessage.textContent = `Обработано ${progress.current} из ${progress.total} строк`;
-          dom.importProgressFill.style.width = percent + '%';
-        }
-      });
-      
-      // Показываем результаты
-      dom.importProgressMessage.textContent = 'Импорт завершён!';
-      dom.importProgressFill.style.width = '100%';
-      
-      let statsHtml = `
-        <p>✅ Обработано строк: ${stats.processed}</p>
-        <p>🆕 Новых лотов: ${stats.new || 0}</p>
-        <p>🔄 Обновлено: ${stats.updated || 0}</p>
-        <p>⏸️ Неактивных: ${stats.inactive || 0}</p>
-        <p>🗑️ Удалено: ${stats.deleted || 0}</p>
-      `;
-      
-      if (stats.errors && stats.errors.length > 0) {
-        statsHtml += `<p style="color: var(--danger); margin-top: 12px;">⚠️ Ошибки:</p>`;
-        statsHtml += `<ul style="color: var(--danger); font-size: 12px; max-height: 150px; overflow-y: auto;">`;
-        stats.errors.slice(0, 20).forEach(err => {
-          statsHtml += `<li>${esc(err)}</li>`;
-        });
-        if (stats.errors.length > 20) {
-          statsHtml += `<li>... и ещё ${stats.errors.length - 20}</li>`;
-        }
-        statsHtml += `</ul>`;
-      }
-      
-      dom.importStats.innerHTML = statsHtml;
-      dom.importResults.style.display = 'block';
-      
-      // Перезагружаем данные
-      await loadCatalogueData();
-      
-    } catch (e) {
-      dom.importProgressMessage.textContent = 'Ошибка импорта';
-      dom.importStats.innerHTML = `<p style="color: var(--danger);">${esc(e.message)}</p>`;
-      dom.importResults.style.display = 'block';
-    }
-  };
-  input.click();
+// ════════════════════════════════════════════════════════════════
+//  CSV IMPORT
+// ════════════════════════════════════════════════════════════════
+async function onCSVFileSelected(file) {
+  const bar = $('import-status-bar');
+  bar.style.display = '';
+  bar.className = 'import-status-bar info';
+  bar.textContent = 'Читаю файл…';
+
+  try {
+    const text = await file.text();
+    const { data: currentJson } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
+    const base = currentJson || { id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '', lots: {} };
+    if (Array.isArray(base.lots)) base.lots = migrateLotsArray(base.lots);
+
+    const { updatedJson, stats } = await CSVImporter.importCSV(
+      text, base,
+      (msg) => { bar.textContent = msg; }
+    );
+
+    state.lots = updatedJson.lots;
+    bar.textContent = 'Сохраняю на GitHub…';
+    await GH.writeJSON('data/' + CATALOGUE_ID + '.json', updatedJson, 'CSV import ' + new Date().toISOString().slice(0, 10));
+
+    bar.className = 'import-status-bar ok';
+    bar.textContent = `✓ Готово — добавлено: ${stats.added}, обновлено: ${stats.updated}, неактивных: ${stats.markedInactive}, удалено: ${stats.deleted}`;
+    renderLots();
+    setTimeout(() => { bar.style.display = 'none'; }, 8000);
+  } catch (e) {
+    bar.className = 'import-status-bar err';
+    bar.textContent = 'Ошибка импорта: ' + e.message;
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
-//  LOTS
+//  LOTS RENDER
 // ════════════════════════════════════════════════════════════════
-function getFilteredLots() {
-  const result = [];
-  Object.entries(state.lotsObj).forEach(([id, lot]) => {
-    let include = false;
-    switch (state.currentFilter) {
-      case 'active':
-        include = (lot.status === 'active' && !lot.ui?.isHidden);
-        break;
-      case 'hidden':
-        include = (lot.status === 'active' && lot.ui?.isHidden === true);
-        break;
-      case 'inactive':
-        include = (lot.status === 'inactive');
-        break;
-      default:
-        include = true;
-    }
-    if (include) {
-      result.push({ id, ...lot });
-    }
+function getLotsForTab(tab) {
+  return Object.entries(state.lots).filter(([, lot]) => {
+    if (tab === 'inactive') return lot.status === 'inactive';
+    if (tab === 'hidden')   return lot.status !== 'inactive' && !!(lot.ui && lot.ui.isHidden);
+    return lot.status !== 'inactive' && !(lot.ui && lot.ui.isHidden);
   });
-  return result;
+}
+
+function updateTabCounts() {
+  const c = { active: 0, hidden: 0, inactive: 0 };
+  for (const lot of Object.values(state.lots)) {
+    if (lot.status === 'inactive')         c.inactive++;
+    else if (lot.ui && lot.ui.isHidden)   c.hidden++;
+    else                                   c.active++;
+  }
+  for (const k of ['active','hidden','inactive']) {
+    const el = $('tab-count-' + k);
+    if (el) el.textContent = c[k] ? String(c[k]) : '';
+  }
 }
 
 function renderLots() {
+  updateTabCounts();
   const list = $('admin-lots-list');
   if (!list) return;
 
-  const filteredLots = getFilteredLots();
-
-  if (filteredLots.length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><h2>Нет лотов</h2><p>Нажмите «+ Добавить лот» или «Импорт CSV»</p></div>';
+  const entries = getLotsForTab(state.activeTab);
+  if (entries.length === 0) {
+    const labels = { active: 'Нет активных лотов', hidden: 'Нет скрытых лотов', inactive: 'Нет неактивных лотов' };
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><h2>${labels[state.activeTab]||'Нет лотов'}</h2></div>`;
     return;
   }
 
   list.innerHTML = '';
-  filteredLots.forEach(lot => {
-    const lotId = lot.id;
-    const ui = lot.ui || {};
+  for (const [id, lot] of entries) {
+    const ui   = lot.ui  || {};
+    const data = lot.data || {};
     const preview = ui.thumb || (ui.images && ui.images[0]);
     const thumb = preview
       ? `<img class="admin-lot-thumb" src="${assetUrl(preview)}" alt="" loading="lazy">`
       : `<div class="admin-lot-thumb-placeholder">🎯</div>`;
 
-    const isHidden = ui.isHidden === true;
-    const badge = !isHidden
-      ? `<span class="admin-lot-badge admin-lot-badge-funpay">Верх</span>`
-      : `<span class="admin-lot-badge admin-lot-badge-hidden">Скрыт</span>`;
-    
-    const inactiveBadge = lot.status === 'inactive' 
-      ? `<span class="admin-lot-badge" style="background: rgba(239,68,68,0.15); color: var(--danger);">Неактивен</span>` 
-      : '';
+    let badge = '';
+    if (lot.status === 'inactive') {
+      badge = `<span class="admin-lot-badge admin-lot-badge-inactive">Неактивен${lot.inactiveSince ? ' с ' + lot.inactiveSince : ''}</span>`;
+    } else if (ui.isHidden) {
+      badge = `<span class="admin-lot-badge admin-lot-badge-hidden">Скрыт</span>`;
+    } else {
+      badge = `<span class="admin-lot-badge admin-lot-badge-funpay">Активен</span>`;
+    }
+
+    const title  = data.prems_8_9 || id;
+    const funpay = data.funpay_link || '';
+    const price  = data.price || '';
+    const lastSeen = lot.lastSeenInCsv ? `CSV: ${lot.lastSeenInCsv}` : '';
 
     const card = document.createElement('div');
-    card.className = 'admin-lot-card';
+    card.className = 'admin-lot-card' + (lot.status === 'inactive' ? ' admin-lot-card--inactive' : '');
     card.innerHTML = `
       ${thumb}
       <div class="admin-lot-info">
-        <div class="admin-lot-title">${escWithBr(ui.title || lotId)} ${badge} ${inactiveBadge}</div>
+        <div class="admin-lot-title">${escWithBr(title)} ${badge}</div>
         <div class="admin-lot-meta">
           <span>${(ui.images || []).length} фото</span>
-          ${ui.funpay ? `<a href="${ui.funpay}" target="_blank" style="color:var(--accent)">FunPay <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg style="display:inline-block;vertical-align:middle" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></span></a>` : ''}
-          ${lot.status === 'inactive' && lot.inactiveSince ? `<span style="color: var(--text-muted);">неактивен с ${lot.inactiveSince}</span>` : ''}
+          ${price ? `<span>💰 ${esc(price)}</span>` : ''}
+          ${lastSeen ? `<span style="color:var(--text-muted);font-size:11px">${esc(lastSeen)}</span>` : ''}
+          ${funpay.includes('lots/') ? `<a href="${esc(funpay)}" target="_blank" style="color:var(--accent)">FunPay ↗</a>` : ''}
         </div>
       </div>
       <div class="admin-lot-actions">
-        <button class="btn btn-ghost btn-no-border" data-action="toggle-visibility" data-lot="${lotId}" title="${isHidden ? 'Показать' : 'Скрыть'}">
-          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
-        </button>
-        <button class="btn btn-ghost btn-no-border" data-action="images" data-lot="${lotId}" title="Фото">
+        <button class="btn btn-ghost btn-no-border" data-action="images" data-lot="${esc(id)}" title="Фото">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
         </button>
-        <button class="btn btn-ghost btn-no-border" data-action="edit" data-lot="${lotId}" title="Изменить">
+        <button class="btn btn-ghost btn-no-border" data-action="edit" data-lot="${esc(id)}" title="Изменить">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
         </button>
-        <button class="btn btn-ghost btn-no-border" style="color:var(--danger)" data-action="delete" data-lot="${lotId}" title="Удалить">
+        <button class="btn btn-ghost btn-no-border" style="color:var(--danger)" data-action="delete" data-lot="${esc(id)}" title="Удалить">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
         </button>
       </div>
     `;
     list.appendChild(card);
-  });
+  }
 
   list.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
-    const lotId = btn.dataset.lot;
-    const action = btn.dataset.action;
-    if (action === 'edit') openLotModal(lotId);
-    if (action === 'delete') confirmDeleteLot(lotId);
-    if (action === 'images') openImageManager(lotId);
-    if (action === 'toggle-visibility') toggleLotVisibility(lotId);
+    const id = btn.dataset.lot, action = btn.dataset.action;
+    if (action === 'edit')   openLotModal(id);
+    if (action === 'delete') confirmDeleteLot(id);
+    if (action === 'images') openImageManager(id);
   });
-}
-
-async function toggleLotVisibility(lotId) {
-  const lot = state.lotsObj[lotId];
-  if (!lot) return;
-  lot.ui.isHidden = !lot.ui.isHidden;
-  await saveCatalogueJSON();
-  renderLots();
 }
 
 // ════════════════════════════════════════════════════════════════
 //  LOT MODAL
 // ════════════════════════════════════════════════════════════════
 function openLotModal(editLotId) {
-  const lot = editLotId ? state.lotsObj[editLotId] : null;
-  state.editingLotId = editLotId;
-  
-  const ui = lot?.ui || {};
-  
+  const lot  = editLotId ? state.lots[editLotId] : null;
+  const data = lot ? (lot.data || {}) : {};
+  const ui   = lot ? (lot.ui   || {}) : {};
+  state.editingLot = editLotId;
+
   dom.lotModalTitle.textContent = lot ? 'Редактировать лот' : 'Новый лот';
-  dom.lotTitleInput.value       = ui.title || '';
-  if (dom.lotTanks10Input)   dom.lotTanks10Input.value   = ui.tanks10 || '';
-  if (dom.lotT10CountInput)  dom.lotT10CountInput.value  = ui.t10count || '';
-  if (dom.lotPremCountInput) dom.lotPremCountInput.value = ui.premcount || '';
-  dom.lotFunpayInput.value      = ui.funpay || '';
-  if (dom.lotPriceInput)    dom.lotPriceInput.value    = ui.price || '';
+  dom.lotTitleInput.value       = data.prems_8_9  || '';
+  if (dom.lotTanks10Input)   dom.lotTanks10Input.value   = data.tanks_10 || '';
+  if (dom.lotT10CountInput)  dom.lotT10CountInput.value  = data.tanks_10_count || '';
+  if (dom.lotPremCountInput) dom.lotPremCountInput.value = data.premcount || '';
+  dom.lotFunpayInput.value      = data.funpay_link || '';
+  if (dom.lotPriceInput)    dom.lotPriceInput.value    = data.price || '';
   if (dom.lotOnFunpayInput) dom.lotOnFunpayInput.checked = !ui.isHidden;
 
   document.querySelectorAll('.wrap-toggle-btn').forEach(btn => {
     btn.disabled = false;
+    btn.classList.remove('is-active');
+    btn.title = 'Разрешить перенос строки';
   });
 
-  const res = ui.resources || {};
   const bondsEl  = $('lot-bonds-input');
   const goldEl   = $('lot-gold-input');
   const silverEl = $('lot-silver-input');
-  if (bondsEl)  bondsEl.value  = res.bonds  || '';
-  if (goldEl)   goldEl.value   = res.gold   || '';
-  if (silverEl) silverEl.value = res.silver || '';
+  if (bondsEl)  bondsEl.value  = data.bonds  || '';
+  if (goldEl)   goldEl.value   = data.gold   || '';
+  if (silverEl) silverEl.value = data.silver || '';
 
   if (typeof RESOURCE_ICONS !== 'undefined') {
     const iconBonds  = $('res-icon-bonds');
@@ -526,7 +468,6 @@ function openLotModal(editLotId) {
     if (iconGold)   iconGold.src   = RESOURCE_ICONS.gold;
     if (iconSilver) iconSilver.src = RESOURCE_ICONS.silver;
   }
-
   if (typeof VEHICLE_ICONS !== 'undefined') {
     const iconT10  = $('veh-icon-t10');
     const iconPrem = $('veh-icon-prem');
@@ -539,61 +480,46 @@ function openLotModal(editLotId) {
 }
 
 async function onLotSave() {
-  const title       = dom.lotTitleInput.value.trim();
-  const tanks10     = (dom.lotTanks10Input   ? dom.lotTanks10Input.value.trim()   : '');
-  const t10countRaw  = (dom.lotT10CountInput  ? dom.lotT10CountInput.value.trim()  : '');
-  const premcountRaw = (dom.lotPremCountInput ? dom.lotPremCountInput.value.trim() : '');
-  const funpay      = dom.lotFunpayInput.value.trim();
-  const price       = dom.lotPriceInput   ? dom.lotPriceInput.value.trim()   : '';
-  const isNotHidden  = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked  : true;
+  const prems89   = dom.lotTitleInput.value.trim();
+  const tanks10   = dom.lotTanks10Input   ? dom.lotTanks10Input.value.trim()   : '';
+  const t10count  = dom.lotT10CountInput  ? dom.lotT10CountInput.value.trim()  : '';
+  const funpay    = dom.lotFunpayInput.value.trim();
+  const price     = dom.lotPriceInput   ? dom.lotPriceInput.value.trim()   : '';
+  const isVisible = dom.lotOnFunpayInput ? !!dom.lotOnFunpayInput.checked  : true;
 
-  if (!title) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
+  if (!prems89) { setStatus(dom.lotModalStatus, 'Введите название', 'err'); return; }
 
-  const bondsRaw  = ($('lot-bonds-input')  ? $('lot-bonds-input').value  : '').replace(/\s+/g, '');
-  const goldRaw   = ($('lot-gold-input')   ? $('lot-gold-input').value   : '').replace(/\s+/g, '');
-  const silverRaw = ($('lot-silver-input') ? $('lot-silver-input').value : '').replace(/\s+/g, '');
+  const bonds  = ($('lot-bonds-input')  ? $('lot-bonds-input').value  : '').replace(/\s+/g, '');
+  const gold   = ($('lot-gold-input')   ? $('lot-gold-input').value   : '').replace(/\s+/g, '');
+  const silver = ($('lot-silver-input') ? $('lot-silver-input').value : '').replace(/\s+/g, '');
 
-  const resources = {};
-  if (bondsRaw  !== '') resources.bonds  = bondsRaw;
-  if (goldRaw   !== '') resources.gold   = goldRaw;
-  if (silverRaw !== '') resources.silver = silverRaw;
+  // Вычисляем premcount из полей (при ручном добавлении — из поля lotPremCountInput)
+  const premcountRaw = dom.lotPremCountInput ? dom.lotPremCountInput.value.trim() : '';
 
   setStatus(dom.lotModalStatus, 'Сохраняю…', 'info');
   try {
-    if (state.editingLotId) {
-      const lot = state.lotsObj[state.editingLotId];
+    const newData = {
+      prems_8_9: prems89, tanks_10: tanks10, tanks_10_count: t10count,
+      premcount: premcountRaw, funpay_link: funpay, price,
+      bonds, gold, silver,
+    };
+    const onFunpay = funpay.includes('lots/');
+
+    if (state.editingLot) {
+      const lot = state.lots[state.editingLot];
       if (lot) {
-        lot.ui = {
-          ...lot.ui,
-          title,
-          funpay,
-          price: price || null,
-          tanks10: tanks10 || null,
-          t10count: t10countRaw || null,
-          premcount: premcountRaw || null,
-          resources: Object.keys(resources).length ? resources : null,
-          isHidden: !isNotHidden
-        };
+        lot.data     = { ...(lot.data || {}), ...newData };
+        lot.onFunpay = onFunpay;
+        if (!lot.ui) lot.ui = {};
+        lot.ui.isHidden = !isVisible;
       }
     } else {
       const newId = String(Date.now()).slice(-9);
-      state.lotsObj[newId] = {
-        status: 'active',
-        lastSeenInCsv: null,
-        inactiveSince: null,
-        data: {},
-        ui: {
-          title,
-          funpay,
-          price: price || null,
-          tanks10: tanks10 || null,
-          t10count: t10countRaw || null,
-          premcount: premcountRaw || null,
-          resources: Object.keys(resources).length ? resources : null,
-          images: [],
-          thumb: null,
-          isHidden: !isNotHidden
-        }
+      state.lots[newId] = {
+        status: 'active', lastSeenInCsv: null, inactiveSince: null,
+        onFunpay,
+        data: newData,
+        ui: { images: [], thumb: '', isHidden: !isVisible }
       };
     }
     await saveCatalogueJSON();
@@ -605,7 +531,7 @@ async function onLotSave() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  CONFIRM
+//  CONFIRM / DELETE
 // ════════════════════════════════════════════════════════════════
 function openConfirm(text, onOk) {
   dom.confirmText.textContent = text;
@@ -618,20 +544,19 @@ function openConfirm(text, onOk) {
 }
 
 function confirmDeleteLot(lotId) {
-  const lot = state.lotsObj[lotId];
-  openConfirm('Удалить лот «' + esc(lot?.ui?.title || lotId) + '»?', () => deleteLot(lotId));
+  const lot = state.lots[lotId];
+  const title = (lot && lot.data && lot.data.prems_8_9) || lotId;
+  openConfirm('Удалить лот «' + esc(title) + '»?', () => deleteLot(lotId));
 }
 
-// ════════════════════════════════════════════════════════════════
-//  УДАЛЕНИЕ
-// ════════════════════════════════════════════════════════════════
 async function deleteLot(lotId) {
-  const lot = state.lotsObj[lotId];
+  const lot = state.lots[lotId];
   if (!lot) return;
-  const files = [...(lot.ui?.images || [])];
-  if (lot.ui?.thumb) files.push(lot.ui.thumb);
+  const ui = lot.ui || {};
+  const files = [...(ui.images || [])];
+  if (ui.thumb) files.push(ui.thumb);
   if (files.length > 0) await GH.deleteFiles(files, 'Delete lot ' + lotId);
-  delete state.lotsObj[lotId];
+  delete state.lots[lotId];
   await saveCatalogueJSON();
   renderLots();
 }
@@ -644,8 +569,8 @@ let imImages = [];
 
 function openImageManager(lotId) {
   imLotId  = lotId;
-  const lot = state.lotsObj[lotId];
-  imImages  = lot?.ui?.images ? [...lot.ui.images] : [];
+  const lot = state.lots[lotId];
+  imImages  = lot ? [...((lot.ui && lot.ui.images) || [])] : [];
 
   let panel = $('image-manager');
   if (!panel) {
@@ -655,12 +580,14 @@ function openImageManager(lotId) {
     document.body.appendChild(panel);
   }
 
+  const title = (lot && lot.data && lot.data.prems_8_9) || lotId;
+
   panel.innerHTML = `
     <div class="image-manager-header">
       <button class="btn btn-ghost" id="im-back">
         <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Назад
       </button>
-      <div class="image-manager-title">${esc(lot?.ui?.title || lotId)}</div>
+      <div class="image-manager-title">${esc(title)}</div>
       <button class="btn btn-ghost" id="im-refresh-thumb">
         <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span> Обновить превью
       </button>
@@ -681,7 +608,6 @@ function openImageManager(lotId) {
   `;
 
   renderManagedImages();
-
   $('im-back').addEventListener('click', closeImageManager);
   $('im-refresh-thumb').addEventListener('click', regenerateThumb);
   $('im-upload-trigger').addEventListener('click', () => $('im-file-input').click());
@@ -710,12 +636,10 @@ function renderManagedImages() {
   const c = $('im-managed-images');
   if (!c) return;
   c.innerHTML = '';
-
   if (imImages.length === 0) {
     c.innerHTML = '<p style="color:var(--text-muted);font-size:13px;grid-column:1/-1">Нет изображений</p>';
     return;
   }
-
   imImages.forEach((src, idx) => {
     const card = document.createElement('div');
     card.className = 'managed-img-card';
@@ -770,18 +694,13 @@ function bindDragSort(card) {
 function swap(a, b) { [imImages[a], imImages[b]] = [imImages[b], imImages[a]]; renderManagedImages(); }
 
 async function saveOrder() {
-  const lot = state.lotsObj[imLotId];
-  if (lot) {
-    if (!lot.ui) lot.ui = {};
-    lot.ui.images = [...imImages];
-  }
+  const lot = state.lots[imLotId];
+  if (lot) { if (!lot.ui) lot.ui = {}; lot.ui.images = [...imImages]; }
   try { await saveCatalogueJSON(); } catch (e) { console.error('saveOrder:', e.message); }
 }
 
 // ── Undo toast ────────────────────────────────────────────────
-let undoToast   = null;
-let undoTimer   = null;
-let undoPending = null;
+let undoToast = null, undoTimer = null, undoPending = null;
 const UNDO_DURATION = 15000;
 
 function showUndoToast(msg, onUndo) {
@@ -789,67 +708,47 @@ function showUndoToast(msg, onUndo) {
   if (!undoToast) {
     undoToast = document.createElement('div');
     undoToast.className = 'undo-toast';
-    undoToast.innerHTML = `
-      <span class="undo-toast-text"></span>
-      <button class="undo-toast-btn">Отменить</button>
-      <div class="undo-toast-progress"></div>
-    `;
+    undoToast.innerHTML = `<span class="undo-toast-text"></span><button class="undo-toast-btn">Отменить</button><div class="undo-toast-progress"></div>`;
     document.body.appendChild(undoToast);
   }
   undoToast.querySelector('.undo-toast-text').textContent = msg;
-  const btn = undoToast.querySelector('.undo-toast-btn');
-  btn.onclick = () => { if (undoPending) onUndo(); hideUndoToast(true); };
+  undoToast.querySelector('.undo-toast-btn').onclick = () => { if (undoPending) onUndo(); hideUndoToast(); };
   const bar = undoToast.querySelector('.undo-toast-progress');
-  bar.style.transition = 'none';
-  bar.style.transform  = 'scaleX(1)';
+  bar.style.transition = 'none'; bar.style.transform = 'scaleX(1)';
   requestAnimationFrame(() => requestAnimationFrame(() => {
     bar.style.transition = `transform ${UNDO_DURATION}ms linear`;
-    bar.style.transform  = 'scaleX(0)';
+    bar.style.transform = 'scaleX(0)';
   }));
   requestAnimationFrame(() => undoToast.classList.add('visible'));
-  undoTimer = setTimeout(() => { commitPendingDelete(); hideUndoToast(false); }, UNDO_DURATION);
+  undoTimer = setTimeout(() => { commitPendingDelete(); hideUndoToast(); }, UNDO_DURATION);
 }
 
-function hideUndoToast(cancelled) {
-  clearTimeout(undoTimer);
-  undoTimer = null;
+function hideUndoToast() {
+  clearTimeout(undoTimer); undoTimer = null;
   if (undoToast) undoToast.classList.remove('visible');
 }
 
 async function commitPendingDelete() {
   if (!undoPending) return;
-  const { path } = undoPending;
-  undoPending = null;
+  const { path } = undoPending; undoPending = null;
   try { await GH.deleteFile(path, 'Delete image'); } catch (e) { console.error('commitPendingDelete:', e.message); }
 }
 
 async function deleteImage(idx) {
-  const path        = imImages[idx];
-  const savedImages = [...imImages];
-  const savedIdx    = idx;
-
+  const path = imImages[idx];
+  const savedImages = [...imImages], savedIdx = idx;
   imImages.splice(idx, 1);
-  const lot = state.lotsObj[imLotId];
-  if (lot) {
-    if (!lot.ui) lot.ui = {};
-    lot.ui.images = [...imImages];
-  }
-  renderManagedImages();
-  renderLots();
-
-  try { await saveCatalogueJSON(); } catch (e) { console.error('deleteImage saveJSON:', e.message); }
-
+  const lot = state.lots[imLotId];
+  if (lot) { if (!lot.ui) lot.ui = {}; lot.ui.images = [...imImages]; }
+  renderManagedImages(); renderLots();
+  try { await saveCatalogueJSON(); } catch (e) { console.error('deleteImage:', e.message); }
   undoPending = { path, idx: savedIdx, savedImages };
   showUndoToast(`Фото ${savedIdx + 1} удалено`, async () => {
     imImages = [...savedImages];
-    const lot = state.lotsObj[imLotId];
-    if (lot) {
-      if (!lot.ui) lot.ui = {};
-      lot.ui.images = [...imImages];
-    }
+    const lot = state.lots[imLotId];
+    if (lot) { if (!lot.ui) lot.ui = {}; lot.ui.images = [...imImages]; }
     undoPending = null;
-    renderManagedImages();
-    renderLots();
+    renderManagedImages(); renderLots();
     try { await saveCatalogueJSON(); } catch (_) {}
   });
 }
@@ -869,11 +768,8 @@ async function regenerateThumb() {
     const thumbPath = 'images/' + CATALOGUE_ID + '/' + imLotId + '/thumb.' + ext;
     const sha = await GH.getFileSha(thumbPath);
     await GH.putBinaryFile(thumbPath, base64, 'Regenerate thumb', sha || undefined);
-    const lot = state.lotsObj[imLotId];
-    if (lot) {
-      if (!lot.ui) lot.ui = {};
-      lot.ui.thumb = thumbPath;
-    }
+    const lot = state.lots[imLotId];
+    if (lot) { if (!lot.ui) lot.ui = {}; lot.ui.thumb = thumbPath; }
     await saveCatalogueJSON();
     if (btn) btn.textContent = '✓ Готово';
     setTimeout(() => { if (btn) { btn.textContent = '🖼 Обновить превью'; btn.disabled = false; } }, 2000);
@@ -887,10 +783,9 @@ async function regenerateThumb() {
 //  ЗАГРУЗКА ФАЙЛОВ
 // ════════════════════════════════════════════════════════════════
 async function uploadFiles(files) {
-  const queue    = $('im-upload-queue');
+  const queue = $('im-upload-queue');
   const fileList = Array.from(files);
   queue.innerHTML = '';
-
   fileList.forEach((f, i) => {
     const div = document.createElement('div');
     div.className = 'upload-item';
@@ -898,15 +793,12 @@ async function uploadFiles(files) {
     queue.appendChild(div);
   });
 
-  const baseDir  = 'images/' + CATALOGUE_ID + '/' + imLotId;
+  const baseDir = 'images/' + CATALOGUE_ID + '/' + imLotId;
   const startIdx = (() => {
     let max = -1;
     for (const p of imImages) {
       const m = String(p || '').match(/\/(\d{3,})\.[a-z0-9]+$/i);
-      if (!m) continue;
-      const n = parseInt(m[1], 10);
-      if (!Number.isFinite(n)) continue;
-      max = Math.max(max, n - 1);
+      if (m) { const n = parseInt(m[1], 10); if (Number.isFinite(n)) max = Math.max(max, n - 1); }
     }
     return max + 1;
   })();
@@ -917,56 +809,47 @@ async function uploadFiles(files) {
     if (rateLimitHit) { statusEl.textContent = 'Пропущено'; statusEl.className = 'upload-item-status err'; continue; }
     try {
       statusEl.textContent = 'Конвертация…';
-      const file = fileList[i];
-      const { base64, ext } = await ImageConvert.toWebP(file);
-      const fileNum  = startIdx + i;
-      const fileName = ImageConvert.numberedName(fileNum, ext);
-      const repoPath = baseDir + '/' + fileName;
+      const { base64, ext } = await ImageConvert.toWebP(fileList[i]);
+      const repoPath = baseDir + '/' + ImageConvert.numberedName(startIdx + i, ext);
       statusEl.textContent = 'Загрузка…';
       const existingSha = await GH.getFileSha(repoPath);
-      await GH.putBinaryFile(repoPath, base64, 'Upload ' + fileName, existingSha || undefined);
+      await GH.putBinaryFile(repoPath, base64, 'Upload ' + repoPath, existingSha || undefined);
       if (imImages.length === 0 && i === 0) {
         try {
-          const { base64: tB64, ext: tExt } = await ImageConvert.toWebP(file, 0.92, 1600);
+          const { base64: tB64, ext: tExt } = await ImageConvert.toWebP(fileList[i], 0.92, 1600);
           const thumbPath = baseDir + '/thumb.' + tExt;
           const thumbSha  = await GH.getFileSha(thumbPath);
           await GH.putBinaryFile(thumbPath, tB64, 'Thumb for ' + imLotId, thumbSha || undefined);
-          const lot = state.lotsObj[imLotId];
-          if (lot) {
-            if (!lot.ui) lot.ui = {};
-            lot.ui.thumb = thumbPath;
-          }
+          const lot = state.lots[imLotId];
+          if (lot) { if (!lot.ui) lot.ui = {}; lot.ui.thumb = thumbPath; }
         } catch (_) {}
       }
       imImages.push(repoPath);
-      const lot = state.lotsObj[imLotId];
-      if (lot) {
-        if (!lot.ui) lot.ui = {};
-        lot.ui.images = [...imImages];
-      }
-      statusEl.textContent = '✓ Готово';
-      statusEl.className   = 'upload-item-status ok';
+      const lot = state.lots[imLotId];
+      if (lot) { if (!lot.ui) lot.ui = {}; lot.ui.images = [...imImages]; }
+      statusEl.textContent = '✓ Готово'; statusEl.className = 'upload-item-status ok';
     } catch (e) {
-      statusEl.textContent = e.message;
-      statusEl.className   = 'upload-item-status err';
+      statusEl.textContent = e.message; statusEl.className = 'upload-item-status err';
       if (e.status === 403 && e.message.includes('лимит')) rateLimitHit = true;
     }
   }
-
-  try { await saveCatalogueJSON(); } catch (e) { console.error('saveCatalogueJSON after upload:', e.message); }
-  renderManagedImages();
-  renderLots();
+  try { await saveCatalogueJSON(); } catch (e) { console.error('upload saveCatalogueJSON:', e.message); }
+  renderManagedImages(); renderLots();
   setTimeout(() => { if (queue) queue.innerHTML = ''; }, 4000);
 }
 
 // ════════════════════════════════════════════════════════════════
-//  СОХРАНЕНИЕ JSON
+//  СОХРАНЕНИЕ
 // ════════════════════════════════════════════════════════════════
 async function saveCatalogueJSON() {
+  const { data: current } = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
+  const base = current || { id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '' };
   await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
-    id:   CATALOGUE_ID,
-    name: 'Галерея',
-    lots: state.lotsObj,
+    id:          base.id          || CATALOGUE_ID,
+    name:        base.name        || 'Галерея',
+    description: base.description || '',
+    seller:      base.seller      || '',
+    lots:        state.lots,
   }, 'Update lots');
 }
 
@@ -975,11 +858,10 @@ async function saveCatalogueJSON() {
 // ════════════════════════════════════════════════════════════════
 function setStatus(el, msg, type) {
   if (!el) return;
-  if (type === 'ok') {
-    el.innerHTML = '<span style="display:inline-flex;align-items:center;vertical-align:middle"><svg style="display:inline-block;vertical-align:middle;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>' + esc(msg);
-  } else {
-    el.textContent = msg;
-  }
+  el.innerHTML = type === 'ok'
+    ? '<span style="display:inline-flex;align-items:center;vertical-align:middle"><svg style="display:inline-block;vertical-align:middle;margin-right:5px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>' + esc(msg)
+    : '';
+  if (type !== 'ok') el.textContent = msg;
   el.className = 'status-msg visible ' + (type || '');
   if (type === 'ok') setTimeout(() => { el.className = 'status-msg'; }, 3000);
 }
