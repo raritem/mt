@@ -1,5 +1,6 @@
 /* ================================================================
-   TANKNEXUS — GitHub Contents API (исправленная версия)
+   TANKNEXUS — GitHub Contents API
+   Исправленная версия с обходом CDN кэша
    ================================================================ */
 
 'use strict';
@@ -27,17 +28,16 @@ window.GH = (() => {
     return !!(c.token && c.repo);
   }
 
-  async function request(method, path, body) {
+  async function request(method, path, body, noCache = false) {
     const cfg = getConfig();
     if (!cfg.token || !cfg.repo) throw new Error('GitHub не настроен');
 
     let url = API + '/repos/' + cfg.repo + path;
     
-    // Более агрессивный обход кэша
-    if (method === 'GET') {
+    // Агрессивный обход кэша для GET запросов
+    if (method === 'GET' || noCache) {
       const sep = url.includes('?') ? '&' : '?';
-      // Используем и _t, и _nocache для гарантии
-      url += sep + '_t=' + Date.now() + '&_nocache=' + Math.random().toString(36).substring(2);
+      url += sep + '_=' + Date.now() + '_' + Math.random().toString(36).substring(2);
     }
 
     const res = await fetch(url, {
@@ -46,11 +46,11 @@ window.GH = (() => {
         'Authorization': 'Bearer ' + cfg.token,
         'Accept': 'application/vnd.github+json',
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate', // Добавляем явно
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
       },
       body: body ? JSON.stringify(body) : undefined,
-      cache: 'no-store', // Важно!
+      cache: 'no-store',
     });
 
     if (!res.ok) {
@@ -73,9 +73,30 @@ window.GH = (() => {
     return res.json();
   }
 
+  // Чтение файла напрямую по SHA — обходит CDN кэш
+  async function getFileBySha(sha) {
+    const cfg = getConfig();
+    const url = `${API}/repos/${cfg.repo}/git/blobs/${sha}`;
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': 'Bearer ' + cfg.token,
+        'Accept': 'application/vnd.github.v3+json',
+      },
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error(`Failed to fetch blob: ${res.status}`);
+    const data = await res.json();
+    // data.content — base64, data.encoding — 'base64' или 'utf-8'
+    let content = data.content;
+    if (data.encoding === 'base64') {
+      const bytes = Uint8Array.from(atob(content), c => c.charCodeAt(0));
+      content = new TextDecoder('utf-8').decode(bytes);
+    }
+    return { sha, content };
+  }
+
   async function getRaw(path, forceRefresh = false) {
     const cfg = getConfig();
-    // Если forceRefresh, сначала очищаем кэш
     if (forceRefresh) {
       delete shaCache[path];
     }
@@ -84,14 +105,24 @@ window.GH = (() => {
   }
 
   async function getFile(path, forceRefresh = false) {
+    // Если у нас есть актуальное содержимое в кэше, используем его
+    if (!forceRefresh && shaContentCache[path] !== undefined) {
+      return { sha: shaCache[path], content: shaContentCache[path] };
+    }
+    
     try {
       const { sha, b64 } = await getRaw(path, forceRefresh);
       const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
       const content = new TextDecoder('utf-8').decode(bytes);
       shaCache[path] = sha;
+      shaContentCache[path] = content;
       return { sha, content };
     } catch (e) {
-      if (e.status === 404) return { sha: null, content: null };
+      if (e.status === 404) {
+        delete shaCache[path];
+        delete shaContentCache[path];
+        return { sha: null, content: null };
+      }
       throw e;
     }
   }
@@ -126,7 +157,21 @@ window.GH = (() => {
     const body = { message, content: b64, branch: cfg.branch };
     if (sha) body.sha = sha;
     const res = await request('PUT', '/contents/' + path, body);
-    if (res?.content?.sha) shaCache[path] = res.content.sha;
+    
+    if (res?.content?.sha) {
+      const newSha = res.content.sha;
+      shaCache[path] = newSha;
+      shaContentCache[path] = content;
+      
+      // КЛЮЧЕВОЕ: после записи сразу читаем по SHA, чтобы обновить кэш
+      // Это обходит CDN кэш полностью
+      try {
+        const freshContent = await getFileBySha(newSha);
+        shaContentCache[path] = freshContent.content;
+      } catch (e) {
+        console.warn('Could not fetch by SHA:', e);
+      }
+    }
     return res;
   }
 
@@ -134,7 +179,14 @@ window.GH = (() => {
     const cfg = getConfig();
     const body = { message, content: base64Data, branch: cfg.branch };
     if (sha) body.sha = sha;
-    return request('PUT', '/contents/' + path, body);
+    const res = await request('PUT', '/contents/' + path, body);
+    
+    if (res?.content?.sha) {
+      const newSha = res.content.sha;
+      shaCache[path] = newSha;
+      // Для бинарных файлов не сохраняем содержимое в текстовый кэш
+    }
+    return res;
   }
 
   async function deleteFile(path, message, sha) {
@@ -142,6 +194,7 @@ window.GH = (() => {
     if (!sha) sha = shaCache[path] || await getFileSha(path);
     if (!sha) return;
     delete shaCache[path];
+    delete shaContentCache[path];
     return request('DELETE', '/contents/' + path, { message, sha, branch: cfg.branch });
   }
 
@@ -151,12 +204,13 @@ window.GH = (() => {
     }
   }
 
+  // Кэши
   const shaCache = {};
+  const shaContentCache = {};
 
   function clearCache() {
-    for (let k in shaCache) {
-      delete shaCache[k];
-    }
+    for (let k in shaCache) delete shaCache[k];
+    for (let k in shaContentCache) delete shaContentCache[k];
   }
 
   async function readJSON(path, forceRefresh = false) {
@@ -172,27 +226,68 @@ window.GH = (() => {
     }
   }
 
-  // Обёртка для принудительного обновления
+  // Принудительное чтение с полным обходом кэша
   async function readJSONForce(path) {
     clearCache();
     return readJSON(path, true);
   }
 
+  // Чтение с повторными попытками (polling)
+  async function readJSONWithRetry(path, maxAttempts = 8, delayMs = 1000) {
+    clearCache();
+    
+    let lastResult = null;
+    
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const result = await readJSON(path, true);
+        const data = result.data;
+        
+        // Проверяем, есть ли осмысленные данные
+        const hasLots = data && data.lots && (
+          (Array.isArray(data.lots) && data.lots.length > 0) ||
+          (!Array.isArray(data.lots) && typeof data.lots === 'object' && Object.keys(data.lots).length > 0)
+        );
+        
+        if (hasLots || attempt === maxAttempts) {
+          return result;
+        }
+        
+        console.log(`readJSONWithRetry: попытка ${attempt}/${maxAttempts} — данных нет, ждём...`);
+        await new Promise(r => setTimeout(r, delayMs * attempt));
+        
+      } catch (e) {
+        console.warn(`readJSONWithRetry: попытка ${attempt} ошибка:`, e.message);
+        if (attempt === maxAttempts) throw e;
+        await new Promise(r => setTimeout(r, delayMs * attempt));
+      }
+    }
+    
+    return lastResult || { data: { id: 'lots', name: 'Галерея', lots: {} }, sha: null };
+  }
+
   async function writeJSON(path, data, message) {
     const content = JSON.stringify(data, null, 2);
+    
     for (let attempt = 0; attempt < 3; attempt++) {
       let sha = shaCache[path];
       if (!sha) {
-        const r = await readJSON(path, true); // force refresh
+        const r = await readJSON(path, true);
         sha = r.sha;
       }
+      
       try {
         const res = await putFile(path, content, message || 'Update', sha || undefined);
-        if (res?.content?.sha) shaCache[path] = res.content.sha;
+        
+        // После успешной записи очищаем кэш и делаем паузу
+        clearCache();
+        await new Promise(r => setTimeout(r, 500));
+        
         return res;
       } catch (e) {
         if (e.status === 409) {
           delete shaCache[path];
+          delete shaContentCache[path];
           await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
           continue;
         }
@@ -201,13 +296,45 @@ window.GH = (() => {
     }
   }
 
+  // Запись с верификацией
+  async function writeJSONWithVerify(path, data, message, maxAttempts = 5) {
+    const result = await writeJSON(path, data, message);
+    
+    // Верификация: читаем и проверяем, что данные сохранились
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      await new Promise(r => setTimeout(r, 1000 * attempt));
+      
+      try {
+        const verifyResult = await readJSONForce(path);
+        const savedCount = verifyResult.data?.lots ? 
+          (Array.isArray(verifyResult.data.lots) ? verifyResult.data.lots.length : Object.keys(verifyResult.data.lots).length) : 0;
+        const expectedCount = data?.lots ? 
+          (Array.isArray(data.lots) ? data.lots.length : Object.keys(data.lots).length) : 0;
+        
+        if (savedCount >= expectedCount) {
+          console.log(`writeJSONWithVerify: верификация успешна (попытка ${attempt})`);
+          return result;
+        }
+        
+        console.warn(`writeJSONWithVerify: верификация ${attempt}/${maxAttempts} — ожидалось ${expectedCount}, получено ${savedCount}`);
+      } catch (e) {
+        console.warn(`writeJSONWithVerify: ошибка верификации ${attempt}:`, e.message);
+      }
+    }
+    
+    console.warn('writeJSONWithVerify: верификация не удалась, но запись выполнена');
+    return result;
+  }
+
   return {
     getConfig, saveConfig, isConfigured, ping,
     getFile, getFileBytes, getFileSha,
+    getFileBySha,
     putFile, putBinaryFile,
     deleteFile, deleteFiles,
-    readJSON, writeJSON,
-    clearCache, readJSONForce,  // добавляем новый метод
+    readJSON, readJSONForce, readJSONWithRetry,
+    writeJSON, writeJSONWithVerify,
+    clearCache,
   };
 
 })();
