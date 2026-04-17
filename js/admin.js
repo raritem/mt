@@ -198,62 +198,53 @@ async function onSettingsSave() {
 // ════════════════════════════════════════════════════════════════
 async function loadCatalogueData() {
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
-  
-  if (GH.clearCache) GH.clearCache();
-  
-  // Polling: пробуем читать, пока не получим данные
-  let lastData = null;
-  
-  for (let attempt = 1; attempt <= 8; attempt++) {
-    try {
-      const result = await GH.readJSONForce('data/' + CATALOGUE_ID + '.json');
-      const data = result.data;
-      
-      const lotCount = data?.lots ? 
-        (Array.isArray(data.lots) ? data.lots.length : Object.keys(data.lots).length) : 0;
-      
-      console.log(`Попытка ${attempt}: найдено ${lotCount} лотов`);
-      
-      // Если нашли лоты — успех
-      if (lotCount > 0) {
-        lastData = data;
-        break;
-      }
-      
-      // Если это первая загрузка после импорта и лотов 0 — возможно кэш
-      if (attempt < 8) {
-        console.log(`Попытка ${attempt}: лотов нет, ждём ${attempt * 1.5}с...`);
-        await new Promise(r => setTimeout(r, attempt * 1500));
-      } else {
-        lastData = data; // используем то, что есть (даже пустое)
-      }
-    } catch (e) {
-      console.error(`Попытка ${attempt} ошибка:`, e);
-      if (attempt === 8) throw e;
-      await new Promise(r => setTimeout(r, attempt * 1000));
+  try {
+    let data = null;
+    let fileExists = false;
+    // Retry до 3 раз с задержкой — GitHub CDN иногда отдаёт старый кеш
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const result = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
+      data = result.data;
+      // Если файл вернул хоть что-то (даже пустые lots) — файл существует
+      if (result.sha) fileExists = true;
+      // Если получили непустой объект с лотами — выходим
+      if (data && data.lots && typeof data.lots === 'object' && !Array.isArray(data.lots) && Object.keys(data.lots).length > 0) break;
+      if (data && Array.isArray(data.lots) && data.lots.length > 0) break;
+      if (attempt < 2) await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
     }
+
+    // Проверяем, есть ли реальные лоты в полученных данных
+    const hasLots = data && data.lots && (
+      (Array.isArray(data.lots) && data.lots.length > 0) ||
+      (!Array.isArray(data.lots) && typeof data.lots === 'object' && Object.keys(data.lots).length > 0)
+    );
+
+    if (data === null || !fileExists) {
+      // Файл не существует — инициализируем новый
+      await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
+        id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '', lots: {}
+      }, 'Init lots.json');
+      state.lots = {};
+    } else if (!hasLots && Object.keys(state.lots || {}).length > 0) {
+      // Файл существует, но вернул пустые lots — скорее всего GitHub CDN кэш.
+      // Уже есть данные в state (от предыдущей операции) — используем их, не сбрасываем.
+      console.warn('loadCatalogueData: GitHub вернул пустые lots (вероятно кэш CDN). Используем текущий state.lots.');
+    } else {
+      // Сохраняем метаданные в state.meta чтобы не читать файл при каждом сохранении
+      state.meta = {
+        id:          data.id          || CATALOGUE_ID,
+        name:        data.name        || 'Галерея',
+        description: data.description || '',
+        seller:      data.seller      || '',
+      };
+      state.lots = Array.isArray(data.lots)
+        ? migrateLotsArray(data.lots)
+        : (data.lots && typeof data.lots === 'object' ? data.lots : {});
+    }
+    renderCataloguePanel();
+  } catch (e) {
+    dom.adminMain.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h2>' + esc(e.message) + '</h2></div>';
   }
-  
-  // Обработка lastData...
-  if (!lastData || !lastData.lots || Object.keys(lastData.lots).length === 0) {
-    // Инициализируем пустую галерею
-    await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
-      id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '', lots: {}
-    }, 'Init lots.json');
-    state.lots = {};
-  } else {
-    state.meta = {
-      id: lastData.id || CATALOGUE_ID,
-      name: lastData.name || 'Галерея',
-      description: lastData.description || '',
-      seller: lastData.seller || '',
-    };
-    state.lots = Array.isArray(lastData.lots)
-      ? migrateLotsArray(lastData.lots)
-      : (lastData.lots && typeof lastData.lots === 'object' ? lastData.lots : {});
-  }
-  
-  renderCataloguePanel();
 }
 
 function migrateLotsArray(arr) {
@@ -890,51 +881,13 @@ async function uploadFiles(files) {
 // ════════════════════════════════════════════════════════════════
 async function saveCatalogueJSON() {
   const m = state.meta || {};
-  
-  console.log('Сохраняем', Object.keys(state.lots).length, 'лотов');
-  
-  const result = await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
-    id: m.id || CATALOGUE_ID,
-    name: m.name || 'Галерея',
+  await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
+    id:          m.id          || CATALOGUE_ID,
+    name:        m.name        || 'Галерея',
     description: m.description || '',
-    seller: m.seller || '',
-    lots: state.lots,
+    seller:      m.seller      || '',
+    lots:        state.lots,
   }, 'Update lots');
-  
-  // Ждём 2 секунды (GitHub CDN нужно время)
-  await new Promise(r => setTimeout(r, 2000));
-  
-  // ВЕРИФИКАЦИЯ: читаем и проверяем, что сохранилось правильно
-  let verified = false;
-  for (let attempt = 1; attempt <= 5; attempt++) {
-    try {
-      const verifyResult = await GH.readJSONForce('data/' + CATALOGUE_ID + '.json');
-      const savedCount = Object.keys(verifyResult.data.lots || {}).length;
-      const expectedCount = Object.keys(state.lots).length;
-      
-      console.log(`Верификация попытка ${attempt}: ожидалось ${expectedCount}, получено ${savedCount}`);
-      
-      if (savedCount >= expectedCount) {
-        verified = true;
-        break;
-      }
-    } catch (e) {
-      console.warn(`Верификация ${attempt} ошибка:`, e);
-    }
-    await new Promise(r => setTimeout(r, 1000 * attempt));
-  }
-  
-  if (!verified) {
-    console.error('Верификация не удалась! Данные могут быть не сохранены.');
-    // Показываем пользователю предупреждение
-    const statusBar = $('import-status-bar');
-    if (statusBar) {
-      statusBar.className = 'import-status-bar err';
-      statusBar.textContent = '⚠️ Данные сохранены, но GitHub CDN ещё не обновился. Обновите страницу через 10 секунд.';
-      statusBar.style.display = '';
-      setTimeout(() => { statusBar.style.display = 'none'; }, 10000);
-    }
-  }
 }
 
 // ════════════════════════════════════════════════════════════════
