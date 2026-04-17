@@ -424,10 +424,14 @@ async function loadCatalogue() {
       return;
     }
 
-    // Главная сетка: все не-скрытые лоты (и funpay, и остальные) — до PAGE_LIMIT штук.
-    // Секция «Ещё аккаунты»: только явно скрытые (isHidden), независимо от onFunpay.
-    const topLotsAll = rawLots.filter(l => !l.isHidden);
-    const hiddenLots = rawLots.filter(l => l.isHidden);
+    // Фильтрация: показываем только active-лоты без isHidden (inactive уже исключены в normalizeLots)
+    const visibleLots = rawLots.filter(l => !l.isHidden);
+
+    // Распределение по блокам — только по onFunpay, isHidden не влияет
+    // onFunpay=true  → верхний блок (FunPay-лоты)
+    // onFunpay=false → секция «Ещё аккаунты»
+    const topLotsAll = visibleLots.filter(l => l.onFunpay);
+    const hiddenLots = visibleLots.filter(l => !l.onFunpay);
 
     // Показываем лоты порциями по PAGE_LIMIT, остальные — по кнопке
     let topShown = 0;
