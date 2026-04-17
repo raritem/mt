@@ -78,13 +78,30 @@ window.GH = (() => {
     return { sha: res.sha, b64: res.content.replace(/\n/g, '') };
   }
 
+  // Читаем мета-инфо файла через Contents API (только sha, без тела — обходим лимит 1 MB)
+  async function getFileMeta(path) {
+    const cfg = getConfig();
+    const res = await request('GET', '/contents/' + path + '?ref=' + cfg.branch);
+    // При файле > 1 MB поле content пустое — поэтому используем только sha
+    return { sha: res.sha };
+  }
+
+  // Читаем содержимое через Git Blobs API — поддерживает файлы любого размера
+  async function getBlobContent(blobSha) {
+    const res = await request('GET', '/git/blobs/' + blobSha);
+    const b64 = res.content.replace(/\n/g, '');
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+
   async function getFile(path) {
     try {
-      const { sha, b64 } = await getRaw(path);
-      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-      const content = new TextDecoder('utf-8').decode(bytes);
-      shaCache[path] = sha;
-      return { sha, content };
+      // Шаг 1: получаем SHA через Contents API
+      const meta = await getFileMeta(path);
+      shaCache[path] = meta.sha;
+      // Шаг 2: читаем содержимое через Git Blobs API — без лимита на размер файла
+      const content = await getBlobContent(meta.sha);
+      return { sha: meta.sha, content };
     } catch (e) {
       if (e.status === 404) return { sha: null, content: null };
       throw e;
