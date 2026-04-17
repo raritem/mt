@@ -933,8 +933,10 @@
         "premcount": "9"
       },
       "ui": {
-        "images": [],
-        "thumb": "",
+        "images": [
+          "images/lots/3faxy8dc/001.webp"
+        ],
+        "thumb": "images/lots/3faxy8dc/thumb.webp",
         "isHidden": false
       }
     },
