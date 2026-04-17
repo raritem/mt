@@ -898,8 +898,10 @@
         "premcount": "6"
       },
       "ui": {
-        "images": [],
-        "thumb": "",
+        "images": [
+          "images/lots/2gsz4bgz/001.webp"
+        ],
+        "thumb": "images/lots/2gsz4bgz/thumb.webp",
         "isHidden": false
       }
     },
