@@ -1101,7 +1101,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 /* ── Заголовок лота ──────────────────────────────────────────── */
 .lot-header {
   padding: 24px 0 28px;
-  border-bottom: 1px solid var(--border);
+  /*border-bottom: 1px solid var(--border);*/
   margin-bottom: 32px;
 }
 
