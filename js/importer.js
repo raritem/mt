@@ -185,5 +185,70 @@ const CSVImporter = (() => {
     return { updatedJson, stats };
   }
 
-  return { importCSV, parseCSV, loadConfig };
+  // ── Импорт таблицы танков ─────────────────────────────────────
+  /**
+   * @param {string} csvText       - содержимое CSV файла танков
+   * @param {object} currentJson   - текущий объект data/tanks.json
+   * @param {function} onProgress  - колбэк(msg) для прогресса
+   * @returns {{ updatedJson, stats }} - обновлённый JSON и статистика
+   */
+  async function importTanksCSV(csvText, currentJson, onProgress = () => {}) {
+    onProgress('Загружаю config.json…');
+    const config = await loadConfig();
+    const colMap = config.tanks;
+    if (!colMap) throw new Error('Секция "tanks" не найдена в config.json');
+
+    onProgress('Парсю CSV…');
+    const rows = parseCSV(csvText);
+
+    const csvByName = {};
+    for (const row of rows) {
+      const rawName = row[colMap.name];
+      if (!rawName || !rawName.trim()) continue;
+      const name = rawName.trim();
+      const data = {};
+      for (const [field, colIdx] of Object.entries(colMap)) {
+        if (field === 'name') continue;
+        data[field] = (row[colIdx] !== undefined) ? String(row[colIdx]).trim() : '';
+      }
+      csvByName[name] = data;
+    }
+
+    onProgress(`Найдено танков в CSV: ${Object.keys(csvByName).length}`);
+
+    const tanks = (currentJson.tanks && typeof currentJson.tanks === 'object' && !Array.isArray(currentJson.tanks))
+      ? { ...currentJson.tanks }
+      : {};
+
+    const stats = { added: 0, updated: 0, deleted: 0 };
+
+    // Добавляем / обновляем из CSV
+    for (const [name, csvData] of Object.entries(csvByName)) {
+      if (tanks[name]) {
+        tanks[name] = { ...tanks[name], ...csvData };
+        stats.updated++;
+      } else {
+        tanks[name] = { ...csvData };
+        stats.added++;
+      }
+    }
+
+    // Удаляем сразу (без 7-дневного ожидания) то, чего нет в CSV
+    for (const name of Object.keys(tanks)) {
+      if (!csvByName[name]) {
+        delete tanks[name];
+        stats.deleted++;
+      }
+    }
+
+    const updatedJson = { tanks };
+
+    onProgress(
+      `Готово! Добавлено: ${stats.added}, обновлено: ${stats.updated}, удалено: ${stats.deleted}`
+    );
+
+    return { updatedJson, stats };
+  }
+
+  return { importCSV, importTanksCSV, parseCSV, loadConfig };
 })();

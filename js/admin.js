@@ -285,6 +285,10 @@ function renderCataloguePanel() {
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Импорт CSV
             <input type="file" id="csv-file-input" accept=".csv,text/csv" style="display:none">
           </label>
+          <label class="btn btn-ghost" id="import-tanks-csv-label" title="Импорт tanks.csv" style="cursor:pointer">
+            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Танки CSV
+            <input type="file" id="tanks-csv-file-input" accept=".csv,text/csv" style="display:none">
+          </label>
           <button class="btn btn-primary" id="add-lot-btn">
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> Добавить лот
           </button>
@@ -315,6 +319,14 @@ function renderCataloguePanel() {
     if (csvInput.files && csvInput.files[0]) {
       onCSVFileSelected(csvInput.files[0]);
       csvInput.value = '';
+    }
+  });
+
+  const tanksCsvInput = $('tanks-csv-file-input');
+  tanksCsvInput.addEventListener('change', () => {
+    if (tanksCsvInput.files && tanksCsvInput.files[0]) {
+      onTanksCSVFileSelected(tanksCsvInput.files[0]);
+      tanksCsvInput.value = '';
     }
   });
 
@@ -367,6 +379,42 @@ async function onCSVFileSelected(file) {
   } catch (e) {
     bar.className = 'import-status-bar err';
     bar.textContent = 'Ошибка импорта: ' + e.message;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  TANKS CSV IMPORT
+// ════════════════════════════════════════════════════════════════
+async function onTanksCSVFileSelected(file) {
+  const bar = $('import-status-bar');
+  bar.style.display = '';
+  bar.className = 'import-status-bar info';
+  bar.textContent = 'Читаю файл танков…';
+
+  try {
+    const text = await file.text();
+
+    // Читаем текущий tanks.json с GitHub
+    let currentTanksJson = { tanks: {} };
+    try {
+      const { data } = await GH.readJSON('data/tanks.json');
+      if (data && data.tanks) currentTanksJson = data;
+    } catch (_) {}
+
+    const { updatedJson, stats } = await CSVImporter.importTanksCSV(
+      text, currentTanksJson,
+      (msg) => { bar.textContent = msg; }
+    );
+
+    bar.textContent = 'Сохраняю tanks.json на GitHub…';
+    await GH.writeJSON('data/tanks.json', updatedJson, 'Update tanks');
+
+    bar.className = 'import-status-bar ok';
+    bar.textContent = `✓ Танки обновлены — добавлено: ${stats.added}, обновлено: ${stats.updated}, удалено: ${stats.deleted}`;
+    setTimeout(() => { bar.style.display = 'none'; }, 8000);
+  } catch (e) {
+    bar.className = 'import-status-bar err';
+    bar.textContent = 'Ошибка импорта танков: ' + e.message;
   }
 }
 

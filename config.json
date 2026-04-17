@@ -1,4 +1,16 @@
 {
+  "tanks": {
+    "name": 0,
+    "icon": 1,
+    "tier": 2,
+    "type": 3,
+    "nation": 4,
+    "isPrem": 5,
+    "interest_level": 6,
+    "description_a": 7,
+    "description_b": 8,
+    "description_c": 9
+  },
   "accounts": {
     "id": 0,
     "price": 2,
