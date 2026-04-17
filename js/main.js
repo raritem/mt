@@ -686,7 +686,7 @@ async function loadLot() {
           <h1 class="lot-title">${escWithBr(title)}</h1>
           ${lot.price ? `<div class="lot-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>` : ''}
         </div>
-        ${lot.tanks10 ? `<p class="lot-tanks10-detail">🔟 ${esc(lot.tanks10)}</p>` : ''}
+        ${lot.tanks10 ? `<p class="lot-tanks10-detail">${esc(lot.tanks10)}</p>` : ''}
         <p style="color:var(--text-muted);font-size:13px;margin-top:4px">📸 ${(lot.images||[]).length} скриншотов</p>
       `;
 
