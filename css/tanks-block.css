@@ -5,9 +5,9 @@
 
 /* ── Общий контейнер ─────────────────────────────────────────── */
 .lot-tanks-block {
-  margin: 0 auto 24px;
+  margin: 0px 0px 24px;
   max-width: var(--max-width, 1200px);
-  padding: 0 16px;
+  /*padding: 0 16px;*/
 }
 
 .tanks-block {
@@ -20,7 +20,7 @@
 .tanks-section {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  /*gap: 6px;*/
 }
 
 .tanks-section-label {
@@ -28,15 +28,17 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-muted, #888);
-  padding: 0 2px;
+  color: #b9b9b9;
+  padding: 2px 11px;
+  background: linear-gradient(90deg, #242831, transparent 70%);
+  border-radius: 10px 0px 0px 0px;
 }
 
 .tanks-section-body {
-  background: var(--card-bg, #1a1a2e);
-  border-radius: 14px;
+  background: linear-gradient(90deg, #1a1c21, transparent 70%);;
+  border-radius: 0px 0px 0px 14px;
   padding: 12px 14px;
-  border: 1px solid var(--border, rgba(255,255,255,0.06));
+  border: 0px solid var(--border, rgba(255,255,255,0.06));
   overflow: hidden;
   transition: padding 0.25s ease;
 }
@@ -45,7 +47,7 @@
 .tanks-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
+  gap: 10px 9px;
 }
 
 /* ── Отдельный танк ──────────────────────────────────────────── */
@@ -53,14 +55,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
   cursor: pointer;
   padding: 6px;
   border-radius: 8px;
   border: 2px solid transparent;
   transition: border-color 0.15s, background 0.15s;
-  min-width: 64px;
-  max-width: 80px;
+  min-width: 116px;
+  max-width: 116px;
   text-align: center;
 }
 
@@ -75,20 +77,21 @@
 
 /* ── Иконка танка ────────────────────────────────────────────── */
 .tank-icon-wrap {
-  width: 60px;
-  height: 40px;
+  width: 112px;
+  height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .tank-icon {
-  max-width: 60px;
-  max-height: 40px;
+  max-width: 211px;
+  max-height: 230px;
   width: auto;
   height: auto;
   object-fit: contain;
   display: block;
+  filter: brightness(1.2) contrast(1.07);
 }
 
 .tank-icon--missing {
@@ -105,7 +108,7 @@
 
 /* ── Название танка ──────────────────────────────────────────── */
 .tank-name {
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.3;
   color: var(--text-secondary, #aaa);
   word-break: break-word;
@@ -151,11 +154,11 @@
     padding: 4px;
   }
   .tank-icon-wrap {
-    width: 48px;
-    height: 34px;
+    width: 54px;
+    height: 70px;
   }
   .tank-icon {
-    max-width: 48px;
-    max-height: 34px;
+    max-width: 120px;
+    max-height: 100px;
   }
 }
