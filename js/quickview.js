@@ -628,7 +628,37 @@ window.QuickView = (() => {
       if (!_isOpen || _currentLotId !== lotId) return; // закрыли пока грузили
 
       const _cleanId = lotId.replace(/^lot_/, '');
-      const lot = (data.lots || []).find(l => l.id === _cleanId || l.id === lotId);
+      let lot = null;
+
+      if (Array.isArray(data.lots)) {
+        lot = data.lots.find(l => l.id === _cleanId || l.id === lotId) || null;
+      } else if (data.lots && typeof data.lots === 'object') {
+        const entry = data.lots[_cleanId] || data.lots[lotId];
+
+        if (entry && entry.status !== 'inactive') {
+          const d = entry.data || {};
+          const u = entry.ui || {};
+
+          lot = {
+            id: _cleanId || lotId,
+            title: d.prems_8_9 || '',
+            tanks10: d.tanks_10 || '',
+            price: d.price || '',
+            funpay: d.funpay_link || '',
+            onFunpay: entry.onFunpay,
+            premcount: d.premcount || '',
+            t10count: d.tanks_10_count || '',
+            resources: {
+              bonds: d.bonds || '',
+              gold: d.gold || '',
+              silver: d.silver || ''
+            },
+            images: u.images || [],
+            thumb: u.thumb || ''
+          };
+        }
+      }
+
       if (!lot) throw new Error('Лот не найден');
 
       _renderContent(lot, data, catalogueId, lotUrl);
