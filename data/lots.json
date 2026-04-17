@@ -199,7 +199,9 @@
         "funpay_link": "https://funpay.com/users/2854472/",
         "bonds": "19654",
         "gold": "9789",
-        "tanks_10_count": "4"
+        "tanks_10_count": "4",
+        "premcount": "",
+        "silver": ""
       },
       "ui": {
         "images": [
@@ -218,7 +220,7 @@
           "images/xmode/1773738565427/004.webp"
         ],
         "thumb": "images/xmode/1773738565427/thumb.webp",
-        "isHidden": true
+        "isHidden": false
       }
     },
     "1773739012044": {
