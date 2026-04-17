@@ -69,7 +69,7 @@
   const sections = [
     {
       key:   'prems_8_9',
-      label: 'Премиум 8–9 уровня',
+      label: 'PREM танки 8–9 уровня',
       names: splitTanks(d.prems_8_9),
     },
     {
@@ -79,7 +79,7 @@
     },
     {
       key:   'prems_6_7_bonus',
-      label: 'Премиум 5–7 уровня',
+      label: 'PREM танки 5–7 уровня',
       names: [
         ...splitTanks(d.prems_6_7),
         ...splitTanks(d.bonus_tanks),
