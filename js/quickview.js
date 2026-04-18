@@ -527,7 +527,7 @@ window.QuickView = (() => {
 
     // tanks10
     const t10El = _modal.querySelector('#qv-tanks10');
-    t10El.innerHTML = lot.tanks10 ? `<p class="qv-tanks10-text">🔟 ${esc(lot.tanks10)}</p>` : '';
+    t10El.innerHTML = lot.tanks10 ? `<p class="qv-tanks10-text">${esc(lot.tanks10)}</p>` : '';
 
     // Ресурсы
     const resEl = _modal.querySelector('#qv-resources');
