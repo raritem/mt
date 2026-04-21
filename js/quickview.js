@@ -16,6 +16,12 @@ window.QuickView = (() => {
   let _galIdx        = 0;
   let _isOpen        = false;
 
+  // Преобразует поле танков (массив или строка) в строку для отображения
+  function _tanksToString(val) {
+    if (Array.isArray(val)) return val.join(', ');
+    return val || '';
+  }
+
   // ── Создание DOM (один раз) ──────────────────────────────────
   function _buildModal() {
     const el = document.createElement('div');
@@ -641,8 +647,8 @@ window.QuickView = (() => {
 
           lot = {
             id: _cleanId || lotId,
-            title: d.prems_8_9 || '',
-            tanks10: d.tanks_10 || '',
+            title: _tanksToString(d.prems_8_9),
+            tanks10: _tanksToString(d.tanks_10),
             price: d.price || '',
             funpay: d.funpay_link || '',
             onFunpay: entry.onFunpay,

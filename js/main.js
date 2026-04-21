@@ -145,6 +145,14 @@ function showStatus(el, msg, type) {
   }
 }
 
+// Преобразует поле танков (массив или строка) в строку для отображения.
+// Массив: ["Tank A", "Tank B"] → "Tank A, Tank B"
+// Строка (старые данные): возвращается как есть
+function tanksToString(val) {
+  if (Array.isArray(val)) return val.join(', ');
+  return val || '';
+}
+
 function normalizeLotTitle(str) {
   if (!str) return str;
   const map = {};
@@ -400,8 +408,8 @@ async function loadCatalogue() {
           const u = lot.ui  || {};
           arr.push({
             id,
-            title:     d.prems_8_9       || '',
-            tanks10:   d.tanks_10        || '',
+            title:     tanksToString(d.prems_8_9),
+            tanks10:   tanksToString(d.tanks_10),
             price:     d.price           || '',
             funpay:    d.funpay_link     || '',
             onFunpay:  lot.onFunpay,
@@ -645,7 +653,7 @@ async function loadLot() {
       if (entry && entry.status !== 'inactive') {
         const d = entry.data || {}, u = entry.ui || {};
         lot = {
-          id: _cleanId || lotId, title: d.prems_8_9 || '', tanks10: d.tanks_10 || '',
+          id: _cleanId || lotId, title: tanksToString(d.prems_8_9), tanks10: tanksToString(d.tanks_10),
           price: d.price || '', funpay: d.funpay_link || '', onFunpay: entry.onFunpay,
           premcount: d.premcount || '', t10count: d.tanks_10_count || '',
           resources: { bonds: d.bonds || '', gold: d.gold || '', silver: d.silver || '' },
@@ -789,7 +797,7 @@ async function loadFavourites() {
         for (const [id, lot] of Object.entries(data.lots)) {
           if (!lot || lot.status === 'inactive') continue;
           const d = lot.data || {}, u = lot.ui || {};
-          arr.push({ id, title: d.prems_8_9 || '', tanks10: d.tanks_10 || '',
+          arr.push({ id, title: tanksToString(d.prems_8_9), tanks10: tanksToString(d.tanks_10),
             price: d.price || '', funpay: d.funpay_link || '', onFunpay: lot.onFunpay,
             premcount: d.premcount || '', t10count: d.tanks_10_count || '',
             resources: { bonds: d.bonds||'', gold: d.gold||'', silver: d.silver||'' },

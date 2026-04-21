@@ -45,6 +45,15 @@ const CSVImporter = (() => {
     return rows;
   }
 
+  // ── Нормализация списка танков ────────────────────────────────
+  // "Tank A, Tank B" → ["Tank A", "Tank B"]
+  // Уже массив — возвращаем как есть (чистим от пустых строк)
+  function normalizeTanks(val) {
+    if (Array.isArray(val)) return val.map(s => String(s).trim()).filter(Boolean);
+    if (!val || !String(val).trim()) return [];
+    return String(val).split(',').map(s => s.trim()).filter(Boolean);
+  }
+
   // ── Определить onFunpay по ссылке ─────────────────────────────
   function detectOnFunpay(link) {
     if (!link) return false;
@@ -124,13 +133,27 @@ const CSVImporter = (() => {
       const bns  = parseInt(csvData['bonus_tanks_count'] || '0', 10) || 0;
       const premcount = p89 + p67 + bns;
 
+      // Нормализуем поля танков: строки → массивы
+      const tankFields = ['prems_8_9', 'tanks_10', 'prems_6_7', 'bonus_tanks'];
+      const normalizedData = { ...csvData, premcount: String(premcount) };
+      for (const field of tankFields) {
+        normalizedData[field] = normalizeTanks(normalizedData[field]);
+      }
+      // Агрегированное поле: все танки из всех категорий
+      normalizedData.all_tanks = [
+        ...normalizedData.prems_8_9,
+        ...normalizedData.tanks_10,
+        ...normalizedData.prems_6_7,
+        ...normalizedData.bonus_tanks,
+      ];
+
       if (lots[id]) {
         // Уже есть — обновляем data, не трогаем ui
         lots[id].status        = 'active';
         lots[id].lastSeenInCsv = today;
         lots[id].inactiveSince = null;
         lots[id].onFunpay      = onFunpay;
-        lots[id].data          = { ...csvData, premcount: String(premcount) };
+        lots[id].data          = normalizedData;
         stats.updated++;
       } else {
         // Нового добавляем с дефолтным ui
@@ -139,7 +162,7 @@ const CSVImporter = (() => {
           lastSeenInCsv: today,
           inactiveSince: null,
           onFunpay:      onFunpay,
-          data: { ...csvData, premcount: String(premcount) },
+          data: normalizedData,
           ui: {
             images:   [],
             thumb:    '',
@@ -250,5 +273,5 @@ const CSVImporter = (() => {
     return { updatedJson, stats };
   }
 
-  return { importCSV, importTanksCSV, parseCSV, loadConfig };
+  return { importCSV, importTanksCSV, parseCSV, loadConfig, normalizeTanks };
 })();

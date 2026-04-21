@@ -60,29 +60,31 @@
   const tanksMap = tanksData.tanks || {};
 
   // ── Разделы техники ──────────────────────────────────────────
-  // Названия танков в lots.json перечислены через ", "
-  function splitTanks(str) {
-    if (!str || !str.trim()) return [];
-    return str.split(',').map(s => s.trim()).filter(Boolean);
+  // Поля танков в lots.json хранятся как массивы (после нормализации через importer.js).
+  // Для обратной совместимости со старыми записями поддерживаем и строковый формат.
+  function asTankArray(val) {
+    if (Array.isArray(val)) return val;
+    if (!val || !String(val).trim()) return [];
+    return String(val).split(',').map(s => s.trim()).filter(Boolean);
   }
 
   const sections = [
     {
       key:   'prems_8_9',
       label: 'PREM танки 8–9 уровня',
-      names: splitTanks(d.prems_8_9),
+      names: asTankArray(d.prems_8_9),
     },
     {
       key:   'tanks_10',
       label: 'Танки 10 уровня',
-      names: splitTanks(d.tanks_10),
+      names: asTankArray(d.tanks_10),
     },
     {
       key:   'prems_6_7_bonus',
       label: 'PREM танки 5–7 уровня',
       names: [
-        ...splitTanks(d.prems_6_7),
-        ...splitTanks(d.bonus_tanks),
+        ...asTankArray(d.prems_6_7),
+        ...asTankArray(d.bonus_tanks),
       ],
     },
   ];

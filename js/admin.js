@@ -472,7 +472,9 @@ function renderLots() {
       badge = `<span class="admin-lot-badge admin-lot-badge-funpay">Активен</span>`;
     }
 
-    const title  = data.prems_8_9 || id;
+    const title  = Array.isArray(data.prems_8_9)
+      ? (data.prems_8_9.join(', ') || id)
+      : (data.prems_8_9 || id);
     const funpay = data.funpay_link || '';
     const price  = data.price || '';
     const lastSeen = lot.lastSeenInCsv ? `CSV: ${lot.lastSeenInCsv}` : '';
@@ -525,8 +527,12 @@ function openLotModal(editLotId) {
   state.editingLot = editLotId;
 
   dom.lotModalTitle.textContent = lot ? 'Редактировать лот' : 'Новый лот';
-  dom.lotTitleInput.value       = data.prems_8_9  || '';
-  if (dom.lotTanks10Input)   dom.lotTanks10Input.value   = data.tanks_10 || '';
+  dom.lotTitleInput.value = Array.isArray(data.prems_8_9)
+    ? data.prems_8_9.join(', ')
+    : (data.prems_8_9 || '');
+  if (dom.lotTanks10Input) dom.lotTanks10Input.value = Array.isArray(data.tanks_10)
+    ? data.tanks_10.join(', ')
+    : (data.tanks_10 || '');
   if (dom.lotT10CountInput)  dom.lotT10CountInput.value  = data.tanks_10_count || '';
   if (dom.lotPremCountInput) dom.lotPremCountInput.value = data.premcount || '';
   dom.lotFunpayInput.value      = data.funpay_link || '';
@@ -584,8 +590,23 @@ async function onLotSave() {
 
   setStatus(dom.lotModalStatus, 'Сохраняю…', 'info');
   try {
+    // Конвертируем строковые поля танков в массивы
+    const _splitField = s => s ? s.split(',').map(x => x.trim()).filter(Boolean) : [];
+    const prems89Arr = _splitField(prems89);
+    const tanks10Arr = _splitField(tanks10);
+
+    // Сохраняем остальные категории из текущих данных лота (если есть)
+    const _existingData = state.editingLot ? ((state.lots[state.editingLot] || {}).data || {}) : {};
+    const prems67Arr   = Array.isArray(_existingData.prems_6_7)   ? _existingData.prems_6_7   : _splitField(_existingData.prems_6_7);
+    const bonusArr     = Array.isArray(_existingData.bonus_tanks) ? _existingData.bonus_tanks : _splitField(_existingData.bonus_tanks);
+
     const newData = {
-      prems_8_9: prems89, tanks_10: tanks10, tanks_10_count: t10count,
+      prems_8_9:  prems89Arr,
+      tanks_10:   tanks10Arr,
+      prems_6_7:  prems67Arr,
+      bonus_tanks: bonusArr,
+      all_tanks:  [...prems89Arr, ...tanks10Arr, ...prems67Arr, ...bonusArr],
+      tanks_10_count: t10count,
       premcount: premcountRaw, funpay_link: funpay, price,
       bonds, gold, silver,
     };
@@ -631,7 +652,8 @@ function openConfirm(text, onOk) {
 
 function confirmDeleteLot(lotId) {
   const lot = state.lots[lotId];
-  const title = (lot && lot.data && lot.data.prems_8_9) || lotId;
+  const rawTitle = (lot && lot.data && lot.data.prems_8_9);
+  const title = Array.isArray(rawTitle) ? (rawTitle.join(', ') || lotId) : (rawTitle || lotId);
   openConfirm('Удалить лот «' + esc(title) + '»?', () => deleteLot(lotId));
 }
 
@@ -666,7 +688,8 @@ function openImageManager(lotId) {
     document.body.appendChild(panel);
   }
 
-  const title = (lot && lot.data && lot.data.prems_8_9) || lotId;
+  const rawImTitle = (lot && lot.data && lot.data.prems_8_9);
+  const title = Array.isArray(rawImTitle) ? (rawImTitle.join(', ') || lotId) : (rawImTitle || lotId);
 
   panel.innerHTML = `
     <div class="image-manager-header">
