@@ -1198,6 +1198,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   transition: all var(--transition);
   cursor: pointer;
   white-space: nowrap;
+  justify-content: center;
 }
 
 .btn-primary {
