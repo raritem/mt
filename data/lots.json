@@ -90491,40 +90491,6 @@
         "isHidden": false
       }
     },
-    "✔️ Создан мной лично в 2020 г.": {
-      "status": "inactive",
-      "lastSeenInCsv": "2026-04-22",
-      "inactiveSince": "2026-04-22",
-      "onFunpay": false,
-      "data": {
-        "price": "",
-        "prems_8_9": [],
-        "tanks_10": [],
-        "funpay_link": "",
-        "prems_6_7": [],
-        "bonus_tanks": [],
-        "year": "",
-        "bonds": "",
-        "gold": "",
-        "silver": "",
-        "spg": "",
-        "boosters": "",
-        "crew": "",
-        "camo": "",
-        "3dstyles": "",
-        "all_tanks": [],
-        "prems_8_9_count": 0,
-        "tanks_10_count": 0,
-        "prems_6_7_count": 0,
-        "bonus_tanks_count": 0,
-        "premcount": 0
-      },
-      "ui": {
-        "images": [],
-        "thumb": "",
-        "isHidden": false
-      }
-    },
     "✔️ Привязок нигде нет": {
       "status": "inactive",
       "lastSeenInCsv": "2026-04-22",
