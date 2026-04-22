@@ -358,25 +358,25 @@ async function loadCatalogue() {
   bindFadeCleanup();
   initStars();
 
-  const gridEl         = document.getElementById('lots-grid');
-  const tableSectionEl = document.getElementById('lots-table-section');
-  // Два контейнера: карточки (по умолчанию) и строки (таблица)
-  const tableGridEl    = document.getElementById('lots-table');       // карточки вторичной сетки
-  const tableRowsEl    = document.getElementById('lots-table-rows'); // строки-список
-  const qEl            = document.getElementById('lots-filter-q');
-  const viewBtnGrid    = document.getElementById('view-btn-grid');
-  const viewBtnTable   = document.getElementById('view-btn-table');
+  const gridEl      = document.getElementById('lots-grid');
+  const qEl         = document.getElementById('lots-filter-q');
+  const viewBtnGrid  = document.getElementById('view-btn-grid');
+  const viewBtnTable = document.getElementById('view-btn-table');
 
   // Текущий вид: 'grid' (карточки) или 'table' (строки)
   let currentView = localStorage.getItem('nexus-catalogue-view') || 'grid';
 
+  // Контейнеры для двух видов (внутри #lots-grid-container)
+  const lotsGridViewEl  = document.getElementById('lots-grid-cards');
+  const lotsTableViewEl = document.getElementById('lots-grid-rows');
+
   function applyView(view) {
     currentView = view;
     try { localStorage.setItem('nexus-catalogue-view', view); } catch {}
-    if (viewBtnGrid)  viewBtnGrid.classList.toggle('active', view === 'grid');
-    if (viewBtnTable) viewBtnTable.classList.toggle('active', view === 'table');
-    if (tableGridEl)  tableGridEl.style.display = view === 'grid'  ? '' : 'none';
-    if (tableRowsEl)  tableRowsEl.style.display = view === 'table' ? '' : 'none';
+    if (viewBtnGrid)      viewBtnGrid.classList.toggle('active',  view === 'grid');
+    if (viewBtnTable)     viewBtnTable.classList.toggle('active', view === 'table');
+    if (lotsGridViewEl)   lotsGridViewEl.style.display  = view === 'grid'  ? '' : 'none';
+    if (lotsTableViewEl)  lotsTableViewEl.style.display = view === 'table' ? '' : 'none';
   }
 
   if (viewBtnGrid)  viewBtnGrid.addEventListener('click',  () => applyView('grid'));
@@ -387,7 +387,6 @@ async function loadCatalogue() {
 
   try {
     const rawBase = getGhRawBase();
-    // Читаем единый файл каталога
     const data = rawBase
       ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
       : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
@@ -395,7 +394,7 @@ async function loadCatalogue() {
     if (!gridEl) return;
 
     // ── Нормализуем структуру: поддержка объекта и старого массива ──
-    const PAGE_LIMIT = 100;
+    const PAGE_SIZE = 100;
 
     function normalizeLots(lotsRaw) {
       const arr = [];
@@ -430,253 +429,200 @@ async function loadCatalogue() {
     const rawLots = normalizeLots(data.lots);
     if (rawLots.length === 0) {
       gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📦</div><h2>Лоты не найдены</h2><p>Галерея пока пуста</p></div>';
-      if (tableSectionEl) tableSectionEl.style.display = 'none';
       return;
     }
 
-    // Фильтрация: показываем только active-лоты без isHidden (inactive уже исключены в normalizeLots)
-    const visibleLots = rawLots.filter(l => !l.isHidden);
-
-    // Распределение по блокам — только по onFunpay, isHidden не влияет
-    // onFunpay=true  → верхний блок (FunPay-лоты)
-    // onFunpay=false → секция «Ещё аккаунты»
-    const topLotsAll = visibleLots.filter(l => l.onFunpay);
-    const hiddenLots = visibleLots.filter(l => !l.onFunpay);
+    // Показываем только видимые лоты (inactive отсеяны в normalizeLots, isHidden — здесь)
+    const allLots = rawLots.filter(l => !l.isHidden);
 
     // ── Сценарии ─────────────────────────────────────────────────
     let activeScenarioId = null;
 
-    // Возвращает топ-лоты с применённым сценарием (или оригинальный порядок)
-    function getTopLotsSorted() {
-      if (!activeScenarioId || typeof FilterEngine === 'undefined') return topLotsAll;
+    function getLotsSorted() {
+      if (!activeScenarioId || typeof FilterEngine === 'undefined') return allLots;
       const scenario = FilterEngine.SCENARIOS.find(s => s.id === activeScenarioId);
-      if (!scenario || scenario.type === 'advanced') return topLotsAll;
-      return FilterEngine.applyScenario(topLotsAll, scenario);
+      if (!scenario || scenario.type === 'advanced') return allLots;
+      return FilterEngine.applyScenario(allLots, scenario);
     }
 
-    // Рендерит блок карточек сценариев
     function renderScenariosBlock() {
       const block = document.getElementById('scenarios-block');
       if (!block || typeof FilterEngine === 'undefined') return;
       block.innerHTML = '';
-
       FilterEngine.SCENARIOS.forEach(scenario => {
         const card = document.createElement('button');
         card.type = 'button';
         const isActive = activeScenarioId === scenario.id;
         card.className = 'scenario-card' + (isActive ? ' scenario-card--active' : '');
         card.dataset.scenarioId = scenario.id;
-
         const subtitleHtml = scenario.subtitle
           ? `<span class="scenario-card__sub">${esc(scenario.subtitle)}</span>`
           : '';
-
         card.innerHTML = `
           <span class="scenario-card__emoji">${scenario.emoji}</span>
           <span class="scenario-card__title">${esc(scenario.title)}</span>
           ${subtitleHtml}
         `;
-
         card.addEventListener('click', () => {
           if (scenario.type === 'advanced') return; // TODO: открыть расширенный фильтр
-          const newId = activeScenarioId === scenario.id ? null : scenario.id;
-          activeScenarioId = newId;
+          activeScenarioId = activeScenarioId === scenario.id ? null : scenario.id;
           renderScenariosBlock();
-          rerenderTopLots();
+          rerenderLots();
         });
-
         block.appendChild(card);
       });
     }
 
-    // Показываем лоты порциями по PAGE_LIMIT, остальные — по кнопке
-    let topShown = 0;
+    // ── Единый блок лотов с поиском и пагинацией ─────────────────
+    let currentPage = 0;
+    let currentQuery = '';
 
-    function rerenderTopLots() {
-      gridEl.innerHTML = '';
-      topShown = 0;
-      renderTopChunk();
+    // Пагинация рендерится в #lots-pagination (создаём если нет)
+    function getPaginationEl() {
+      let el = document.getElementById('lots-pagination');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'lots-pagination';
+        el.className = 'lots-pagination';
+        gridEl.parentElement.insertBefore(el, gridEl.nextSibling);
+      }
+      return el;
     }
 
-    function renderTopChunk() {
-      const sorted = getTopLotsSorted();
-      const chunk = sorted.slice(topShown, topShown + PAGE_LIMIT);
-      chunk.forEach(lot => gridEl.appendChild(buildLotCard(lot, CATALOGUE_ID)));
-      if (topShown === 0) applyFadeUpStagger(gridEl, '.lot-card', 0.06);
-      topShown += chunk.length;
+    function getFilteredLots() {
+      const sorted = getLotsSorted();
+      if (!currentQuery) return sorted;
+      const q = currentQuery.toLowerCase();
+      return sorted.filter(l => normalizeLotTitle(l.title || '').toLowerCase().includes(q));
+    }
 
-      const oldBtn = document.getElementById('show-more-top-btn');
-      if (oldBtn) oldBtn.remove();
-
-      if (topShown < sorted.length) {
+    function renderPagination(total) {
+      const paginationEl = getPaginationEl();
+      paginationEl.innerHTML = '';
+      const totalPages = Math.ceil(total / PAGE_SIZE);
+      if (totalPages <= 1) return;
+      for (let i = 0; i < totalPages; i++) {
         const btn = document.createElement('button');
-        btn.id = 'show-more-top-btn';
-        btn.className = 'btn btn-ghost';
-        btn.style.cssText = 'display:block;margin:28px auto 8px;padding:10px 32px;font-size:15px;';
-        btn.textContent = 'Показать ещё (' + (sorted.length - topShown) + ')';
-        btn.addEventListener('click', renderTopChunk);
-        gridEl.parentElement.insertBefore(btn, gridEl.nextSibling);
+        btn.textContent = String(i + 1);
+        btn.className = 'btn ' + (i === currentPage ? 'btn-primary' : 'btn-ghost');
+        btn.style.cssText = 'min-width:36px;padding:6px 10px;font-size:14px;';
+        btn.addEventListener('click', () => {
+          currentPage = i;
+          renderLots(false);
+          gridEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        paginationEl.appendChild(btn);
       }
     }
 
-    renderScenariosBlock();
-    gridEl.innerHTML = '';
-    renderTopChunk();
+    function renderLots(resetPage = true) {
+      if (resetPage) currentPage = 0;
 
-    // для обратной совместимости с кодом ниже
-    const topLots = topLotsAll;
+      const filtered = getFilteredLots();
+      const start    = currentPage * PAGE_SIZE;
+      const pageLots = filtered.slice(start, start + PAGE_SIZE);
 
-    // ── Нижняя секция «Ещё аккаунты» ────────────────────────────
-    if (tableSectionEl && tableGridEl && tableRowsEl) {
-      if (hiddenLots.length === 0) {
-        tableSectionEl.style.display = 'none';
-      } else {
-        tableSectionEl.style.display = '';
-        applyView(currentView); // применяем сохранённый/дефолтный вид
+      if (lotsGridViewEl)  lotsGridViewEl.innerHTML  = '';
+      if (lotsTableViewEl) lotsTableViewEl.innerHTML = '';
 
-        const SECONDARY_PAGE_SIZE = 100;
-        let secondaryPage = 0; // текущая страница (0-based)
+      if (filtered.length === 0) {
+        const empty = '<div class="empty-state" style="grid-column:1/-1;padding:48px 16px"><div class="empty-icon">🔎</div><h2>Ничего не найдено</h2><p>Попробуйте другой запрос</p></div>';
+        if (lotsGridViewEl)  lotsGridViewEl.innerHTML  = empty;
+        if (lotsTableViewEl) lotsTableViewEl.innerHTML = empty;
+        renderPagination(0);
+        return;
+      }
 
-        // Контейнер пагинации — вставляем после tableSectionEl
-        let paginationEl = document.getElementById('secondary-pagination');
-        if (!paginationEl) {
-          paginationEl = document.createElement('div');
-          paginationEl.id = 'secondary-pagination';
-          paginationEl.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:24px 0 8px;';
-          tableSectionEl.appendChild(paginationEl);
-        }
+      // ── Карточки (grid view) ─────────────────────────────────
+      if (lotsGridViewEl) {
+        pageLots.forEach(lot => {
+          lotsGridViewEl.appendChild(buildLotCard(lot, CATALOGUE_ID));
+        });
+        if (resetPage) applyFadeUpStagger(lotsGridViewEl, '.lot-card', 0.05);
+      }
 
-        const renderPagination = (totalFiltered) => {
-          paginationEl.innerHTML = '';
-          const totalPages = Math.ceil(totalFiltered / SECONDARY_PAGE_SIZE);
-          if (totalPages <= 1) return;
-          for (let i = 0; i < totalPages; i++) {
-            const btn = document.createElement('button');
-            btn.textContent = String(i + 1);
-            btn.className = 'btn ' + (i === secondaryPage ? 'btn-primary' : 'btn-ghost');
-            btn.style.cssText = 'min-width:36px;padding:6px 10px;font-size:14px;';
-            btn.addEventListener('click', () => {
-              secondaryPage = i;
-              renderSecondary(false);
-              tableSectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-            paginationEl.appendChild(btn);
-          }
-        };
+      // ── Строки (table view) ──────────────────────────────────
+      if (lotsTableViewEl) {
+        pageLots.forEach(lot => {
+          const row = document.createElement('div');
+          row.className = 'lot-row-card';
 
-        const renderSecondary = (resetPage = true) => {
-          const q = (qEl ? qEl.value : '').trim().toLowerCase();
-          const filtered = !q
-            ? hiddenLots
-            : hiddenLots.filter(l => normalizeLotTitle(l.title || '').toLowerCase().includes(q));
+          const firstImg   = lot.images && lot.images[0];
+          const previewSrc = lot.thumb || firstImg;
+          const thumbRowImg = previewSrc
+            ? `<img class="lot-row-thumb" src="${assetUrl(previewSrc)}" alt="${esc(lot.title)}" loading="lazy">`
+            : `<div class="lot-row-thumb-placeholder">🎯</div>`;
 
-          if (resetPage) secondaryPage = 0;
+          const title = normalizeLotTitle(lot.title);
+          const tanks10RowHtml = lot.tanks10
+            ? `<div class="lot-row-tanks10">${esc(lot.tanks10)}</div>` : '';
 
-          // Очищаем оба контейнера
-          tableGridEl.innerHTML = '';
-          tableRowsEl.innerHTML = '';
+          const rowVehicleStatsHtml = (() => {
+            const t10count  = lot.t10count  > 0 ? lot.t10count  : null;
+            const premcount = lot.premcount > 0 ? lot.premcount : null;
+            if (!t10count && !premcount) return '';
+            let badges = '';
+            if (premcount) badges += `<span class="vstats__badge vstats__badge--prem"><span class="vstats__line">${esc(premcount)} PREM'ов</span></span>`;
+            if (t10count)  badges += `<span class="vstats__badge vstats__badge--top"><span class="vstats__line">${esc(t10count)} топа</span></span>`;
+            return `<div class="lot-card-vstats lot-card-vstats--row">${badges}</div>`;
+          })();
 
-          if (filtered.length === 0) {
-            const empty = '<div class="empty-state" style="padding:36px 16px"><div class="empty-icon">🔎</div><h2>Ничего не найдено</h2><p>Попробуйте другой запрос</p></div>';
-            tableGridEl.innerHTML = empty;
-            tableRowsEl.innerHTML = empty;
-            paginationEl.innerHTML = '';
-            return;
-          }
+          const isMobile = window.innerWidth < 640;
+          const resIconsHtml = (typeof renderResourceIcons === 'function')
+            ? renderResourceIcons(lot.resources, isMobile ? 'short' : 'full') : '';
+          const tags = Array.isArray(lot.tags) ? lot.tags : [];
+          const tagsHtml = resIconsHtml || (tags.length
+            ? tags.slice(0, 10).map(t => `<span class="lot-row-tag">${esc(String(t))}</span>`).join('')
+            : '');
 
-          // Срез текущей страницы
-          const start = secondaryPage * SECONDARY_PAGE_SIZE;
-          const pageLots = filtered.slice(start, start + SECONDARY_PAGE_SIZE);
-
-          const alreadySeen = tableSectionEl.dataset.seen === '1';
-
-          // ── Карточки (grid view) ─────────────────────────────
-          pageLots.forEach((lot) => {
-            const card = buildLotCard(lot, CATALOGUE_ID);
-            if (!alreadySeen) card.classList.add('fade-prep');
-            tableGridEl.appendChild(card);
-          });
-
-          // ── Строки (table view) ──────────────────────────────
-          pageLots.forEach((lot, i) => {
-            const row = document.createElement('div');
-            row.className = alreadySeen ? 'lot-row-card' : 'lot-row-card fade-prep';
-
-            const firstImg = lot.images && lot.images[0];
-            const previewSrc = lot.thumb || firstImg;
-            const thumbRowImg = previewSrc
-              ? `<img class="lot-row-thumb" src="${assetUrl(previewSrc)}" alt="${esc(lot.title)}" loading="lazy">`
-              : `<div class="lot-row-thumb-placeholder">🎯</div>`;
-
-            const title = normalizeLotTitle(lot.title);
-            const tanks10RowHtml = lot.tanks10 ? `<div class="lot-row-tanks10">${esc(lot.tanks10)}</div>` : '';
-
-            const rowVehicleStatsHtml = (() => {
-              const t10count  = lot.t10count  > 0 ? lot.t10count  : null;
-              const premcount = lot.premcount > 0 ? lot.premcount : null;
-              if (!t10count && !premcount) return '';
-              let badges = '';
-              if (premcount) badges += `<span class="vstats__badge vstats__badge--prem"><span class="vstats__line">${esc(premcount)} PREM'ов</span></span>`;
-              if (t10count) badges += `<span class="vstats__badge vstats__badge--top"><span class="vstats__line">${esc(t10count)} топа</span></span>`;
-              return `<div class="lot-card-vstats lot-card-vstats--row">${badges}</div>`;
-            })();
-
-            const isMobile = window.innerWidth < 640;
-            const resIconsHtml = (typeof renderResourceIcons === 'function')
-              ? renderResourceIcons(lot.resources, isMobile ? 'short' : 'full') : '';
-            const tags = Array.isArray(lot.tags) ? lot.tags : [];
-            const tagsHtml = resIconsHtml || (tags.length
-              ? tags.slice(0, 10).map(t => `<span class="lot-row-tag">${esc(String(t))}</span>`).join('')
-              : '');
-
-            row.innerHTML = `
-              <div class="lot-row-left">
-                <div class="lot-row-thumb-wrap">${thumbRowImg}</div>
-                <div class="lot-row-mid">
-                  <div class="lot-row-title-row">
-                    <div class="lot-row-title">${escWithBr(title)}</div>
-                    ${lot.price ? `<div class="lot-card-price lot-card-price--row">${esc(lot.price)}<span class="price-rub"> ₽</span></div>` : ''}
-                  </div>
-                  ${tanks10RowHtml}
-                  ${rowVehicleStatsHtml}
-                  <div class="lot-row-tags">${tagsHtml}</div>
+          row.innerHTML = `
+            <div class="lot-row-left">
+              <div class="lot-row-thumb-wrap">${thumbRowImg}</div>
+              <div class="lot-row-mid">
+                <div class="lot-row-title-row">
+                  <div class="lot-row-title">${escWithBr(title)}</div>
+                  ${lot.price ? `<div class="lot-card-price lot-card-price--row">${esc(lot.price)}<span class="price-rub"> ₽</span></div>` : ''}
                 </div>
+                ${tanks10RowHtml}
+                ${rowVehicleStatsHtml}
+                <div class="lot-row-tags">${tagsHtml}</div>
               </div>
-            `;
+            </div>
+          `;
 
-            const lotUrl = ROOT + 'view/?id=' + encodeURIComponent(lot.id);
-            row.addEventListener('click', () => { window.location.href = lotUrl; });
-            tableRowsEl.appendChild(row);
-          });
-
-          renderPagination(filtered.length);
-        };
-
-        if (qEl) qEl.oninput = () => renderSecondary(true);
-        renderSecondary(true);
-
-        // IO запускает анимацию при появлении в viewport
-        if (!tableSectionEl.dataset.ioBound) {
-          tableSectionEl.dataset.ioBound = '1';
-          const io = new IntersectionObserver((entries) => {
-            const e = entries[0];
-            if (!e.isIntersecting) return;
-            if (tableSectionEl.dataset.seen === '1') return;
-            tableSectionEl.dataset.seen = '1';
-            applyFadeUpStagger(tableGridEl, '.lot-card', 0.04);
-            applyFadeUpStagger(tableRowsEl, '.lot-row-card', 0.03);
-            io.disconnect();
-          }, { threshold: 0, rootMargin: '0px 0px -120px 0px' });
-          io.observe(tableSectionEl);
-        }
+          const lotUrl = ROOT + 'view/?id=' + encodeURIComponent(lot.id);
+          row.addEventListener('click', () => { window.location.href = lotUrl; });
+          lotsTableViewEl.appendChild(row);
+        });
+        if (resetPage) applyFadeUpStagger(lotsTableViewEl, '.lot-row-card', 0.04);
       }
+
+      renderPagination(filtered.length);
     }
+
+    function rerenderLots() {
+      renderLots(true);
+    }
+
+    // Поиск
+    if (qEl) {
+      qEl.oninput = () => {
+        currentQuery = qEl.value.trim();
+        rerenderLots();
+      };
+    }
+
+    // Первый рендер — убираем спиннер, показываем контент
+    const spinnerEl = gridEl ? gridEl.querySelector('.loading-spinner') : null;
+    if (spinnerEl) spinnerEl.remove();
+    renderScenariosBlock();
+    applyView(currentView);
+    renderLots(true);
 
   } catch (e) {
     if (gridEl) {
       gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><h2>Не удалось загрузить галерею</h2><p>' + esc(e.message) + '</p></div>';
     }
-    if (tableSectionEl) tableSectionEl.style.display = 'none';
   }
 }
 

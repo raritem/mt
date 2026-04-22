@@ -25,41 +25,33 @@
   <main class="container">
     <!-- Сценарии -->
     <div id="scenarios-block" class="scenarios-block"></div>
-    <div id="lots-grid" class="lots-grid">
-      <div class="loading-spinner">
-        <div class="spinner"></div>
+
+    <!-- Поиск и переключатель вида -->
+    <div class="lots-toolbar" id="lots-toolbar">
+      <div class="lots-toolbar__search">
+        <input type="text" id="lots-filter-q" placeholder="Поиск по технике…" autocomplete="off">
+      </div>
+      <div class="lots-view-toggle" id="lots-view-toggle">
+        <button class="view-toggle-btn active" id="view-btn-grid" data-view="grid" title="Карточки" aria-label="Вид карточками">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="view-toggle-btn" id="view-btn-table" data-view="table" title="Таблица" aria-label="Вид таблицей">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
       </div>
     </div>
 
-    <section class="lots-table-section" id="lots-table-section" style="display:none">
-      <div class="lots-table-header">
-        <h2 class="lots-table-title">Ещё аккаунты</h2>
-        <div class="lots-view-toggle" id="lots-view-toggle">
-          <button class="view-toggle-btn active" id="view-btn-grid" data-view="grid" title="Карточки" aria-label="Вид карточками">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          </button>
-          <button class="view-toggle-btn" id="view-btn-table" data-view="table" title="Таблица" aria-label="Вид таблицей">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-        </div>
-      </div>
+    <!-- Единый блок лотов -->
+    <div id="lots-grid">
+      <div class="loading-spinner"><div class="spinner"></div></div>
 
-      <div class="lots-table-filters" id="lots-table-filters">
-        <div class="filter-row">
-          <input type="text" id="lots-filter-q" placeholder="Поиск" autocomplete="off">
-        </div>
-      </div>
+      <!-- Карточки (grid view) — заполняется JS -->
+      <div class="lots-grid__cards" id="lots-grid-cards" style="display:none"></div>
 
-      <div id="lots-table-container">
-        <!-- Заполняется JS: либо lots-grid-secondary, либо lots-table -->
-        <div class="lots-grid lots-grid--secondary" id="lots-table" style="display:none">
-          <!-- Карточки лотов -->
-        </div>
-        <div class="lots-table-rows" id="lots-table-rows" style="display:none">
-          <!-- Строки таблицы -->
-        </div>
-      </div>
-    </section>
+      <!-- Строки (table view) — заполняется JS -->
+      <div class="lots-table-rows" id="lots-grid-rows" style="display:none"></div>
+    </div>
+    <!-- Пагинация вставляется JS после #lots-grid -->
   </main>
 
   <footer class="site-footer">
