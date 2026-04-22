@@ -179,12 +179,9 @@ const CSVImporter = (() => {
       const funpayLink = csvData['funpay_link'] || '';
       const onFunpay = detectOnFunpay(funpayLink);
 
-      // Нормализуем isPrem: "Прем" → true, иначе → false
-      const isPrem = normalizeIsPrem(csvData['isPrem']);
-
       // Нормализуем поля танков: строки → массивы
       const tankFields = ['prems_8_9', 'tanks_10', 'prems_6_7', 'bonus_tanks'];
-      const normalizedData = { ...csvData, isPrem };
+      const normalizedData = { ...csvData };
       for (const field of tankFields) {
         normalizedData[field] = normalizeTanks(normalizedData[field]);
       }
