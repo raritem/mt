@@ -78,6 +78,55 @@ const CSVImporter = (() => {
     return res.json();
   }
 
+  // ── Загрузить tanks.json ──────────────────────────────────────
+  async function loadTanks() {
+    try {
+      if (window.GH && GH.isConfigured()) {
+        const { data } = await GH.readJSON('data/tanks.json');
+        if (data && data.tanks) return data.tanks;
+      }
+    } catch (_) {}
+    const res = await fetch('../data/tanks.json');
+    if (!res.ok) throw new Error('Не удалось загрузить tanks.json');
+    const json = await res.json();
+    return json.tanks || {};
+  }
+
+  // ── Нормализация isPrem ───────────────────────────────────────
+  // "Прем" → true, любое другое значение или пусто → false
+  function normalizeIsPrem(val) {
+    return String(val || '').trim() === 'Прем';
+  }
+
+  // ── Вычисление counts из tanks.json ──────────────────────────
+  // Принимает all_tanks (массив имён) и карту танков из tanks.json.
+  // Возвращает { prems_8_9_count, tanks_10_count, prems_6_7_count, bonus_tanks_count, premcount }.
+  function computeCounts(allTanks, tanksMap) {
+    let prems_8_9_count  = 0;
+    let tanks_10_count   = 0;
+    let prems_6_7_count  = 0;
+    let bonus_tanks_count = 0;
+
+    for (const name of allTanks) {
+      const info   = tanksMap[name] || {};
+      const tier   = parseInt(info.tier, 10) || 0;
+      const isPrem = info.isPrem === true || info.isPrem === 'true';
+
+      if (tier === 10) {
+        tanks_10_count++;
+      } else if (tier >= 8 && tier <= 9 && isPrem) {
+        prems_8_9_count++;
+      } else if (tier >= 5 && tier <= 7 && isPrem) {
+        prems_6_7_count++;
+      } else {
+        bonus_tanks_count++;
+      }
+    }
+
+    const premcount = prems_8_9_count + prems_6_7_count + bonus_tanks_count;
+    return { prems_8_9_count, tanks_10_count, prems_6_7_count, bonus_tanks_count, premcount };
+  }
+
   // ── Основная функция импорта ──────────────────────────────────
   /**
    * @param {string} csvText       - содержимое CSV файла
@@ -89,6 +138,9 @@ const CSVImporter = (() => {
     onProgress('Загружаю config.json…');
     const config = await loadConfig();
     const colMap = config.accounts; // { fieldName: columnIndex }
+
+    onProgress('Загружаю tanks.json…');
+    const tanksMap = await loadTanks();
 
     onProgress('Парсю CSV…');
     const rows = parseCSV(csvText);
@@ -127,15 +179,12 @@ const CSVImporter = (() => {
       const funpayLink = csvData['funpay_link'] || '';
       const onFunpay = detectOnFunpay(funpayLink);
 
-      // Вычисляем premcount = prems_8_9_count + prems_6_7_count + bonus_tanks_count
-      const p89  = parseInt(csvData['prems_8_9_count']  || '0', 10) || 0;
-      const p67  = parseInt(csvData['prems_6_7_count']  || '0', 10) || 0;
-      const bns  = parseInt(csvData['bonus_tanks_count'] || '0', 10) || 0;
-      const premcount = p89 + p67 + bns;
+      // Нормализуем isPrem: "Прем" → true, иначе → false
+      const isPrem = normalizeIsPrem(csvData['isPrem']);
 
       // Нормализуем поля танков: строки → массивы
       const tankFields = ['prems_8_9', 'tanks_10', 'prems_6_7', 'bonus_tanks'];
-      const normalizedData = { ...csvData, premcount: String(premcount) };
+      const normalizedData = { ...csvData, isPrem };
       for (const field of tankFields) {
         normalizedData[field] = normalizeTanks(normalizedData[field]);
       }
@@ -146,6 +195,14 @@ const CSVImporter = (() => {
         ...normalizedData.prems_6_7,
         ...normalizedData.bonus_tanks,
       ];
+
+      // Вычисляем counts из tanks.json (источник истины)
+      const counts = computeCounts(normalizedData.all_tanks, tanksMap);
+      normalizedData.prems_8_9_count  = counts.prems_8_9_count;
+      normalizedData.tanks_10_count   = counts.tanks_10_count;
+      normalizedData.prems_6_7_count  = counts.prems_6_7_count;
+      normalizedData.bonus_tanks_count = counts.bonus_tanks_count;
+      normalizedData.premcount        = counts.premcount;
 
       if (lots[id]) {
         // Уже есть — обновляем data, не трогаем ui
@@ -247,11 +304,16 @@ const CSVImporter = (() => {
 
     // Добавляем / обновляем из CSV
     for (const [name, csvData] of Object.entries(csvByName)) {
+      // Нормализуем isPrem в boolean при импорте tanks.json
+      const normalizedEntry = { ...csvData };
+      if ('isPrem' in normalizedEntry) {
+        normalizedEntry.isPrem = normalizeIsPrem(normalizedEntry.isPrem);
+      }
       if (tanks[name]) {
-        tanks[name] = { ...tanks[name], ...csvData };
+        tanks[name] = { ...tanks[name], ...normalizedEntry };
         stats.updated++;
       } else {
-        tanks[name] = { ...csvData };
+        tanks[name] = { ...normalizedEntry };
         stats.added++;
       }
     }
@@ -273,5 +335,5 @@ const CSVImporter = (() => {
     return { updatedJson, stats };
   }
 
-  return { importCSV, importTanksCSV, parseCSV, loadConfig, normalizeTanks };
+  return { importCSV, importTanksCSV, parseCSV, loadConfig, loadTanks, normalizeTanks, normalizeIsPrem, computeCounts };
 })();

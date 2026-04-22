@@ -280,8 +280,8 @@ function buildLotCard(lot, catalogueId) {
   const tanks10Html = lot.tanks10 ? `<div class="${tanks10Class}">${esc(lot.tanks10)}</div>` : '';
 
   const vehicleStatsHtml = (() => {
-    const t10count = lot.t10count !== undefined && lot.t10count !== null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
-    const premcount = lot.premcount !== undefined && lot.premcount !== null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
+    const t10count  = lot.t10count  > 0 ? lot.t10count  : null;
+    const premcount = lot.premcount > 0 ? lot.premcount : null;
     if (!t10count && !premcount) return '';
     let badges = '';
     if (premcount) badges += `<span class="vstats__badge vstats__badge--prem"><span class="vstats__line">${esc(premcount)} PREM'ов</span></span>`;
@@ -413,8 +413,8 @@ async function loadCatalogue() {
             price:     d.price           || '',
             funpay:    d.funpay_link     || '',
             onFunpay:  lot.onFunpay,
-            premcount: d.premcount       || '',
-            t10count:  d.tanks_10_count  || '',
+            premcount: d.premcount !== undefined ? Number(d.premcount) || 0 : 0,
+            t10count:  d.tanks_10_count !== undefined ? Number(d.tanks_10_count) || 0 : 0,
             resources: { bonds: d.bonds || '', gold: d.gold || '', silver: d.silver || '' },
             images:    u.images || [],
             thumb:     u.thumb  || '',
@@ -556,8 +556,8 @@ async function loadCatalogue() {
             const tanks10RowHtml = lot.tanks10 ? `<div class="lot-row-tanks10">${esc(lot.tanks10)}</div>` : '';
 
             const rowVehicleStatsHtml = (() => {
-              const t10count = lot.t10count !== undefined && lot.t10count !== null && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
-              const premcount = lot.premcount !== undefined && lot.premcount !== null && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
+              const t10count  = lot.t10count  > 0 ? lot.t10count  : null;
+              const premcount = lot.premcount > 0 ? lot.premcount : null;
               if (!t10count && !premcount) return '';
               let badges = '';
               if (premcount) badges += `<span class="vstats__badge vstats__badge--prem"><span class="vstats__line">${esc(premcount)} PREM'ов</span></span>`;
@@ -655,7 +655,7 @@ async function loadLot() {
         lot = {
           id: _cleanId || lotId, title: tanksToString(d.prems_8_9), tanks10: tanksToString(d.tanks_10),
           price: d.price || '', funpay: d.funpay_link || '', onFunpay: entry.onFunpay,
-          premcount: d.premcount || '', t10count: d.tanks_10_count || '',
+          premcount: Number(d.premcount) || 0, t10count: Number(d.tanks_10_count) || 0,
           resources: { bonds: d.bonds || '', gold: d.gold || '', silver: d.silver || '' },
           images: u.images || [], thumb: u.thumb || '',
         };
@@ -799,7 +799,7 @@ async function loadFavourites() {
           const d = lot.data || {}, u = lot.ui || {};
           arr.push({ id, title: tanksToString(d.prems_8_9), tanks10: tanksToString(d.tanks_10),
             price: d.price || '', funpay: d.funpay_link || '', onFunpay: lot.onFunpay,
-            premcount: d.premcount || '', t10count: d.tanks_10_count || '',
+            premcount: Number(d.premcount) || 0, t10count: Number(d.tanks_10_count) || 0,
             resources: { bonds: d.bonds||'', gold: d.gold||'', silver: d.silver||'' },
             images: u.images||[], thumb: u.thumb||'' });
         }

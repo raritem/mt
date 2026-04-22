@@ -543,8 +543,8 @@ window.QuickView = (() => {
 
     // Статс-бейджи (vstats)
     const badgesEl = _modal.querySelector('#qv-badges');
-    const t10count  = lot.t10count !== undefined && String(lot.t10count).trim() !== '' ? String(lot.t10count).trim() : null;
-    const premcount = lot.premcount !== undefined && String(lot.premcount).trim() !== '' ? String(lot.premcount).trim() : null;
+    const t10count  = lot.t10count  > 0 ? lot.t10count  : null;
+    const premcount = lot.premcount > 0 ? lot.premcount : null;
     if (t10count || premcount) {
       let badges = '';
       if (premcount) badges += `<span class="vstats__badge vstats__badge--prem"><span class="vstats__line">${esc(premcount)} PREM'ов</span></span>`;
@@ -652,8 +652,8 @@ window.QuickView = (() => {
             price: d.price || '',
             funpay: d.funpay_link || '',
             onFunpay: entry.onFunpay,
-            premcount: d.premcount || '',
-            t10count: d.tanks_10_count || '',
+            premcount: Number(d.premcount) || 0,
+            t10count: Number(d.tanks_10_count) || 0,
             resources: {
               bonds: d.bonds || '',
               gold: d.gold || '',

@@ -242,6 +242,13 @@ async function loadCatalogueData() {
         : (data.lots && typeof data.lots === 'object' ? data.lots : {});
     }
     renderCataloguePanel();
+
+    // Кэшируем tanks.json для вычисления counts при ручном сохранении лота
+    try {
+      if (typeof CSVImporter !== 'undefined' && typeof CSVImporter.loadTanks === 'function') {
+        window._cachedTanksMap = await CSVImporter.loadTanks();
+      }
+    } catch (_) { window._cachedTanksMap = {}; }
   } catch (e) {
     dom.adminMain.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h2>' + esc(e.message) + '</h2></div>';
   }
@@ -533,8 +540,8 @@ function openLotModal(editLotId) {
   if (dom.lotTanks10Input) dom.lotTanks10Input.value = Array.isArray(data.tanks_10)
     ? data.tanks_10.join(', ')
     : (data.tanks_10 || '');
-  if (dom.lotT10CountInput)  dom.lotT10CountInput.value  = data.tanks_10_count || '';
-  if (dom.lotPremCountInput) dom.lotPremCountInput.value = data.premcount || '';
+  if (dom.lotT10CountInput)  dom.lotT10CountInput.value  = Number(data.tanks_10_count) || 0;
+  if (dom.lotPremCountInput) dom.lotPremCountInput.value = Number(data.premcount) || 0;
   dom.lotFunpayInput.value      = data.funpay_link || '';
   if (dom.lotPriceInput)    dom.lotPriceInput.value    = data.price || '';
   if (dom.lotOnFunpayInput) dom.lotOnFunpayInput.checked = !ui.isHidden;
@@ -585,8 +592,9 @@ async function onLotSave() {
   const gold   = ($('lot-gold-input')   ? $('lot-gold-input').value   : '').replace(/\s+/g, '');
   const silver = ($('lot-silver-input') ? $('lot-silver-input').value : '').replace(/\s+/g, '');
 
-  // Вычисляем premcount из полей (при ручном добавлении — из поля lotPremCountInput)
-  const premcountRaw = dom.lotPremCountInput ? dom.lotPremCountInput.value.trim() : '';
+  // Вычисляем counts из tanks.json (источник истины)
+  // Если CSVImporter.computeCounts недоступен — фоллбэк на 0
+  const _tanksMap = (window._cachedTanksMap) ? window._cachedTanksMap : {};
 
   setStatus(dom.lotModalStatus, 'Сохраняю…', 'info');
   try {
@@ -600,14 +608,26 @@ async function onLotSave() {
     const prems67Arr   = Array.isArray(_existingData.prems_6_7)   ? _existingData.prems_6_7   : _splitField(_existingData.prems_6_7);
     const bonusArr     = Array.isArray(_existingData.bonus_tanks) ? _existingData.bonus_tanks : _splitField(_existingData.bonus_tanks);
 
+    const allTanks = [...prems89Arr, ...tanks10Arr, ...prems67Arr, ...bonusArr];
+
+    // Вычисляем counts из tanks.json через CSVImporter если доступен
+    let counts = { prems_8_9_count: 0, tanks_10_count: 0, prems_6_7_count: 0, bonus_tanks_count: 0, premcount: 0 };
+    if (typeof CSVImporter !== 'undefined' && typeof CSVImporter.computeCounts === 'function') {
+      counts = CSVImporter.computeCounts(allTanks, _tanksMap);
+    }
+
     const newData = {
       prems_8_9:  prems89Arr,
       tanks_10:   tanks10Arr,
       prems_6_7:  prems67Arr,
       bonus_tanks: bonusArr,
-      all_tanks:  [...prems89Arr, ...tanks10Arr, ...prems67Arr, ...bonusArr],
-      tanks_10_count: t10count,
-      premcount: premcountRaw, funpay_link: funpay, price,
+      all_tanks:  allTanks,
+      tanks_10_count:   counts.tanks_10_count,
+      prems_8_9_count:  counts.prems_8_9_count,
+      prems_6_7_count:  counts.prems_6_7_count,
+      bonus_tanks_count: counts.bonus_tanks_count,
+      premcount: counts.premcount,
+      funpay_link: funpay, price,
       bonds, gold, silver,
     };
     const onFunpay = funpay.includes('lots/');
