@@ -1,0 +1,164 @@
+/* ================================================================
+   TANKNEXUS — Tanks Block styles
+   Подключить в view/index.html рядом с main.css
+   ================================================================ */
+
+/* ── Общий контейнер ─────────────────────────────────────────── */
+.lot-tanks-block {
+  margin: 0px 0px 24px;
+  max-width: var(--max-width, 1200px);
+  /*padding: 0 16px;*/
+}
+
+.tanks-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Секция (Прем 8-9 / Т10 / Прем 5-7) ─────────────────────── */
+.tanks-section {
+  display: flex;
+  flex-direction: column;
+  /*gap: 6px;*/
+}
+
+.tanks-section-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b9b9b9;
+  padding: 2px 11px;
+  background: linear-gradient(90deg, #242831, transparent 70%);
+  border-radius: 10px 0px 0px 0px;
+}
+
+.tanks-section-body {
+  background: linear-gradient(90deg, #1a1c21, transparent 70%);;
+  border-radius: 0px 0px 0px 14px;
+  padding: 12px 14px;
+  border: 0px solid var(--border, rgba(255,255,255,0.06));
+  overflow: hidden;
+  transition: padding 0.25s ease;
+}
+
+/* ── Ряд иконок ──────────────────────────────────────────────── */
+.tanks-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 9px;
+}
+
+/* ── Отдельный танк ──────────────────────────────────────────── */
+.tank-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
+  min-width: 116px;
+  max-width: 116px;
+  text-align: center;
+}
+
+.tank-item:hover {
+  background: var(--hover-bg, rgba(255,255,255,0.05));
+}
+
+.tank-item--active {
+  border-color: var(--accent, #f0a500);
+  background: var(--hover-bg, rgba(255,255,255,0.05));
+}
+
+/* ── Иконка танка ────────────────────────────────────────────── */
+.tank-icon-wrap {
+  width: 112px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tank-icon {
+  max-width: 211px;
+  max-height: 230px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  filter: brightness(1.2) contrast(1.07);
+}
+
+.tank-icon--missing {
+  width: 44px;
+  height: 36px;
+  border-radius: 6px;
+  background: var(--border, rgba(255,255,255,0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--text-muted, #888);
+}
+
+/* ── Название танка ──────────────────────────────────────────── */
+.tank-name {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--text-secondary, #aaa);
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.tank-item--active .tank-name {
+  color: var(--text, #eee);
+}
+
+/* ── Панель описания (раскрывается по клику) ─────────────────── */
+.tank-desc-panel {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--bg-subtle, rgba(255,255,255,0.04));
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary, #bbb);
+  border-left: 3px solid var(--accent, #f0a500);
+  animation: fadeInDown 0.2s ease;
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Адаптив ─────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .lot-tanks-block {
+    padding: 0 10px;
+  }
+  .tanks-section-body {
+    padding: 10px 10px;
+  }
+  .tanks-row {
+    gap: 8px 10px;
+  }
+  .tank-item {
+    min-width: 54px;
+    max-width: 68px;
+    padding: 4px;
+  }
+  .tank-icon-wrap {
+    width: 54px;
+    height: 70px;
+  }
+  .tank-icon {
+    max-width: 120px;
+    max-height: 100px;
+  }
+}

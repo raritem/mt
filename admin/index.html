@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Админка — TANKNEXUS</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+  <link rel="stylesheet" href="../css/main.css?v=b83f9e5">
+  <link rel="stylesheet" href="../css/admin.css?v=b83f9e5">
+</head>
+<body class="admin-body">
+
+  <header class="admin-header">
+    <div class="header-inner">
+      <a href="../gallery/" class="logo">
+        <span class="logo-icon">🎯</span>
+        <img src="../logo.svg" alt="TANKNEXUS" class="logo-img">
+      </a>
+      <span class="admin-badge">Admin</span>
+      <div class="admin-header-right">
+        <span class="token-status" id="token-status">Не подключено</span>
+        <button class="btn btn-ghost" id="settings-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Настройки
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Настройки / Авторизация -->
+  <div class="modal-overlay" id="settings-overlay"></div>
+  <div class="modal" id="settings-modal">
+    <div class="modal-header">
+      <h2>Настройки GitHub</h2>
+      <button class="modal-close" id="settings-close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>GitHub Personal Access Token</label>
+        <p class="form-hint">Нужны права: <code>repo</code> (или <code>contents:write</code>)</p>
+        <div class="input-with-eye">
+          <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+          <button class="eye-btn" id="token-eye">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Репозиторий</label>
+        <p class="form-hint">Формат: <code>username/repo-name</code></p>
+        <input type="text" id="repo-input" placeholder="username/tanknexus">
+      </div>
+      <div class="form-group">
+        <label>Ветка</label>
+        <input type="text" id="branch-input" value="main" placeholder="main">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="settings-save">Сохранить и проверить</button>
+      </div>
+      <div class="status-msg" id="settings-status"></div>
+    </div>
+  </div>
+
+  <!-- Основной layout — без sidebar -->
+  <div class="admin-layout-wrap admin-layout-wrap--nosidebar">
+    <main class="admin-main admin-main--full" id="admin-main">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">📦</div>
+        <h2>Галерея</h2>
+        <p>Загружаем лоты…</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Модалка: лот -->
+  <div class="modal-overlay" id="lot-modal-overlay"></div>
+  <div class="modal" id="lot-modal">
+    <div class="modal-header">
+      <h2 id="lot-modal-title">Новый лот</h2>
+      <button class="modal-close" id="lot-modal-close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="form-group-header">
+          <label>Премиум танки (строка 1)</label>
+          <button type="button" class="wrap-toggle-btn" data-target="lot-title-input" title="Разрешить перенос строки" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4v7a4 4 0 0 1-4 4H4"/><path d="m9 10-5 5 5 5"/></svg>
+          </button>
+        </div>
+        <textarea id="lot-title-input" placeholder="СУ-130ПМ, Skorpian G, Bourrasque" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <div class="form-group-header">
+          <label>Танки 10 уровня (строка 2)</label>
+          <button type="button" class="wrap-toggle-btn" data-target="lot-tanks10-input" title="Разрешить перенос строки" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4v7a4 4 0 0 1-4 4H4"/><path d="m9 10-5 5 5 5"/></svg>
+          </button>
+        </div>
+        <textarea id="lot-tanks10-input" placeholder="140, 430U, Obj. 279e" rows="2"></textarea>
+      </div>
+      <div class="form-group" id="vehicles-form-group">
+        <label>Количество техники</label>
+        <div class="resource-fields">
+          <div class="resource-field-row">
+            <img id="veh-icon-prem" class="resource-field-icon" alt="Прем">
+            <input type="text" id="lot-premcount-input" placeholder="Премиум танков (напр. 8)" inputmode="numeric">
+          </div>
+          <div class="resource-field-row">
+            <img id="veh-icon-t10" class="resource-field-icon" alt="Т10">
+            <input type="text" id="lot-t10count-input" placeholder="Танков X уровня (напр. 15)" inputmode="numeric">
+          </div>
+        </div>
+        <p class="form-hint">Оставьте поле пустым — иконка не будет показана</p>
+      </div>
+      <div class="form-group">
+        <label>Ссылка на FunPay</label>
+        <input type="url" id="lot-funpay-input" placeholder="https://funpay.com/lots/...">
+      </div>
+      <div class="form-group">
+        <label>Цена</label>
+        <div class="price-input-wrap">
+          <input type="text" id="lot-price-input" placeholder="например: 1 200 ₽" inputmode="decimal">
+        </div>
+        <p class="form-hint">Отображается на карточке лота. Оставьте пустым — цена скрыта.</p>
+      </div>
+      <div class="form-group" id="resources-form-group">
+        <label>Ресурсы аккаунта</label>
+        <div class="resource-fields" id="resource-fields">
+          <div class="resource-field-row">
+            <img id="res-icon-bonds" class="resource-field-icon" alt="Боны">
+            <input type="text" id="lot-bonds-input" placeholder="Боны (напр. 11200)" inputmode="numeric">
+          </div>
+          <div class="resource-field-row">
+            <img id="res-icon-gold" class="resource-field-icon" alt="Золото">
+            <input type="text" id="lot-gold-input" placeholder="Золото (напр. 4560)" inputmode="numeric">
+          </div>
+          <div class="resource-field-row">
+            <img id="res-icon-silver" class="resource-field-icon" alt="Серебро">
+            <input type="text" id="lot-silver-input" placeholder="Серебро (напр. 8568930)" inputmode="numeric">
+          </div>
+        </div>
+        <p class="form-hint">Оставьте поле пустым — ресурс не будет показан</p>
+      </div>
+      <div class="form-group">
+        <label>Показывать в верхней сетке</label>
+        <div class="toggle-row">
+          <input type="checkbox" id="lot-onfunpay-input">
+          <label for="lot-onfunpay-input" class="toggle-label">
+            <span class="toggle-ui" aria-hidden="true"></span>
+            <span class="toggle-text">Если выключено — лот попадёт в раздел "ещё аккаунты"</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="lot-modal-cancel">Отмена</button>
+        <button class="btn btn-primary" id="lot-modal-save">Сохранить</button>
+      </div>
+      <div class="status-msg" id="lot-modal-status"></div>
+    </div>
+  </div>
+
+  <!-- Модалка подтверждения (дивлоговое окно) -->
+  <div class="modal-overlay" id="confirm-overlay"></div>
+  <div class="modal modal-sm" id="confirm-modal">
+    <div class="modal-header">
+      <h2>Подтвердите удаление</h2>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-text">Вы уверены?</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="confirm-cancel">Отмена</button>
+        <button class="btn btn-danger" id="confirm-ok">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Удалить
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js?v=b83f9e5"></script>
+  <script src="../js/resources.js?v=b83f9e5"></script>
+  <script src="../js/github-api.js?v=b83f9e5"></script>
+  <script src="../js/image-convert.js?v=b83f9e5"></script>
+  <script src="../js/importer.js?v=b83f9e5"></script>
+  <script src="../js/precompute.js?v=b83f9e5"></script>
+  <script src="../js/admin.js?v=b83f9e5"></script>
+</body>
+</html>
