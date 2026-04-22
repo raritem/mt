@@ -408,17 +408,19 @@ async function loadCatalogue() {
           const u = lot.ui  || {};
           arr.push({
             id,
-            title:     tanksToString(d.prems_8_9),
-            tanks10:   tanksToString(d.tanks_10),
-            price:     d.price           || '',
-            funpay:    d.funpay_link     || '',
-            onFunpay:  lot.onFunpay,
-            premcount: d.premcount !== undefined ? Number(d.premcount) || 0 : 0,
-            t10count:  d.tanks_10_count !== undefined ? Number(d.tanks_10_count) || 0 : 0,
-            resources: { bonds: d.bonds || '', gold: d.gold || '', silver: d.silver || '' },
-            images:    u.images || [],
-            thumb:     u.thumb  || '',
-            isHidden:  u.isHidden || false,
+            title:           tanksToString(d.prems_8_9),
+            tanks10:         tanksToString(d.tanks_10),
+            price:           d.price           || '',
+            funpay:          d.funpay_link     || '',
+            onFunpay:        lot.onFunpay,
+            premcount:       d.premcount !== undefined ? Number(d.premcount) || 0 : 0,
+            prems_8_9_count: d.prems_8_9_count !== undefined ? Number(d.prems_8_9_count) || 0 : 0,
+            t10count:        d.tanks_10_count !== undefined ? Number(d.tanks_10_count) || 0 : 0,
+            resources:       { bonds: d.bonds || '', gold: d.gold || '', silver: d.silver || '' },
+            images:          u.images || [],
+            thumb:           u.thumb  || '',
+            isHidden:        u.isHidden || false,
+            scoreBase:       lot.scoreBase || { tagCounts: {} },
           });
         }
       }
@@ -441,11 +443,64 @@ async function loadCatalogue() {
     const topLotsAll = visibleLots.filter(l => l.onFunpay);
     const hiddenLots = visibleLots.filter(l => !l.onFunpay);
 
+    // ── Сценарии ─────────────────────────────────────────────────
+    let activeScenarioId = null;
+
+    // Возвращает топ-лоты с применённым сценарием (или оригинальный порядок)
+    function getTopLotsSorted() {
+      if (!activeScenarioId || typeof FilterEngine === 'undefined') return topLotsAll;
+      const scenario = FilterEngine.SCENARIOS.find(s => s.id === activeScenarioId);
+      if (!scenario || scenario.type === 'advanced') return topLotsAll;
+      return FilterEngine.applyScenario(topLotsAll, scenario);
+    }
+
+    // Рендерит блок карточек сценариев
+    function renderScenariosBlock() {
+      const block = document.getElementById('scenarios-block');
+      if (!block || typeof FilterEngine === 'undefined') return;
+      block.innerHTML = '';
+
+      FilterEngine.SCENARIOS.forEach(scenario => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        const isActive = activeScenarioId === scenario.id;
+        card.className = 'scenario-card' + (isActive ? ' scenario-card--active' : '');
+        card.dataset.scenarioId = scenario.id;
+
+        const subtitleHtml = scenario.subtitle
+          ? `<span class="scenario-card__sub">${esc(scenario.subtitle)}</span>`
+          : '';
+
+        card.innerHTML = `
+          <span class="scenario-card__emoji">${scenario.emoji}</span>
+          <span class="scenario-card__title">${esc(scenario.title)}</span>
+          ${subtitleHtml}
+        `;
+
+        card.addEventListener('click', () => {
+          if (scenario.type === 'advanced') return; // TODO: открыть расширенный фильтр
+          const newId = activeScenarioId === scenario.id ? null : scenario.id;
+          activeScenarioId = newId;
+          renderScenariosBlock();
+          rerenderTopLots();
+        });
+
+        block.appendChild(card);
+      });
+    }
+
     // Показываем лоты порциями по PAGE_LIMIT, остальные — по кнопке
     let topShown = 0;
 
+    function rerenderTopLots() {
+      gridEl.innerHTML = '';
+      topShown = 0;
+      renderTopChunk();
+    }
+
     function renderTopChunk() {
-      const chunk = topLotsAll.slice(topShown, topShown + PAGE_LIMIT);
+      const sorted = getTopLotsSorted();
+      const chunk = sorted.slice(topShown, topShown + PAGE_LIMIT);
       chunk.forEach(lot => gridEl.appendChild(buildLotCard(lot, CATALOGUE_ID)));
       if (topShown === 0) applyFadeUpStagger(gridEl, '.lot-card', 0.06);
       topShown += chunk.length;
@@ -453,17 +508,18 @@ async function loadCatalogue() {
       const oldBtn = document.getElementById('show-more-top-btn');
       if (oldBtn) oldBtn.remove();
 
-      if (topShown < topLotsAll.length) {
+      if (topShown < sorted.length) {
         const btn = document.createElement('button');
         btn.id = 'show-more-top-btn';
         btn.className = 'btn btn-ghost';
         btn.style.cssText = 'display:block;margin:28px auto 8px;padding:10px 32px;font-size:15px;';
-        btn.textContent = 'Показать ещё (' + (topLotsAll.length - topShown) + ')';
+        btn.textContent = 'Показать ещё (' + (sorted.length - topShown) + ')';
         btn.addEventListener('click', renderTopChunk);
         gridEl.parentElement.insertBefore(btn, gridEl.nextSibling);
       }
     }
 
+    renderScenariosBlock();
     gridEl.innerHTML = '';
     renderTopChunk();
 

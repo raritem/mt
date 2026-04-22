@@ -9,7 +9,8 @@
     "interest_level": 6,
     "description_a": 7,
     "description_b": 8,
-    "description_c": 9
+    "description_c": 9,
+    "tags": 10
   },
   "accounts": {
     "id": 0,

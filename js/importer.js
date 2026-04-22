@@ -201,6 +201,21 @@ const CSVImporter = (() => {
       normalizedData.bonus_tanks_count = counts.bonus_tanks_count;
       normalizedData.premcount        = counts.premcount;
 
+      // ── Precompute scoreBase (tagCounts) для сценарной фильтрации ──
+      // Учитываем ТОЛЬКО prems_8_9 — каждый тег 1 раз на танк
+      // Хранятся только теги с count > 0
+      const tagCounts = {};
+      for (const tankName of normalizedData.prems_8_9) {
+        const info = tanksMap[tankName];
+        if (!info || !Array.isArray(info.tags)) continue;
+        for (const tag of info.tags) {
+          if (!tag) continue;
+          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        }
+      }
+      // scoreBase хранится на уровне лота (не внутри data)
+      const scoreBase = { tagCounts };
+
       if (lots[id]) {
         // Уже есть — обновляем data, не трогаем ui
         lots[id].status        = 'active';
@@ -208,6 +223,7 @@ const CSVImporter = (() => {
         lots[id].inactiveSince = null;
         lots[id].onFunpay      = onFunpay;
         lots[id].data          = normalizedData;
+        lots[id].scoreBase     = scoreBase;
         stats.updated++;
       } else {
         // Нового добавляем с дефолтным ui
@@ -217,6 +233,7 @@ const CSVImporter = (() => {
           inactiveSince: null,
           onFunpay:      onFunpay,
           data: normalizedData,
+          scoreBase,
           ui: {
             images:   [],
             thumb:    '',
@@ -305,6 +322,14 @@ const CSVImporter = (() => {
       const normalizedEntry = { ...csvData };
       if ('isPrem' in normalizedEntry) {
         normalizedEntry.isPrem = normalizeIsPrem(normalizedEntry.isPrem);
+      }
+      // Нормализуем теги: "tag1, tag2" → ["tag1", "tag2"]
+      // Пустая строка → [] (не хранится как пустая строка)
+      if ('tags' in normalizedEntry) {
+        const rawTags = String(normalizedEntry.tags || '').trim();
+        normalizedEntry.tags = rawTags
+          ? rawTags.split(',').map(t => t.trim()).filter(Boolean)
+          : [];
       }
       if (tanks[name]) {
         tanks[name] = { ...tanks[name], ...normalizedEntry };
