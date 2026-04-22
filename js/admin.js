@@ -379,6 +379,19 @@ async function onCSVFileSelected(file) {
     bar.textContent = 'Сохраняю на GitHub…';
     await saveCatalogueJSON();
 
+    // ── Precompute: обновляем индексы после импорта ────────────
+    try {
+      const tanksMap = await CSVImporter.loadTanks();
+      await Precompute.run(
+        state.lots,
+        tanksMap,
+        (msg) => { bar.textContent = msg; }
+      );
+    } catch (e) {
+      // Ошибка precompute не должна мешать основному импорту
+      console.warn('[Precompute] Ошибка при генерации индексов:', e.message);
+    }
+
     bar.className = 'import-status-bar ok';
     bar.textContent = `✓ Готово — добавлено: ${stats.added}, обновлено: ${stats.updated}, неактивных: ${stats.markedInactive}, удалено: ${stats.deleted}`;
     renderLots();
@@ -415,6 +428,17 @@ async function onTanksCSVFileSelected(file) {
 
     bar.textContent = 'Сохраняю tanks.json на GitHub…';
     await GH.writeJSON('data/tanks.json', updatedJson, 'Update tanks');
+
+    // ── Precompute: пересчитываем индексы с новым tanks.json ───
+    try {
+      await Precompute.run(
+        state.lots || {},
+        updatedJson.tanks || {},
+        (msg) => { bar.textContent = msg; }
+      );
+    } catch (e) {
+      console.warn('[Precompute] Ошибка при генерации индексов:', e.message);
+    }
 
     bar.className = 'import-status-bar ok';
     bar.textContent = `✓ Танки обновлены — добавлено: ${stats.added}, обновлено: ${stats.updated}, удалено: ${stats.deleted}`;
