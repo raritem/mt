@@ -277,9 +277,9 @@
       }
     },
     "id": {
-      "status": "active",
+      "status": "inactive",
       "lastSeenInCsv": "2026-04-22",
-      "inactiveSince": null,
+      "inactiveSince": "2026-04-22",
       "onFunpay": false,
       "data": {
         "price": "Цена",
@@ -5384,7 +5384,6 @@
         "price": "",
         "prems_8_9": [
           "617Q",
-          "617Q",
           "T77",
           "Кировец-1",
           "Т-54 обр. 1"
@@ -5412,7 +5411,6 @@
         "3dstyles": "",
         "all_tanks": [
           "617Q",
-          "617Q",
           "T77",
           "Кировец-1",
           "Т-54 обр. 1",
@@ -5423,11 +5421,11 @@
           "У-18",
           "Т-V Пантера"
         ],
-        "prems_8_9_count": 5,
+        "prems_8_9_count": 4,
         "tanks_10_count": 3,
         "prems_6_7_count": 3,
         "bonus_tanks_count": 0,
-        "premcount": 8
+        "premcount": 7
       },
       "ui": {
         "images": [],
