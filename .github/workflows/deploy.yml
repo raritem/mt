@@ -1,13 +1,11 @@
-name: Deploy to GitHub Pages
+name: Inject cache version
 on:
   push:
     branches: [main]
-
 permissions:
   contents: write
-
 jobs:
-  deploy:
+  inject:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,11 +19,9 @@ jobs:
             -not -path "./.git/*" \
             -exec sed -i "s/__CACHE_VER__/$VER/g" {} +
 
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          publish_branch: gh-pages
-          exclude_assets: '.github'
-          force_orphan: true
+      - name: Commit injected files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet || git commit -am "ci: inject cache version $VER"
+          git push
