@@ -9,7 +9,15 @@
       "interest_level": "80",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "121": {
       "icon": "ch19_121.png",
@@ -20,7 +28,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Название": {
       "icon": "Тех. название",
@@ -31,7 +40,10 @@
       "interest_level": "Интерес",
       "description_a": "Описание 1",
       "description_b": "Описание 2",
-      "description_c": "Описание 3"
+      "description_c": "Описание 3",
+      "tags": [
+        "Тэги"
+      ]
     },
     "Badger": {
       "icon": "gb92_fv217.png",
@@ -42,7 +54,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Concept 5": {
       "icon": "gb120_concept_no_5.png",
@@ -53,7 +66,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Condor": {
       "icon": "gb134_fv242b_condor.png",
@@ -64,7 +78,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "FV4005": {
       "icon": "gb83_fv4005.png",
@@ -75,7 +90,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "FV215b 183": {
       "icon": "gb48_fv215b_183.png",
@@ -86,7 +102,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "S. Conqueror": {
       "icon": "gb91_super_conqueror.png",
@@ -97,7 +114,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Manticore": {
       "icon": "gb100_manticore.png",
@@ -108,7 +126,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "ConquerorGC": {
       "icon": "gb31_conqueror_gun.png",
@@ -119,7 +138,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Centurion AX": {
       "icon": "gb86_centurion_action_x.png",
@@ -130,7 +150,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "E 100": {
       "icon": "g56_e_100.png",
@@ -141,7 +162,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Grille 15": {
       "icon": "g121_grille_15_l63.png",
@@ -152,7 +174,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Jg.Pz. E 100": {
       "icon": "g72_jagdpz_e100.png",
@@ -163,7 +186,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Leopard 1": {
       "icon": "g89_leopard1.png",
@@ -174,7 +198,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Pz.Kpfw. VII": {
       "icon": "g134_pzkpfw_vii.png",
@@ -185,7 +210,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Rhm. Pzw.": {
       "icon": "g125_spz_57_rh.png",
@@ -196,7 +222,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "E 50 M": {
       "icon": "g73_e50_ausf_m.png",
@@ -207,7 +234,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Maus": {
       "icon": "g42_maus.png",
@@ -218,7 +246,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "G.W. E 100": {
       "icon": "g61_g_e.png",
@@ -229,7 +258,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Minotauro": {
       "icon": "it23_cc_3.png",
@@ -240,7 +270,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Rinoceronte": {
       "icon": "it15_rinoceronte.png",
@@ -251,7 +282,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Progetto 65": {
       "icon": "it08_progetto_m40_mod_65.png",
@@ -262,7 +294,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "BZ-75": {
       "icon": "ch48_bz_75.png",
@@ -273,7 +306,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "GPT-75": {
       "icon": "ch73_gpt_75.png",
@@ -284,7 +318,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "WZ-111 5A": {
       "icon": "ch41_wz_111_5a.png",
@@ -295,7 +330,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "WZ-113G FT": {
       "icon": "ch38_wz113g_ft.png",
@@ -306,7 +342,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "WZ-132-1": {
       "icon": "ch28_wz_132a.png",
@@ -317,7 +354,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "60TP": {
       "icon": "pl15_60tp_lewandowskiego.png",
@@ -328,7 +366,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "CS-63": {
       "icon": "pl21_cs_63.png",
@@ -339,7 +378,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Żubr": {
       "icon": "pl30_sdp_wz58t.png",
@@ -350,7 +390,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Merkava LP": {
       "icon": "un02_merkava_lp.png",
@@ -361,7 +402,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "T-54D": {
       "icon": "un14_t54d.png",
@@ -372,7 +414,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "ИС-4": {
       "icon": "r90_is_4m.png",
@@ -383,7 +426,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "ИС-7": {
       "icon": "r45_is_7.png",
@@ -394,7 +438,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Об. 140": {
       "icon": "r97_object_140.png",
@@ -405,7 +450,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Об. 261": {
       "icon": "r52_object_261.png",
@@ -416,7 +462,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Об. 268": {
       "icon": "r88_object268.png",
@@ -427,7 +474,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Об. 268/4": {
       "icon": "r149_object_268_4.png",
@@ -438,7 +486,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Об. 277": {
       "icon": "r155_object_277.png",
@@ -449,7 +498,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Об. 430У": {
       "icon": "r148_object_430_u.png",
@@ -460,7 +510,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Об. 705А": {
       "icon": "r145_object_705_a.png",
@@ -471,7 +522,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "СТ-II": {
       "icon": "r169_st_ii.png",
@@ -482,7 +534,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Т-62А": {
       "icon": "r87_t62a.png",
@@ -493,7 +546,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Т-100 ЛТ": {
       "icon": "r158_lt_432.png",
@@ -504,7 +558,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "К-91": {
       "icon": "r144_k_91.png",
@@ -515,7 +570,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Firebird": {
       "icon": "a175_otac_mt_58_02.png",
@@ -526,7 +582,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "M-V-Y": {
       "icon": "a143_m_v_y.png",
@@ -537,7 +594,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "M48 Patton": {
       "icon": "a84_m48a1.png",
@@ -548,7 +606,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "T110E4": {
       "icon": "a83_t110e4.png",
@@ -559,7 +618,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "T110E5": {
       "icon": "a69_t110e5.png",
@@ -570,7 +630,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "T57 Heavy": {
       "icon": "a67_t57_58.png",
@@ -581,7 +642,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Sheridan": {
       "icon": "a116_xm551.png",
@@ -592,7 +654,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "T110E3": {
       "icon": "a85_t110e3.png",
@@ -603,7 +666,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "T92 HMC": {
       "icon": "a38_t92.png",
@@ -614,7 +678,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "AMX 30 B": {
       "icon": "f72_amx_30.png",
@@ -625,7 +690,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "AMX 50 B": {
       "icon": "f10_amx_50b.png",
@@ -636,7 +702,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "AMX M4 54": {
       "icon": "f82_amx_m4_mle1949_ter.png",
@@ -647,7 +714,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "B-C 25 t": {
       "icon": "f18_bat_chatillon25t.png",
@@ -658,7 +726,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "EBR 105": {
       "icon": "f108_panhard_ebr_105.png",
@@ -669,7 +738,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Foch B": {
       "icon": "f64_amx_50fosh_b.png",
@@ -680,7 +750,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "AMX 13 105": {
       "icon": "f88_amx_13_105.png",
@@ -691,7 +762,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "B-C 155 58": {
       "icon": "f38_bat_chatillon155_58.png",
@@ -702,7 +774,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Vz. 55": {
       "icon": "cz17_vz_55.png",
@@ -713,7 +786,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "TVP T 50/51": {
       "icon": "cz04_t50_51.png",
@@ -724,7 +798,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Kranvagn": {
       "icon": "s16_kranvagn.png",
@@ -735,7 +810,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "UDES 15/16": {
       "icon": "s28_udes_15_16.png",
@@ -746,7 +822,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Strv 103B": {
       "icon": "s11_strv_103b.png",
@@ -757,7 +834,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Ho-Ri 3": {
       "icon": "j35_ho_ri_3.png",
@@ -768,7 +846,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "STB-1": {
       "icon": "j16_st_b1.png",
@@ -779,7 +858,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Type 5 H": {
       "icon": "j20_type_2605.png",
@@ -790,7 +870,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Type 71": {
       "icon": "j40_type_71.png",
@@ -801,7 +882,8 @@
       "interest_level": "",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "BZ-176": {
       "icon": "ch47_bz_176.png",
@@ -812,7 +894,18 @@
       "interest_level": "110",
       "description_a": "входит в топ 3 самых редких и желанных имб игры. Уже с момента появления разработчики быстро поняли, что танк вышел вне баланса, поэтому с тех пор он не появлялся в свободной продаже. Благодаря ракетным ускарителям и крепкой броне, а также хорошим углам склонения, машина раньше остальных занимает ключевые точки и крайне сильна в позициоке. Но по-настоящему главный козырь, это его орудие — сумасшедший бревномёт с фугасными снарядами на неадекватные 800 !!! урона. С учётом последних изменений баланса (бои практически всегда проходят в формате ±1 уровень), BZ-176 стал ещё жёстче, чем раньше.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "rare",
+        "imba",
+        "mechanics",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "Bourrasque": {
       "icon": "f116_bat_chatillon_bourrasque.png",
@@ -823,7 +916,15 @@
       "interest_level": "109",
       "description_a": "входит в топ 3 самых редких и желанных имб игры. Уже с момента появления разработчики быстро поняли, что танк вышел вне баланса, поэтому с тех пор он практически не появлялся в продаже. Благодаря сумасшедшей динамике и очень низкому силуэту, может эффективно отыгрывать как роль среднего танка, так и ЛТ. Но его главный козырь — мощный скоростной барабан на 2 снаряда и 720 суммарного урона, который превращает его в одного из самых опасных дамагеров на своём уровне. С учётом последних изменений баланса (бои практически всегда проходят в формате ±1 уровень), Bourrasque стал ещё жёстче, чем раньше.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "imba",
+        "mobility",
+        "sniper_medium",
+        "alpha"
+      ]
     },
     "Škoda T 56": {
       "icon": "cz14_skoda_t-56.png",
@@ -834,7 +935,16 @@
       "interest_level": "108",
       "description_a": "входит в топ 3 самых редких и желанных имб игры. Уже с момента появления разработчики быстро поняли, что танк вышел вне баланса, поэтому с тех пор он практически не появлялся в продаже. Благодаря крепкой башне и комфортным углам склонения машина очень сильна в позиционке. Но её главный козырь — мощный скоростной барабан на 2 снаряда и 920 !!! суммарного урона, который превращает его в одного из самых опасных дамагеров на своём уровне. С учётом последних изменений баланса (бои практически всегда проходят в формате ±1 уровень), Škoda T 56 стала ещё жёстче, чем раньше.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "imba",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "EBR 75 FL 10": {
       "icon": "f106_panhard_ebr_75_mle1954.png",
@@ -845,7 +955,14 @@
       "interest_level": "107",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "imba",
+        "mechanics",
+        "mobility"
+      ]
     },
     "Turtle I": {
       "icon": "gb99_turtle_mk1.png",
@@ -856,7 +973,16 @@
       "interest_level": "106",
       "description_a": "одна из самых токсичных имб игры! В одном из патчей разработчики перестарались с апом характеристик и машина начала люто нагибать, после этого танк в срочном порядке был выведен из свободной продажи и больше никогда не продавался. На борту мощное орудие с отличным пробитием и сумасшедшей перезарядкой для такого урона, а крайне комфортные углы склонения (-10°) и крепкая рубка, дают преимущество при игре от рельефа и позволяют безопасно и уверенно продавливать направления.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "imba",
+        "close_combat",
+        "armor_medium",
+        "sniper_medium"
+      ]
     },
     "Марс": {
       "icon": "it13_progetto_m35_mod_46_le.png",
@@ -867,7 +993,15 @@
       "interest_level": "105",
       "description_a": "редчайшая итальянская имба с потрясающей динамикой, стабилизацией орудия и магазином с механикой дозарядки ( нет необходимости дожидаться полной зарядки барабана, чтобы совершить выстрел ). Танк имеет уникальнейший 3D стиль и никогда свободно не продавался, получить его можно было только в рамках внутриигровых ивентов",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "rare",
+        "strong",
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "Дуплет": {
       "icon": "r228_duplet.png",
@@ -878,7 +1012,16 @@
       "interest_level": "104",
       "description_a": "новая имба из новогодних коробок 2026, один из сильнейших премов 9 уровня в игре! Вместе с потрясающей динамикой и необычайно комфортными для \"совета\" углами склонения (-8°), танк оснащён хорошей стабилизацией и механикой спаренных орудий — можно стрелять как поочередно в стиле барабанного танка, так и выдать мощный залп дуплетом с двух дубин одновременно!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "new",
+        "strong",
+        "mechanics",
+        "armor_medium",
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "К-91-122": {
       "icon": "r173_k_91_2_122.png",
@@ -889,7 +1032,15 @@
       "interest_level": "103",
       "description_a": "НАША 💪 СОВЕТСКАЯ ИМБА, отсутствует в свободной продаже, ЛУЧШИЙ прем танк 9 уровня в игре на данный момент, обладает высоким разовым уроном, быстрой перезарядкой, отличным пробитием (что идеально для фарма серебра, тк не нужно заряжать \"голду\"), и неимоверной динамикой, очень сильный универсальный аппарат",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "new",
+        "strong",
+        "mobility",
+        "sniper_medium",
+        "alpha"
+      ]
     },
     "Prototipo 6": {
       "icon": "it32_prototipo_6.png",
@@ -900,7 +1051,13 @@
       "interest_level": "102",
       "description_a": "новая итальянская имба из НГ коробок 2025. Один из лучших премов 9 уровня в игре на данный момент. Танк имеет крутейшую динамику и главную фишку - барабан на 5 снарядов с механикой дозарядки, с МОЛНИЕНОСНЫМ кд между выстрелами в 1.5 секунды, буквально пулемёт ! Очень уникальный, эмоциональный и по-своему новый геймплей, из-за чего данная машина так полюбилась всем, кому посчастливилось её \"выбить\"",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "new",
+        "strong",
+        "mobility"
+      ]
     },
     "Находка-4": {
       "icon": "g171_e77_02.png",
@@ -911,7 +1068,17 @@
       "interest_level": "101",
       "description_a": "редчайшая немецкая имба в уникальном стиле с отличной для тяжа динамикой, комфортной пушкой и огромным уроном с выстрела в целых 530 с хорошим пробитием!!! Это позволяет комфортно фармить серебро и не бояться идти в размен. Ну и вишенка на торте — возможность фармить боны на всей Прем технике 9 уровня!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "new",
+        "rare",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "E-77": {
       "icon": "g171_e77.png",
@@ -922,7 +1089,16 @@
       "interest_level": "100",
       "description_a": "редчайшая немецкая имба с отличной для тяжа динамикой, комфортной пушкой и огромным уроном с выстрела в целых 530 с хорошим пробитием!!! Это позволяет комфортно фармить серебро и не бояться идти в размен. Ну и вишенка на торте — возможность фармить боны на всей Прем технике 9 уровня!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "new",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Рудный барон": {
       "icon": "gb110_fv4201_chieftain_prototype_b.png",
@@ -933,7 +1109,17 @@
       "interest_level": "99",
       "description_a": "редкая имба в уникальном 3D стиле! После мощного апа в одном из последних патчей, один из сильнейших премов 9 лвл! Крайне токсичен в позиционной игре благодаря идеальным углам склонения орудия (-10°), миниатюрному лючку и точной пушке с высоким уроном. Ещё одна немаловажная особенность данного танка — возможность фармить боны!",
       "description_b": "редкий тяж в уникальном 3D стиле. Один из сильнейших премов 9 лвл - в последнем патче его серьёзно апнули! Шикарные углы склонения орудия, маленький командирский лючок и ощутимый урон, делают его по-настоящему токсичным в позиционной игре. Ещё одна немаловажная особенность — возможность фармить боны на всех премах 9 ур!",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "rare",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Strv K": {
       "icon": "s31_strv_k.png",
@@ -944,7 +1130,17 @@
       "interest_level": "98",
       "description_a": "отличные углы склонения орудия, крепкая башня, существенный урон с выстрела и потрясающая точность! Очень сильная машина в позиционной игре от рельефа! Ну и вишенка на торте - возможность фармить боны на всей Прем технике 9 уровня!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "sniper_medium",
+        "alpha"
+      ]
     },
     "Chieftain P.": {
       "icon": "gb110_fv4201_chieftain_prototype.png",
@@ -955,7 +1151,16 @@
       "interest_level": "97",
       "description_a": "после мощного апа характеристик в последнем патче, это один из лучших прем танков 9 уровня в игре! Машина может похвастаться потрясающей стабилизацией, идеальными углами склонения орудия (-10°), внушительным уроном и крепкой башней. Всё это позволяет прочно занимать позиции при игре от рельефа, скрывая бОльшую часть корпуса, а британская точность позволяет комфортно отрабатывать по целям на средних и даже дальних дистанциях. Идеально подходит новичкам и игрокам среднего уровня, так как не требует высоких навыков для его реализации. Ну и вишенка на торте - возможность фармить боны на всей Прем технике 9 уровня!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "T54 Heavy": {
       "icon": "a156_t54_2022.png",
@@ -966,7 +1171,16 @@
       "interest_level": "96",
       "description_a": "крутейший тяж с крепкой башей и сумасшедшими углами склонения орудия в (-12°), это буквально имбалансный показатель при игре от рельефа! На борту дубина с неслабым уроном в 450 единиц! Ну и вишенка на торте — возможность фармить боны!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Char Mle. 75": {
       "icon": "f118_char_mle_75.png",
@@ -977,7 +1191,11 @@
       "interest_level": "95",
       "description_a": "первый и единственный прем ЛТ 9 с газотурбинным двигателем, позволяющим разгоняться до 75 км/ч при активации режима. Но главная фишка даже не скорость, а его КАССЕТНЫЙ БАРАБАН! За один выстрел вы выдаёте сразу 3 снаряда с интервалом 0,4 сек, нанося 600 урона за 1,2 сек. Таких кассет у вас 2 — 1200 урона. По стилю игры это идеальный разведчик-дамагер: активируете турбо-режим, чтобы молниеносно занять агрессивную позицию или залететь в борт/корму, возвращаетесь в обычный для улучшения точности и стабилизации, и быстро раздаёте 2 очереди. Но и это ещё не всё! 3 снаряда за выстрел — это в 3 раза больше шансов поджечь или взорвать бк, что не редкость для этого танка. Да, у машины есть свои капризы (низкий обзор и скрытность для ЛТ), но это с лихвой окупается эмоциями от кассетных снарядов, полыхающими кабинами и возможностью фармить БОНЫ!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mechanics",
+        "mobility"
+      ]
     },
     "Т-54Б": {
       "icon": "r223_t_54b_1958.png",
@@ -988,7 +1206,14 @@
       "interest_level": "94",
       "description_a": "наша легендарная «54-ка», доработанная до идеала и ставшая премом. Сочетает всё лучшее от своего знаменитого старшего брата: отличная маневренность и точное орудие с хорошей стабилизацией. Крепкая литая башня (целых 260 мм) позволяет уверенно играть от рельефа, несмотря на скромные УВН и стабильно перестреливать одноклассников. Ну и вишенка на торте — как и вся прем-техника 9 уровня, Т-54Б фармит боны!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "armor_medium",
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "BZ-58-2": {
       "icon": "ch59_bz58_2.png",
@@ -999,7 +1224,15 @@
       "interest_level": "93",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "TL-7": {
       "icon": "a146_tl_7_120.png",
@@ -1010,7 +1243,11 @@
       "interest_level": "92",
       "description_a": "самоходка с ВРАЩАЮЩЕЙСЯ БАШНЕЙ и БАРАБАНОМ на 4 снаряда! Удобные углы склонения орудия (-10°) позволяют не подставляться при игре от рельефа. По стилю больше напоминает средний танк, чем классическую ПТ, но со своей спецификой: со стрельбой на ходу есть сложности, как и у большинства ПТ. И ещё один жирный плюс — как и все премы 9 уровня, TL-7 фармит боны!",
       "description_b": "особенности данной машины делают её супер универсальной и позволяют отыгрывать не только роль ПТ, но и среднего танка поддержки, когда того требует ситуация. Всё благодаря наличию башни полного вращения вместо неподвижной рубки, как у классических самоходок и барабана на 4 снаряда! Помимо уникального геймплея Прем техника 9 уровня имеет приятный бонус - возможность фармить боны!",
-      "description_c": "особенности этой машины позволяют отыгрывать не только роль ПТ, но и среднего танка поддержки. Всё благодаря башне полного вращения вместо неподвижной рубки, как у классических самоходок, и точному барабану на 4 снаряда! В сочетании с компактными габаритами и превосходными углами склонения (-10°) можно уверенно и безопасно стрелять из-за рельефов местности. Ещё один жирный плюс — как и все премы 9 уровня, TL-7 фармит боны!"
+      "description_c": "особенности этой машины позволяют отыгрывать не только роль ПТ, но и среднего танка поддержки. Всё благодаря башне полного вращения вместо неподвижной рубки, как у классических самоходок, и точному барабану на 4 снаряда! В сочетании с компактными габаритами и превосходными углами склонения (-10°) можно уверенно и безопасно стрелять из-за рельефов местности. Ещё один жирный плюс — как и все премы 9 уровня, TL-7 фармит боны!",
+      "tags": [
+        "meta_buffed",
+        "mobility"
+      ]
     },
     "Latt Strf 120": {
       "icon": "s33_latt_stridsfordon_120.png",
@@ -1021,7 +1258,13 @@
       "interest_level": "91",
       "description_a": "новая имба 9 уровня, ЛУЧШАЯ прем самоходка для осадной игры от маскировки из кустов в роли снайпера. Идеальна для фарма и отдыха в рандоме.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mechanics",
+        "mobility",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "Об. 283": {
       "icon": "r191_object_283.png",
@@ -1032,7 +1275,8 @@
       "interest_level": "90",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Леший": {
       "icon": "r159_su_130pm_dr.png",
@@ -1043,7 +1287,15 @@
       "interest_level": "89",
       "description_a": "абсолютная советская имба в уникальном 3D стиле, имеет лютую маскировку и дубину на сумасшедшие 520 урона, сносит пол кабины за выстрел, РВЁТ ВСЁ, из-за превосходства по своим характеристикам над одноклассниками выведена разработчиками из свободной продажи, чтобы не ломать баланс в боях",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "rare",
+        "strong",
+        "mobility",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "Skorpion G": {
       "icon": "g114_rheinmetall_skorpian.png",
@@ -1054,7 +1306,14 @@
       "interest_level": "88",
       "description_a": "абсолютная немецкая имба, имеет лютую подвижность и дубину маусган на ... 490 урона, сносит пол кабины за выстрел, РВЁТ ВСЁ, из-за превосходства по своим характеристикам над одноклассниками выведен разработчиками из свободной продажи, чтобы не ломать баланс в боях",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "mobility",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "Skorpion": {
       "icon": "g114_skorpian.png",
@@ -1065,7 +1324,14 @@
       "interest_level": "87",
       "description_a": "абсолютная немецкая имба, имеет лютую подвижность и дубину маусган на ... 490 урона, сносит пол кабины за выстрел, РВЁТ ВСЁ, из-за превосходства по своим характеристикам над одноклассниками выведен разработчиками из свободной продажи, чтобы не ломать баланс в боях",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "mobility",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "СУ-130ПМ": {
       "icon": "r159_su_130pm.png",
@@ -1076,7 +1342,14 @@
       "interest_level": "86",
       "description_a": "абсолютная советская имба, имеет лютую маскировку и дубину на сумасшедшие 520 урона, сносит пол кабины за выстрел, РВЁТ ВСЁ, из-за превосходства по своим характеристикам над одноклассниками выведена разработчиками из свободной продажи, чтобы не ломать баланс в боях",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "mobility",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "Progetto 46": {
       "icon": "it13_progetto_m35_mod_46.png",
@@ -1087,7 +1360,14 @@
       "interest_level": "85",
       "description_a": "редчайшая итальянская имба с впечатляющей динамикой, стабилизацией орудия и магазином с механикой дозарядки (нет необходимости дожидаться полной зарядки барабана, чтобы совершить выстрел). Танк давно отсутствует в свободной продаже.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "strong",
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "703 II (122)": {
       "icon": "r165_object_703_ii.png",
@@ -1098,7 +1378,17 @@
       "interest_level": "84",
       "description_a": "НАША советская имба, тяж с отличным бронированием, феноминальной стабилизацией орудий и 2 лютыми дубинами по 390 урона с каждой, можно стрелять поочерёдно как с барабанного танка, либо выдать залп дуплетом на всё лицо противника. Разваливает кабины с пол оборота, очень \"слабая\" техника. Из-за превосходства по своим боевым характеристикам над одноклассниками выведен разработчиками из свободной продажи, чтобы не ломать баланс в боях. Максимально прост по геймплею, прощает множество ошибок новичкам!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "mechanics",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "TST": {
       "icon": "cz21_tst.png",
@@ -1109,7 +1399,15 @@
       "interest_level": "83",
       "description_a": "тяж прорыва с мощной лобовой бронёй, превосходной подвижностью и скорострельным орудием — имбалансный урон в минуту более 3000!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "Alpine Tiger": {
       "icon": "ch03_wz_111_a.png",
@@ -1120,7 +1418,16 @@
       "interest_level": "82",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "rare",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "ИС-6": {
       "icon": "r61_object252.png",
@@ -1131,7 +1438,16 @@
       "interest_level": "81",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "WZ-111": {
       "icon": "ch03_wz_111.png",
@@ -1142,7 +1458,14 @@
       "interest_level": "79",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Ka-Ri": {
       "icon": "j31_type_5_kari.png",
@@ -1153,7 +1476,13 @@
       "interest_level": "78",
       "description_a": "самоходка с КОРАБЕЛЬНОЙ ДУБИНОЙ 9 УРОВНЯ, с огромным уроном, высоким пробитием и ювелирной точностью, снимает пол лица за выстрел! Одна из лучших машин для нагиба, максимально проста по геймплею, даже для новичка. Идеальна для снайперской игры из инвиза от кустов!",
       "description_b": "самоходка с КОРАБЕЛЬНОЙ ДУБИНОЙ 9 УРОВНЯ, с огромным уроном и высоким пробитием, снимает пол лица за выстрел! Одна из лучших машин для нагиба, максимально проста по геймплею, даже для новичка. Идеальна для снайперской игры из инвиза от кустов!",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "Bisonte C45": {
       "icon": "it18_progetto_c45_mod_71.png",
@@ -1164,7 +1493,13 @@
       "interest_level": "77",
       "description_a": "барабанная имба с механикой дозарядки (не нужно дожидаться полной зарядки барабана, чтобы совершить выстрел). Имеет комфортнейшие углы склонения орудия (-10°) и непробиваемую башню, за счёт чего танк крайне токсичен в позиционной игре от рельефов и насыпей. В комплекте один из лучших 3D стилей в игре специально для этой машины. Даже новички способны показывать хорошие результаты на данном аппарате!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "Gonsalo": {
       "icon": "gb115_gonsalo.png",
@@ -1175,7 +1510,15 @@
       "interest_level": "76",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "617Q": {
       "icon": "ch63_stt_617q.png",
@@ -1186,7 +1529,16 @@
       "interest_level": "75",
       "description_a": "новая двуствольная имба с ракетными ускорителями. Можно стрелять как поочерёдно из каждый пушки, так и выдать мощный залп сразу с двух орудий! Ракетные ускорители помогают быстро занимать ключевые точки, бодро убегать, если противник продавливает направление и эффектно таранить слабобронированные цели. В сочетании с высоким уроном (360) и комфортными углами склонения (-8°) — один из самых сильных и интересных премов 8 уровня в игре на данный момент.",
       "description_b": "новая двуствольная имба с ивента \"Разлом\". Единственный танк в игре, оснащенный сразу 2 механиками: ракетными ускорителями и спаренными орудиями, которые позволяют стрелять не только поочерёдно из каждый пушки, но и выдать залп одновременно! В сочетании с высоким уроном (360) и комфортными углами склонения (-8°) — один из самых сильный премов 8 уровня на данный момент.",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "new",
+        "strong",
+        "mechanics",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "M47 Improv.": {
       "icon": "a152_m_project_2.png",
@@ -1197,7 +1549,13 @@
       "interest_level": "74",
       "description_a": "один из самых сильных и сбалансированных премов 8 лвл. Сочетает мощное орудие (320 урона), идеальные \"амерские\" углы склонения (-10°), крепчайшую башню и уверенное лобовое бронирование - редкость для среднего танка! Эти ярко выраженные плюсы позволяют стабильно наносить урон в условиях современных боёв. Танк уверенно держит направления, особенно в позиционной игре от насыпей и рельефов, что позволяет не зависеть от команды и настреливать урон даже в турбосливах!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "strong",
+        "armor_medium"
+      ]
     },
     "GSOR 1010": {
       "icon": "gb121_gsor_1010_fb.png",
@@ -1208,7 +1566,13 @@
       "interest_level": "73",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "Doppel": {
       "icon": "g196_e_75_ausf_b_doppel.png",
@@ -1219,7 +1583,16 @@
       "interest_level": "72",
       "description_a": "новая двуствольная имба с впечатляющей бронёй из новогодних коробок. Один из сильнейших премов 8 в игре! Машина оснащена механикой спаренных орудий — можно стрелять как поочередно в стиле барабанного танка, так и выдать мощный залп дуплетом с двух дубин одновременно!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "new",
+        "strong",
+        "mechanics",
+        "close_combat",
+        "armor_heavy"
+      ]
     },
     "Sekera": {
       "icon": "cz39_sd_122_49_sekera.png",
@@ -1230,7 +1603,16 @@
       "interest_level": "71",
       "description_a": "новая самоходка с крепким лбом и мощным барабаном на 2 снаряда по 390 урона!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "new",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "AMBT": {
       "icon": "a149_ambt.png",
@@ -1241,7 +1623,12 @@
       "interest_level": "70",
       "description_a": "абсолютная американская имба с барабаном, оснащенным механикой дозарядки ( нет необходимости дожидаться полной зарядки барабана, чтобы совершить выстрел )",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "mobility"
+      ]
     },
     "Защитник": {
       "icon": "r134_object_252k.png",
@@ -1252,7 +1639,16 @@
       "interest_level": "69",
       "description_a": "наш советский TOP G, легендарнейшная имба с лютейшей бронёй от танка 10 уровня и бревномётом на 440 урона. Танк очень живуч за счёт своего имбалансного бронирования, поэтому максимально прост по геймплею и прощает множество ошибок новичкам",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "Сапсан": {
       "icon": "r115_is-3_auto_s.png",
@@ -1263,7 +1659,17 @@
       "interest_level": "68",
       "description_a": "полная копия ИС-3 с МЗ с уникальным стилем, имеет ОЧЕНЬ ИМБОВЫЙ БАРАБАН С МЕХАНИКОЙ ДОЗАРЯДКИ - не обязательно дожидаться зарядки всего барабана, чтобы начать вести огонь, если того требует ситуация (Советская легенда мира танков ИС-3 ещё и с барабаном)",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "rare",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Burza": {
       "icon": "pl27_sdp_wz_66t.png",
@@ -1274,7 +1680,18 @@
       "interest_level": "67",
       "description_a": "уникальная самоходка с механикой газотурбинного двигателя! Оснащена мощной дубиной на 450 урона, удобными для ПТ углами склонения (-8°) и впечатляющим бронированием лба. При активации режима носиться по карте, как разъярённый бизон и способна снимать немало хп тараном!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "mechanics",
+        "armor_medium",
+        "mobility",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "WZ-111 6": {
       "icon": "ch58_111_vz51.png",
@@ -1285,7 +1702,14 @@
       "interest_level": "66",
       "description_a": "динамичный тяж прорыва. Обладает одной из самых крепких башен на уровне, почти без уязвимых зон благодаря крайне малым размерам лючка! Идеален для агрессивной игры: способен вытанковывать много урона в позиционных перестрелках и выгодно разменивать хп за счёт высокого разового урона (360), а отличные углы склонения (-8°) дают заметное преимущество, при игре от рельефов и насыпей. Стабильно набивает урон и при этом прощает многие ошибки новичкам!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "strong",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "Renegade": {
       "icon": "a124_t54e2.png",
@@ -1296,7 +1720,15 @@
       "interest_level": "65",
       "description_a": "на первый взгляд классический американец: отличные углы склонения орудия и неплохая подвижность. Но впечатляющий урон в минуту в сочетании с хорошей стабилизацией до сих пор превращают его в настоящую фаршимбу!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "Type 63": {
       "icon": "j36_type_63_ht.png",
@@ -1307,7 +1739,12 @@
       "interest_level": "64",
       "description_a": "невероятно эффектный прем с литой качающейся непробиваемой башней и уникальной механикой охлаждения орудия. После короткой паузы пушка становится ювелирно точной, позволяя уверенно работать по целям на дистанции и выцеливать уязвимые зоны противника.",
       "description_b": "НЕВЕРОЯТНО красивая прем имба 8 уровня с литой качающейся непробиваемой башней. Когда встречаешь данный аппарат в команде противника, очко начинает полыхать, как нефтебаза, потому что в позиционной игре данный танк высовывает только башню на которой отсутствуют какие-либо уязвимые зоны и свою дубину с новой механикой ОХЛАЖДЕНИЯ, которая, после пары секунд остывания становится ювелирно точной и злой",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "mechanics"
+      ]
     },
     "TS-54": {
       "icon": "a145_ts_54.png",
@@ -1318,7 +1755,14 @@
       "interest_level": "63",
       "description_a": "НОВАЯ ДВУСТВОЛКА! Машина имеет механику спаренных орудий - можно вести огонь как поочередно из каждого орудия, в стиле барабанного танка с дозарядкой, так и выдать дуплет на пол лица противника одновременно с двух пушек! Если ищите уникальный, эмоциональный геймплей, это ваш выбор!",
       "description_b": "новая двуствольная имба с механикой спаренных орудий. Можно стрелять как поочередно в стиле барабанного танка, так и выдать мощный залп дуплетом с двух дубин одновременно! Для тяжа обладает впечатляющей точностью — легко выцеливать лючки и уязвимые зоны, отличной стабилизацией — вы тратите меньше времени на сведение и быстрее реагируете на бой, а также удобными углами склонения (-8°) и хорошей подвижностью.",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "mechanics",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "Об. 252У": {
       "icon": "r134_object_252u.png",
@@ -1329,7 +1773,16 @@
       "interest_level": "62",
       "description_a": "наш советский TOP G, легендарнейшная имба с лютейшей бронёй от танка 10 уровня и бревномётом на 440 урона. Танк очень живуч за счёт своего имбалансного бронирования, поэтому максимально прост по геймплею и прощает множество ошибок новичкам",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "703 II (100)": {
       "icon": "r165_object_703_ii_100.png",
@@ -1340,7 +1793,15 @@
       "interest_level": "61",
       "description_a": "НАША советская имба! Тяж прорыва с крепкой бронёй, отличной стабилизацией и 2 мощными пушками по 300 урона. Можно стрелять как поочерёдно из каждого ствола, так и выдать мощный залп дуплетом с двух дубин одновременно. Очень прост по геймплею и прощает множество ошибок новичкам.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "strong",
+        "mechanics",
+        "close_combat",
+        "armor_heavy"
+      ]
     },
     "E 75 TS": {
       "icon": "g143_e75_ts.png",
@@ -1351,7 +1812,14 @@
       "interest_level": "60",
       "description_a": "динамичный немецкий тяж с потрясающим орудием, особенно силен в позиционной игре от рельефов и насыпей, благодаря крепкой башне и комфортным углам склонения орудия! Один из лучших вариантов для старта!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "strong",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "Об. 265Т": {
       "icon": "r212_object_265t.png",
@@ -1362,7 +1830,15 @@
       "interest_level": "59",
       "description_a": "штурмовой тяж с крепкой бронёй и мощной альфой, буквально созданный для ближнего боя. В отличие от большинства советской техники, у него хорошие углы склонения орудия (-8°), что позволяет безопасно стрелять из-за насыпей и рельефов местности. Заднее расположение башни даёт огромное преимущество в городских перестрелках — можно эффективно выезжать от борта, прикрывая уязвимые зоны. Отличный вариант для тех, кто хочет стабильно наносить урон на передовой, даже без большого опыта игры.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "M-IV-Y": {
       "icon": "a141_m_iv_y.png",
@@ -1373,7 +1849,14 @@
       "interest_level": "58",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "strong",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "50TP pr.": {
       "icon": "pl08_50tp_prototyp.png",
@@ -1384,7 +1867,15 @@
       "interest_level": "57",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Объект 168Н": {
       "icon": "r203_object_168n.png",
@@ -1395,7 +1886,13 @@
       "interest_level": "56",
       "description_a": "НАШ, Советский новичок из НГ коробок 2025. Из особенностей - отличная динамика, точная пушка ( но только после полного сведения! ) и потрясающий урон в минуту с альфой 320. По стилю игры - снайпер а ля немецкий леопард.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "mobility",
+        "sniper_top"
+      ]
     },
     "Taurus CA": {
       "icon": "gb118_taurus_ca.png",
@@ -1406,7 +1903,16 @@
       "interest_level": "55",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "Somua SM": {
       "icon": "f84_somua_sm.png",
@@ -1417,7 +1923,15 @@
       "interest_level": "54",
       "description_a": "сильнейший барабан на 5 снарядов. Многие статисты берут его для игры на результат, так как машина имеет огромный потенциал! Кроме того, танк отлично подходит для фарма серебра: высокое пробитие базовым снарядом и удобное орудие делают процесс комфортным, а наличие барабана делает даже рутинные бои более увлекательными.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "ИСУ-152К": {
       "icon": "r177_isu_152k_bl10.png",
@@ -1428,7 +1942,12 @@
       "interest_level": "53",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "strong",
+        "sniper_medium",
+        "alpha"
+      ]
     },
     "Vipera": {
       "icon": "it30_cc_mod_64_prem.png",
@@ -1439,7 +1958,13 @@
       "interest_level": "52",
       "description_a": "титаническое лобовое бронирование, топовые углы склонения орудия (-10°) и магазинная система заряжания на 5 снарядов с огромной альфой (400) позволяют безнаказанно наносить до 2000 !!! урона с 1 барабана. Это очень серьёзный противник на поле боя, на которого будут бояться выходить, когда он заряжен. Название машины говорит само за себя: \"ГАДЮКА\". За такой жир танк расплачивается не самой лучшей подвижностью и пусть на бумаге это самоходка, фактически это тяж, который играет преимущественно от первой линии. Машина прощает множество ошибок, поэтому даже новичок сможет показывать уверенные результаты без лишней сложности!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "strong",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "GSOR 1008": {
       "icon": "gb109_gsor_1008.png",
@@ -1450,7 +1975,13 @@
       "interest_level": "51",
       "description_a": "гипер опасный барабан на 4 снаряда с отличной подвижностью, маскировкой и высоким пробитием базовым снарядом. Танк универсален и идеален, как для пассивной игры от инвиза из кустов, так и для более активного крысо-геймплея, так как обладает отличной динамикой, маскировкой, точностью и довольно маленькими габаритами, из-за чего по нему непросто попасть. Главное правило - сводиться до конца!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "mobility",
+        "sniper_top"
+      ]
     },
     "Dravec": {
       "icon": "cz37_vz_59_dravec.png",
@@ -1461,7 +1992,11 @@
       "interest_level": "50",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "mobility"
+      ]
     },
     "CS-52 LIS": {
       "icon": "pl19_cs_52_lis.png",
@@ -1472,7 +2007,14 @@
       "interest_level": "49",
       "description_a": "сбалансированный универсал. Отличная стабилизация и динамика, комфортная пушка с высоким альфой. Один из лучших премов для фарма серебра.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "strong",
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "Lansen C": {
       "icon": "s26_lansen_c.png",
@@ -1483,7 +2025,13 @@
       "interest_level": "48",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "strong",
+        "mobility"
+      ]
     },
     "ShPTK-TVP": {
       "icon": "cz20_shptk_tvp_100_mm.png",
@@ -1494,7 +2042,13 @@
       "interest_level": "47",
       "description_a": "чехословацкая имба, в простонародии \"ШПАК\", любимец статистов. Идеален для фарма серебра и игры на результат, так как имеет колоссально высокое пробитие базовым снарядом и неимоверно высокий урон в минуту, благодаря чему, потрясающе отыгрывает даже против танков 10 уровня",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "meta_buffed",
+        "strong",
+        "mobility",
+        "sniper_top"
+      ]
     },
     "Pr.68 (P)": {
       "icon": "g164_kpz_pr_68_p.png",
@@ -1505,7 +2059,13 @@
       "interest_level": "46",
       "description_a": "быстрый немецкий снайпер с мощной точной пушкой и превосходной подвижностью. Оснащён автоматической пневмоподвеской, благодаря которой может опускаться орудие на 9 градусов, что очень комфортно при игре от рельефов и позволяет скрывать бОльшую часть корпуса за холмами. Имеет высокое пробитие и урон в целых 400 единиц — оптимальный выбор для тех, кто предпочитает наносить стабильный урон с дистанции без необходимости в лобовых разменах",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "strong",
+        "mobility",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "Kpz 07 RH": {
       "icon": "g154_kpz_07_rh.png",
@@ -1516,7 +2076,11 @@
       "interest_level": "45",
       "description_a": "очень динамичный ЛТ-подобный средний танк, способный менять фланги в считанные секунды, за счёт сумасшедшей подвижности. Орудие с колоссально высоким уроном в минуту, перезарядка всего 4 секунды - эдакий вечно заряженный крысо-барабан. За это расплачивается отсутствием брони и не самым высоким уроном за выстрел.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "Lorr. 40 t": {
       "icon": "f19_lorraine40t.png",
@@ -1527,7 +2091,14 @@
       "interest_level": "44",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "strong",
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "ASTRON Rex": {
       "icon": "a140_astron_rex_105mm.png",
@@ -1538,7 +2109,8 @@
       "interest_level": "43",
       "description_a": "динамичный легкий средний танк с барабаном на 5 снарядов.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Наносит до 1600 урона за серию": {
       "icon": "стреляя каждые 4 секунды. Хорошо подходит для фланговых атак",
@@ -1546,10 +2118,11 @@
       "type": "когда враг не может ответить. У танка низкий силуэт",
       "nation": "хорошие углы склонения пушки (-10°) и быстрая скорость заднего хода — удобно играть от рельефа и быстро уходить на перезарядку после стрельбы. Главная фишка - мобильность легкого танка",
       "isPrem": false,
-      "interest_level": "кто любит действовать хитро и выбирать правильные моменты для атаки.,,,,,,,,,a69_t110e5_7x7.png",
+      "interest_level": "кто любит действовать хитро и выбирать правильные моменты для атаки.,,,mobility",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "AMX Cda 105": {
       "icon": "f68_amx_chasseur_de_char_46.png",
@@ -1560,7 +2133,13 @@
       "interest_level": "42",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "strong",
+        "mobility",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "KanJPz 105": {
       "icon": "g112_kanonenjagdpanzer_105.png",
@@ -1571,7 +2150,12 @@
       "interest_level": "41",
       "description_a": "немецкая ювелирно точная пушка, колоссальная динамика, высокий разовый урон и пробитие ( идеально для фарма кредитов ), за ярко выраженные плюсы расплачивается посредственным бронированием, а точнее практически полным её отсутствием. Идеально справляется с ролью снайпера.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility",
+        "sniper_top",
+        "alpha"
+      ]
     },
     "T77": {
       "icon": "a132_t77.png",
@@ -1582,7 +2166,12 @@
       "interest_level": "40",
       "description_a": "мощнейший барабан на 3 снаряда. Между выстрелами всего 2 сек, как у десятки, а высокий урон и пробитие позволяют спокойно пробивать даже крепкие цели без необходимости заряжать голду. Чтобы раскрыть этот танк, нужно правильное оборудование (УМП + Стаб + Прицел) и он начинает рвать всё, что движется. Одна из моих самых любимых машин в игре, которая должна быть у каждого! ❤️",
       "description_b": "агрессивный барабан на 3 снаряда. Между выстрелами всего 2 сек, как у десятки, а высокий урон и пробитие позволяют спокойно пробивать даже крепкие цели без необходимости заряжать голду. Совет - всё оборудование ставим на стабилизацию и танк превращается в мясорубку",
-      "description_c": "динамичный агрессивный барабан на 3 снаряда. Между выстрелами всего 2 сек, как у десятки, а высокий урон и пробитие позволяют спокойно пробивать даже крепкие цели без необходимости заряжать голду. Совет - всё оборудование ставим на стабилизацию и танк превращается в фаршимбу."
+      "description_c": "динамичный агрессивный барабан на 3 снаряда. Между выстрелами всего 2 сек, как у десятки, а высокий урон и пробитие позволяют спокойно пробивать даже крепкие цели без необходимости заряжать голду. Совет - всё оборудование ставим на стабилизацию и танк превращается в фаршимбу.",
+      "tags": [
+        "popular",
+        "strong",
+        "close_combat"
+      ]
     },
     "EMIL 1951": {
       "icon": "s18_emil_1951_e1.png",
@@ -1593,7 +2182,13 @@
       "interest_level": "39",
       "description_a": "мощный магазин на 3 снаряда, непробиваемая башня, отличная для тт подвижность и имбалансные углы склонения орудия (-12°). Танк очень токсичен в позиционной игре, так как не имеет уязвимых зон, когда выезжает от рельефов местности",
       "description_b": "на первый взгляд, просто мощный динамичный барабан на 3 снаряда с крепкой башней. Но что действительно делает его уникальным — это абсолютно имбалансные углы склонения орудия (-12°), благодаря которым танк невероятно силён в позиционной игре, может уверенно стрелять из-за рельефов и в одиночку удерживать направления.",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "strong",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "Т-34": {
       "icon": "a13_t34_hvy.png",
@@ -1604,7 +2199,13 @@
       "interest_level": "38",
       "description_a": "классический американский тяж с дубиной на 400 урона, потрясающим пробитием основным снарядом, железобетонной башней и завидными углами склонения орудия. До недавнего времени гордо носил клеймо \"КУСОК\" ( г*вна, кто не понял ), но всё изменилось после последнего апа. Разработчики сделали из него самую настоящую имбу, \"подкрутив\" подвижности, стабилизацию орудия и перезарядку. В текущих реалиях - очень достойная машина, которая играет буквально за вас!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "strong",
+        "alpha"
+      ]
     },
     "T34 B": {
       "icon": "a13_t34_hvy_bf.png",
@@ -1615,7 +2216,13 @@
       "interest_level": "37",
       "description_a": "классический американский тяж с дубиной на 400 урона, потрясающим пробитием основным снарядом, железобетонной башней и завидными углами склонения орудия. До недавнего времени гордо носил клеймо \"КУСОК\" ( г*вна, кто не понял ), но всё изменилось после последнего апа. Разработчики сделали из него самую настоящую имбу, \"подкрутив\" подвижности, стабилизацию орудия и перезарядку. В текущих реалиях - очень достойная машина, которая играет буквально за вас!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "strong",
+        "alpha"
+      ]
     },
     "Jagdtiger Pr.": {
       "icon": "g44_jagdtigerh.png",
@@ -1626,7 +2233,14 @@
       "interest_level": "36",
       "description_a": "практически полная копия прокачиваемой самоходки немецкой ветки, но с одним нюансиком, разрабы взяли ПТ 9 уровня сделали её Премный клон и поставили на ... 8. Как итог, данный аппарат со своей дубиной маусганом на борту и железобетонной рубкой рвёт всё, что видит по кд. Отличается Яга от своего старшего собрата разве что более низким пробитием, но для 8 уровня оно по-прежнему остаётся крайне высоким даже на базовом снаряде, поэтому броню противника она практически не чувствует.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "strong",
+        "armor_medium",
+        "sniper_medium",
+        "alpha"
+      ]
     },
     "WZ-113-II": {
       "icon": "ch46_113_140.png",
@@ -1637,7 +2251,14 @@
       "interest_level": "35",
       "description_a": "тяж прорыва, с потрясающей для ТТ подвижностью и крепчайшей бронёй! Способен уверенно врываться и продавливать направления, а также вытанковывать большое количество урона, благодаря корпусу от \"десятки\". Новичкам машина прощает множество ошибок, так как часто ловит рикошеты и непробития.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "mobility"
+      ]
     },
     "VK 75.01 K": {
       "icon": "g141_vk7501k.png",
@@ -1648,7 +2269,15 @@
       "interest_level": "34",
       "description_a": "жёсткий немецкий тяж с дубиной маусганом на ... 490 урона! Сносит пол кабины за выстрел, РВЁТ ВСЁ. После последнего обновления разрабы \"потрогали\" его технические характеристики и неслабо так апнули, теперь на данном аппарате нагибают даже новички, так как машина стала существенно комфортнее благодаря увеличению скорости перезарядки и углов склонения орудия, и в целом максимально проста по геймплею за счёт игры от высокого урона, который всегда проще реализовать, чем ДПМ",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "strong",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Caernarvon AX": {
       "icon": "gb93_caernarvon_ax.png",
@@ -1659,7 +2288,10 @@
       "interest_level": "33",
       "description_a": "в одном из последних патчей 2024 года танк получил жирнейший ап характеристик, ему разогнали перезарядку, сведение и существенно улучшили стабилизацию, за счёт чего он стал лютейшей имбой! Многие топовые игроки до последнего не верили что его выпустят в релиз с такими ТТХ, но это случилось! Крутейший аппарат для нагиба и фарма серебра, имеющий свой уникальный геймплей. ГЛАВНАЯ ИМБА среди всех прем танков 8 уровня за боны по версии Клумбы ( https://www.youtube.com/watch?v=aBEGdzvED4M&t=117s )",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "strong"
+      ]
     },
     "КВ-4 КТТС": {
       "icon": "r121_kv4_ktt.png",
@@ -1670,7 +2302,14 @@
       "interest_level": "32",
       "description_a": "на борту одна из лучших пушек своего уровня! Играется как тяжёлый танк, выдаёт уверенную альфу 360 с колоссальным уроном в минуту свыше 3000! Орудие вращается на 45° в каждую сторону, что делает стрельбу удобной даже без башни. Идеальный выбор для тех, кто любит постоянно держать противника в фокусе под огнём.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "56TP": {
       "icon": "pl24_56tp.png",
@@ -1681,7 +2320,13 @@
       "interest_level": "31",
       "description_a": "тяжелый польский альфа самец с дубиной на 390 урона, прекрасным пробитием, потрясающими углами склонения орудия и феноменальной для тяжа точностью, что ещё нужно для комфортного фарма в удовольствие ?",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "forgiving",
+        "close_combat",
+        "alpha"
+      ]
     },
     "Chrysler K": {
       "icon": "a115_chrysler_k.png",
@@ -1692,7 +2337,14 @@
       "interest_level": "30",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "meta_buffed",
+        "strong",
+        "close_combat",
+        "armor_heavy"
+      ]
     },
     "Panther 8.8": {
       "icon": "g106_pzkpfwpanther_ausff.png",
@@ -1703,7 +2355,12 @@
       "interest_level": "29",
       "description_a": "легендарная немецкая пантера с ювелирно точной пушкой и отличной скорострельностью. Танк получил добротный ап характеристик в одном из последних обновлений, что существенно сказалось на его эффективности в бою даже в руках неопытных игроков!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "strong",
+        "mobility",
+        "sniper_top"
+      ]
     },
     "К-2": {
       "icon": "r192_k_2.png",
@@ -1714,7 +2371,14 @@
       "interest_level": "28",
       "description_a": "советский титан! Машина имеет сверхмощное бронирование. Корпус буквально от десятки, за счёт чего тяж стабильно вытанковывает огромное количество урона и имеет впечатляющую выживаемость! Идеальный выбор для старта: прощает множество даже самых грубых ошибок, обладает высоким уроном (390) и максимально прост по геймплею.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "meta_buffed",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "ИС-5": {
       "icon": "r113_object_730.png",
@@ -1725,7 +2389,13 @@
       "interest_level": "27",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Об. 259А": {
       "icon": "r188_object_259a.png",
@@ -1736,7 +2406,13 @@
       "interest_level": "26",
       "description_a": "советский тяж прорыва с мощнейшим орудием на 420 урона и крепкой башней. Оптимальный выбор для тех, кто предпочитает ворваться, дать на пол лица и откатить, вместо того, чтобы кидать часто и по чуть чуть, рискуя отлететь в ангар",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Кировец-1": {
       "icon": "r123_kirovets_1.png",
@@ -1747,7 +2423,14 @@
       "interest_level": "25",
       "description_a": "советская МОЩЬ. Более быстрый и крепкий прем-аналог легендарного ИС-3, но без его слабых мест! Вместо «щучьего носа», ровная бронеплита, которую гораздо труднее пробить. Лучший \"дед\" на 8 уровне по версии топ-стрелка! → https://clck.ru/3PRdk7",
       "description_b": "лютая советская МОЩЬ. Более быстрый и крепкий Прем-аналог легендарного ИС-3, но без его слабых мест: вместо «щучьего носа» - толстая ровная бронеплита, которую гораздо труднее пробить. Орудие косовато, поэтому комфортно он чувствует себя именно в ближнем бою. Зато каждый выстрел для противника по-настоящему ощутим — 390 альфы и высокая динамика позволяют буквально врываться с двух ног и ломать кабины. Не зря он признан лучшим \"дедом\" на 8 уровне по версии топ стрелка! 👉 Смотри обзор → https://youtu.be/P_TI9rw1zSQ?si=2dyiedCbjU3ykTgz",
-      "description_c": "советская МОЩЬ, более быстрый и крепкий аналог легендарного ИС-3. Советская техника особенно хороша в руках новичков и неопытных игроков, так как прощает множество ошибок за счёт своей универсальности, достаточно высокого разового урона, отличного бронирования с сюрпризами для противника в виде фальшбортов и выгодных наклонов бронелистов, а также славится \"вертуханами\" несмотря на не самую лучшую точность"
+      "description_c": "советская МОЩЬ, более быстрый и крепкий аналог легендарного ИС-3. Советская техника особенно хороша в руках новичков и неопытных игроков, так как прощает множество ошибок за счёт своей универсальности, достаточно высокого разового урона, отличного бронирования с сюрпризами для противника в виде фальшбортов и выгодных наклонов бронелистов, а также славится \"вертуханами\" несмотря на не самую лучшую точность",
+      "tags": [
+        "popular",
+        "forgiving",
+        "close_combat",
+        "armor_heavy",
+        "alpha"
+      ]
     },
     "Т-44 обл.": {
       "icon": "r98_t44_85.png",
@@ -1758,7 +2441,10 @@
       "interest_level": "24",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility"
+      ]
     },
     "T26E5": {
       "icon": "a117_t26e5.png",
@@ -1769,7 +2455,11 @@
       "interest_level": "23",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "Карачун": {
       "icon": "j27_o_i_120_bp.png",
@@ -1780,7 +2470,12 @@
       "interest_level": "22",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "forgiving",
+        "close_combat",
+        "armor_heavy"
+      ]
     },
     "T42": {
       "icon": "a136_t42.png",
@@ -1791,7 +2486,11 @@
       "interest_level": "21",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "M4A1 Rev.": {
       "icon": "f73_m4a1_revalorise.png",
@@ -1802,7 +2501,11 @@
       "interest_level": "20",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "sniper_medium",
+        "alpha"
+      ]
     },
     "СТГ": {
       "icon": "r146_stg.png",
@@ -1813,7 +2516,12 @@
       "interest_level": "19",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility",
+        "sniper_medium",
+        "alpha"
+      ]
     },
     "T25 Pilot 1": {
       "icon": "a111_t25_pilot.png",
@@ -1824,7 +2532,10 @@
       "interest_level": "18",
       "description_a": "один из лучших фармеров в игре и лютая имба! До недавнего времени аппарат был откровенно слабенький, но в одном из последних обновлений разрабы \"потрогали\" его технические характеристики и неслабо так апнули, машина стала существенно сильнее благодаря увеличению скорости перезарядки, пробития, динамики и обзора, за счёт чего, статисты начали показывать на нём сумасшедшие результаты по урону! Смотрите видос! ( https://www.youtube.com/watch?v=wJiWf4mnf84 )",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility"
+      ]
     },
     "M46 KR": {
       "icon": "a63_m46_patton_kr.png",
@@ -1835,7 +2546,10 @@
       "interest_level": "17",
       "description_a": "красивейший американец в уникальном исполнении с потрясающими американскими углами склонения орудия, неплохой стабилизацией и лютейшей скорострельностью. В одном из последний патчей ему апнули характеристики, в том числе усилили бронепробитие, после чего он стал ну очень хорош!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility"
+      ]
     },
     "Tornvagn": {
       "icon": "s32_bofors_tornvagn.png",
@@ -1846,7 +2560,11 @@
       "interest_level": "16",
       "description_a": "потрясающие углы склонения орудия, непробиваемая башня и высокое пробитие, за счёт чего прекрасно себя чувствует даже в боях с техникой 10 уровня, в лоб башни его практически невозможно пробить даже с десятки.",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "armor_medium",
+        "alpha"
+      ]
     },
     "A.P. AMX 30": {
       "icon": "f117_alt_proto_amx_30.png",
@@ -1857,7 +2575,10 @@
       "interest_level": "15",
       "description_a": "очень динамичный средний танк с высоким пробитием, благодаря которому танк стабильно фармит серебро, так как нет необходимости заряжать более дорогой тип снаряда. Но это ещё не всё! Его главная фишка - это абсолютно имбалансные углы склонения орудия в (-11) градусов! Такой показатель в игре встречается крайне редко и нехарактерен для средних танков. Это позволяет безопасно выходить из-за холмов, высовывая только верхнюю часть башни с орудием и полностью скрывать корпус за рельефом, благодаря чему можно безнаказанно наносить урон по противнику!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility"
+      ]
     },
     "КВ-5": {
       "icon": "r54_kv_5.png",
@@ -1868,7 +2589,13 @@
       "interest_level": "14",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "close_combat",
+        "armor_medium"
+      ]
     },
     "КВ-4 Кресл.": {
       "icon": "r128_kv4_kreslavskiy.png",
@@ -1879,7 +2606,10 @@
       "interest_level": "13",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "armor_medium"
+      ]
     },
     "VK 168.01 P": {
       "icon": "g138_vk168_02.png",
@@ -1890,7 +2620,12 @@
       "interest_level": "12",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "close_combat",
+        "armor_medium",
+        "alpha"
+      ]
     },
     "Т-54 обр. 1": {
       "icon": "r112_t54_45.png",
@@ -1901,7 +2636,10 @@
       "interest_level": "11",
       "description_a": "советский универсал, маневренный средний танк, универсальная машина на поле боя",
       "description_b": "наш, советский Т54! Способен быстро менять фланги, заходить с бортов, разводить на выстрел, играя от башни, и ловить противника на ошибках",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility"
+      ]
     },
     "Pz. 58": {
       "icon": "g119_panzer58.png",
@@ -1912,7 +2650,11 @@
       "interest_level": "10",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility",
+        "sniper_medium"
+      ]
     },
     "TL-1 LPC": {
       "icon": "a127_tl_1_lpc.png",
@@ -1923,7 +2665,10 @@
       "interest_level": "9",
       "description_a": "динамичный средний танк с очень комфортным орудием и крепкой башней, что позволяет прочно занимать позиции при игре от рельефа и стабильно и безопасно наносить урон, выезжая из-за холмов и насыпей. Подойдёт тем, кто предпочитает активный геймплей, например зайти с фланга и устроить перекрестный огонь, заставив врага ошибаться, вместо того, чтобы большую часть боя прятаться в кустах, выжидая, когда противник ошибётся сам",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility"
+      ]
     },
     "Škoda T 27": {
       "icon": "cz13_t_27.png",
@@ -1934,7 +2679,10 @@
       "interest_level": "8",
       "description_a": "быстрый барабан с 3 снарядами и молниеносным кд между выстрелами (1.8 сек)",
       "description_b": "быстрый барабан на 3 снаряда. Перезарядка между выстрелами всего 1.8 сек — почти пулемёт! Можно буквально не отпускать противника с катка, пока не разрядите в него весь барабан.",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "mobility"
+      ]
     },
     "Chieftain/T95": {
       "icon": "gb87_chieftain_t95_turret.png",
@@ -1945,7 +2693,8 @@
       "interest_level": "7",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Об. 274а": {
       "icon": "r180_object_274_a.png",
@@ -1956,7 +2705,8 @@
       "interest_level": "6",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Jg.Tig.8.8 cm": {
       "icon": "g65_jagdtiger_sdkfz_185.png",
@@ -1967,7 +2717,8 @@
       "interest_level": "5",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Strv 81": {
       "icon": "s23_strv_81.png",
@@ -1978,7 +2729,8 @@
       "interest_level": "4",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "T95E2": {
       "icon": "a81_t95_e2.png",
@@ -1989,7 +2741,8 @@
       "interest_level": "3",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "M 41 90 mm": {
       "icon": "g120_m41_90.png",
@@ -2000,7 +2753,8 @@
       "interest_level": "2",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Senlac": {
       "icon": "gb101_fv1066_senlac.png",
@@ -2011,7 +2765,8 @@
       "interest_level": "1",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "ИС-2М": {
       "icon": "r156_is_2m.png",
@@ -2022,7 +2777,8 @@
       "interest_level": "8",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "ИС-2Э": {
       "icon": "r175_is_2_screen.png",
@@ -2033,7 +2789,8 @@
       "interest_level": "8",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "ИСУ-122С": {
       "icon": "r116_isu122c_berlin.png",
@@ -2044,7 +2801,12 @@
       "interest_level": "7",
       "description_a": "высокий разовый урон 390, сверхвысокий урон в минуту, нехарактерный для 7 уровня",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "alpha"
+      ]
     },
     "КВ-122": {
       "icon": "r133_kv_122.png",
@@ -2055,7 +2817,8 @@
       "interest_level": "7",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "СУ-122-44": {
       "icon": "r89_su122_44.png",
@@ -2066,7 +2829,13 @@
       "interest_level": "7",
       "description_a": "наша, советская фурия с пушкой-деструктором, 390 урона НА 7 УРОВНЕ!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": [
+        "popular",
+        "meta_buffed",
+        "strong",
+        "alpha"
+      ]
     },
     "У-18": {
       "icon": "r164_u_18_t.png",
@@ -2077,7 +2846,8 @@
       "interest_level": "9",
       "description_a": "советская самоходка с неимоверно высоким уроном. Эта дубина снимает 700 хп с выстрела! Вы всегда на шаг впереди, потому что можете разменять хп выгоднее, чем противник!",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "AT 15A": {
       "icon": "gb71_at_15a.png",
@@ -2088,7 +2858,8 @@
       "interest_level": "5",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Eagle 7": {
       "icon": "a121_m26_cologne.png",
@@ -2099,7 +2870,8 @@
       "interest_level": "8",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "FV201 (A45)": {
       "icon": "gb52_a45.png",
@@ -2110,7 +2882,8 @@
       "interest_level": "4",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "M56 Scorpion": {
       "icon": "a101_m56.png",
@@ -2121,7 +2894,8 @@
       "interest_level": "8",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Steyr WT": {
       "icon": "g109_steyr_wt.png",
@@ -2132,7 +2906,8 @@
       "interest_level": "5",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Super Hellcat": {
       "icon": "a130_super_hellcat.png",
@@ -2143,7 +2918,8 @@
       "interest_level": "7",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "T26E3 Eagle 7": {
       "icon": "a121_m26_cologne.png",
@@ -2154,7 +2930,8 @@
       "interest_level": "8",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "VK 45.03": {
       "icon": "g118_vk4503.png",
@@ -2165,7 +2942,8 @@
       "interest_level": "5",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Т-34-85М": {
       "icon": "r108_t34_85m.png",
@@ -2176,7 +2954,8 @@
       "interest_level": "9",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Т-50-2": {
       "icon": "r160_t_50_2.png",
@@ -2187,7 +2966,8 @@
       "interest_level": "6",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Т-V Пантера": {
       "icon": "r218_panther_n_518.png",
@@ -2198,7 +2978,8 @@
       "interest_level": "6",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Dicker Max": {
       "icon": "g41_dickermax.png",
@@ -2209,7 +2990,8 @@
       "interest_level": "5",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "GMC M36B1": {
       "icon": "a174_m36b1_gmc.png",
@@ -2220,7 +3002,8 @@
       "interest_level": "7",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "M10 RBFM": {
       "icon": "f112_m10_rbfm.png",
@@ -2231,7 +3014,8 @@
       "interest_level": "4",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "M44": {
       "icon": "a87_m44.png",
@@ -2242,7 +3026,8 @@
       "interest_level": "1",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Panther/M10": {
       "icon": "g78_panther_m10.png",
@@ -2253,7 +3038,8 @@
       "interest_level": "4",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Skoda T 40": {
       "icon": "cz01_skoda_t40.png",
@@ -2264,7 +3050,8 @@
       "interest_level": "5",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Super Chaffee": {
       "icon": "a134_m24e2_superchaffee.png",
@@ -2275,7 +3062,8 @@
       "interest_level": "6",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Tiger 131": {
       "icon": "g136_tiger_131.png",
@@ -2286,7 +3074,8 @@
       "interest_level": "6",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "VK 28.01 105": {
       "icon": "g158_vk2801_105_spxxi.png",
@@ -2297,7 +3086,8 @@
       "interest_level": "8",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "VK 36.01 K 41": {
       "icon": "g15_vk3601h_c.png",
@@ -2308,7 +3098,8 @@
       "interest_level": "7",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "КВ-1С с МЗ": {
       "icon": "r197_kv_1s_mz.png",
@@ -2319,7 +3110,8 @@
       "interest_level": "9",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "КВ-1Э": {
       "icon": "r186_kv_1_screened.png",
@@ -2330,7 +3122,8 @@
       "interest_level": "7",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Т-115": {
       "icon": "r209_t_115.png",
@@ -2341,7 +3134,8 @@
       "interest_level": "8",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Т-34Э": {
       "icon": "r154_t_34e_1943.png",
@@ -2352,7 +3146,8 @@
       "interest_level": "6",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "M24 No.594": {
       "icon": "a160_m24_594.png",
@@ -2363,7 +3158,8 @@
       "interest_level": "2",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "M41 HMC": {
       "icon": "a18_m41.png",
@@ -2374,7 +3170,8 @@
       "interest_level": "1",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     },
     "Valiant": {
       "icon": "gb37_valliant.png",
@@ -2385,7 +3182,8 @@
       "interest_level": "4",
       "description_a": "",
       "description_b": "",
-      "description_c": ""
+      "description_c": "",
+      "tags": []
     }
   }
 }
