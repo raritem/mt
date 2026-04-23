@@ -269,8 +269,8 @@
 }
 .admin-lot-badge-funpay {
   color: var(--accent);
-  background: rgba(245,197,24,0.10);
-  border-color: rgba(245,197,24,0.22);
+  background: rgb(204 255 0 / 11%);
+  border-color: rgb(204 255 0 / 27%);
 }
 .admin-lot-badge-hidden {
   color: var(--text-muted);
