@@ -2613,3 +2613,73 @@ body.qv-open {
   justify-content: center;
   margin: 28px 0 8px;
 }
+
+/* ── Сценарные танки в карточке лота ─────────────────────────── */
+.lot-card-sc-tanks {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.sc-tanks-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent, #f0a500);
+  margin-bottom: 6px;
+  opacity: 0.85;
+}
+
+.sc-tanks-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.sc-tank-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+  max-width: 80px;
+}
+
+.sc-tank-icon {
+  width: 56px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+  transition: transform 0.15s ease;
+}
+
+.sc-tank-item:hover .sc-tank-icon {
+  transform: scale(1.08);
+}
+
+.sc-tank-no-icon {
+  width: 56px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0.5;
+}
+
+.sc-tank-name {
+  font-size: 9px;
+  color: var(--text-muted, #aaa);
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 72px;
+}

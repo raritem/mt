@@ -269,8 +269,8 @@
 }
 .admin-lot-badge-funpay {
   color: var(--accent);
-  background: rgb(204 255 0 / 11%);
-  border-color: rgb(204 255 0 / 27%);
+  background: rgba(245,197,24,0.10);
+  border-color: rgba(245,197,24,0.22);
 }
 .admin-lot-badge-hidden {
   color: var(--text-muted);
@@ -844,7 +844,7 @@
 
 .admin-tab.is-active .admin-tab-count {
   background: var(--accent);
-  color: #000000;
+  color: #fff;
 }
 
 /* ── Import status bar ─────────────────────────────────────────── */

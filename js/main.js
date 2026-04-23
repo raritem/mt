@@ -198,6 +198,51 @@ function favToggle(lotId) {
   else { ids.splice(idx, 1); favSaveAll(ids); return false; }
 }
 
+// ── Снепшоты избранного ──────────────────────────────────────────
+// Хранят состояние аккаунта на момент добавления: { scenarioId, scenarioTanks[] }
+const FAV_SNAPSHOTS_KEY = 'wot_shop_fav_snapshots';
+
+function favGetSnapshots() {
+  try { return JSON.parse(localStorage.getItem(FAV_SNAPSHOTS_KEY) || '{}'); } catch { return {}; }
+}
+
+function favSaveSnapshot(lotId, snapshot) {
+  try {
+    const all = favGetSnapshots();
+    all[String(lotId)] = snapshot;
+    localStorage.setItem(FAV_SNAPSHOTS_KEY, JSON.stringify(all));
+  } catch {}
+}
+
+function favRemoveSnapshot(lotId) {
+  try {
+    const all = favGetSnapshots();
+    delete all[String(lotId)];
+    localStorage.setItem(FAV_SNAPSHOTS_KEY, JSON.stringify(all));
+  } catch {}
+}
+
+function favGetSnapshot(lotId) {
+  return favGetSnapshots()[String(lotId)] || null;
+}
+
+// Добавляет/убирает из избранного с фиксацией снепшота
+function favToggleWithSnapshot(lotId, snapshot) {
+  const ids = favGetAll();
+  const idx = ids.indexOf(String(lotId));
+  if (idx === -1) {
+    ids.push(String(lotId));
+    favSaveAll(ids);
+    if (snapshot) favSaveSnapshot(lotId, snapshot);
+    return true;
+  } else {
+    ids.splice(idx, 1);
+    favSaveAll(ids);
+    favRemoveSnapshot(lotId);
+    return false;
+  }
+}
+
 function updateHeaderFavIcon() {
   const btn = document.getElementById('header-fav-btn');
   if (!btn) return;
@@ -263,7 +308,9 @@ function initStars() {
 }
 
 // ── Вспомогательная функция: построить карточку лота ────────────
-function buildLotCard(lot, catalogueId) {
+function buildLotCard(lot, catalogueId, opts) {
+  // opts: { scenarioId, scenarioTanks, isFavSnapshot }
+  opts = opts || {};
   const card = document.createElement('div');
   card.className = 'lot-card';
 
@@ -313,6 +360,33 @@ function buildLotCard(lot, catalogueId) {
   const resHtml = (typeof renderResourceIcons === 'function')
     ? renderResourceIcons(lot.resources, 'short') : '';
 
+  // ── Сценарные танки: 2–3 наиболее релевантных ─────────────────
+  // opts.scenarioTanks — список имён уже упорядоченных по сценарию,
+  // если нет — берём оригинальный порядок из prems_8_9_array
+  const scenarioTanksDisplay = (opts.scenarioTanks && opts.scenarioTanks.length > 0)
+    ? opts.scenarioTanks
+    : (lot.prems_8_9_array || []);
+  const topTanks = scenarioTanksDisplay.slice(0, 3);
+
+  const scenarioTanksHtml = (() => {
+    if (!topTanks.length) return '';
+    const tankItems = topTanks.map(name => {
+      const info = (window._tanksData && window._tanksData[name]) || {};
+      const icon = info.icon ? assetUrl('icons/small/' + info.icon) : null;
+      const imgEl = icon
+        ? `<img src="${esc(icon)}" alt="${esc(name)}" class="sc-tank-icon" loading="lazy" onerror="this.style.display='none'">`
+        : `<span class="sc-tank-no-icon">🛡</span>`;
+      return `<div class="sc-tank-item" title="${esc(name)}">${imgEl}<span class="sc-tank-name">${esc(name)}</span></div>`;
+    }).join('');
+    const scenarioDef = opts.scenarioId && typeof FilterEngine !== 'undefined'
+      ? FilterEngine.SCENARIOS.find(s => s.id === opts.scenarioId)
+      : null;
+    const labelHtml = scenarioDef
+      ? `<span class="sc-tanks-label">${scenarioDef.emoji} ${esc(scenarioDef.title)}</span>`
+      : '';
+    return `<div class="lot-card-sc-tanks">${labelHtml}<div class="sc-tanks-row">${tankItems}</div></div>`;
+  })();
+
   card.innerHTML = `
     ${thumbHtml}
     <div class="lot-card-body">
@@ -321,6 +395,7 @@ function buildLotCard(lot, catalogueId) {
       </div>
       ${tanks10Html}
       ${vehicleStatsHtml}
+      ${scenarioTanksHtml}
       ${resHtml ? `<div class="lot-card-resources">${resHtml}</div>` : ''}
     </div>
   `;
@@ -339,7 +414,11 @@ function buildLotCard(lot, catalogueId) {
     favBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const id = String(lot.id);
-      const active = favToggle(id);
+      // Фиксируем снепшот: сценарий + визуальный порядок танков на момент добавления
+      const active = favToggleWithSnapshot(id, {
+        scenarioId: opts.scenarioId || null,
+        scenarioTanks: topTanks,
+      });
       favBtn.classList.toggle('fav-active', active);
       updateHeaderFavIcon();
     });
@@ -387,14 +466,21 @@ async function loadCatalogue() {
 
   try {
     const rawBase = getGhRawBase();
-    const data = rawBase
-      ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
-      : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
+    const [data, tanksDataRaw] = await Promise.all([
+      rawBase
+        ? fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
+        : fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json'),
+      rawBase
+        ? fetchJSON(rawBase + 'data/tanks.json').catch(() => ({ tanks: {} }))
+        : fetchJSON(ROOT + 'data/tanks.json').catch(() => ({ tanks: {} })),
+    ]);
+    // Делаем tanks доступными глобально для buildLotCard
+    window._tanksData = tanksDataRaw.tanks || {};
 
     if (!gridEl) return;
 
     // ── Нормализуем структуру: поддержка объекта и старого массива ──
-    const PAGE_SIZE = 100;
+    const PAGE_SIZE = 36;
 
     function normalizeLots(lotsRaw) {
       const arr = [];
@@ -420,6 +506,7 @@ async function loadCatalogue() {
             thumb:           u.thumb  || '',
             isHidden:        u.isHidden || false,
             scoreBase:       lot.scoreBase || { tagCounts: {} },
+            prems_8_9_array: Array.isArray(d.prems_8_9) ? d.prems_8_9 : (d.prems_8_9 ? String(d.prems_8_9).split(',').map(s=>s.trim()).filter(Boolean) : []),
           });
         }
       }
@@ -437,6 +524,26 @@ async function loadCatalogue() {
 
     // ── Сценарии ─────────────────────────────────────────────────
     let activeScenarioId = null;
+
+    // Вычисляет упорядоченный по сценарию список премиум танков 8-9 лота
+    function getScenarioTanksForLot(lot, scenarioId) {
+      const tanks = lot.prems_8_9_array || [];
+      if (!scenarioId || typeof FilterEngine === 'undefined') return tanks;
+      const scenario = FilterEngine.SCENARIOS.find(s => s.id === scenarioId);
+      if (!scenario || !scenario.weights || Object.keys(scenario.weights).length === 0) return tanks;
+      const tanksMap = window._tanksData || {};
+      // Сортируем по сумме весов сценария × кол-во совпадающих тегов танка
+      return [...tanks].sort((a, b) => {
+        const tagsA = (tanksMap[a] && tanksMap[a].tags) || [];
+        const tagsB = (tanksMap[b] && tanksMap[b].tags) || [];
+        let scoreA = 0, scoreB = 0;
+        for (const [tag, weight] of Object.entries(scenario.weights)) {
+          if (tagsA.includes(tag)) scoreA += weight;
+          if (tagsB.includes(tag)) scoreB += weight;
+        }
+        return scoreB - scoreA;
+      });
+    }
 
     function getLotsSorted() {
       if (!activeScenarioId || typeof FilterEngine === 'undefined') return allLots;
@@ -536,7 +643,11 @@ async function loadCatalogue() {
       // ── Карточки (grid view) ─────────────────────────────────
       if (lotsGridViewEl) {
         pageLots.forEach(lot => {
-          lotsGridViewEl.appendChild(buildLotCard(lot, CATALOGUE_ID));
+          const scenarioTanks = getScenarioTanksForLot(lot, activeScenarioId);
+          lotsGridViewEl.appendChild(buildLotCard(lot, CATALOGUE_ID, {
+            scenarioId: activeScenarioId,
+            scenarioTanks,
+          }));
         });
         if (resetPage) applyFadeUpStagger(lotsGridViewEl, '.lot-card', 0.05);
       }
@@ -787,9 +898,15 @@ async function loadFavourites() {
 
   try {
     const rawBase = getGhRawBase();
-    const data = rawBase
-      ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
-      : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
+    const [data, tanksDataRaw] = await Promise.all([
+      rawBase
+        ? fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
+        : fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json'),
+      rawBase
+        ? fetchJSON(rawBase + 'data/tanks.json').catch(() => ({ tanks: {} }))
+        : fetchJSON(ROOT + 'data/tanks.json').catch(() => ({ tanks: {} })),
+    ]);
+    window._tanksData = tanksDataRaw.tanks || {};
 
     // Поддержка объектной структуры
     const allLots = (() => {
@@ -803,7 +920,9 @@ async function loadFavourites() {
             price: d.price || '', funpay: d.funpay_link || '', onFunpay: lot.onFunpay,
             premcount: Number(d.premcount) || 0, t10count: Number(d.tanks_10_count) || 0,
             resources: { bonds: d.bonds||'', gold: d.gold||'', silver: d.silver||'' },
-            images: u.images||[], thumb: u.thumb||'' });
+            images: u.images||[], thumb: u.thumb||'',
+            prems_8_9_array: Array.isArray(d.prems_8_9) ? d.prems_8_9 : (d.prems_8_9 ? String(d.prems_8_9).split(',').map(s=>s.trim()).filter(Boolean) : []),
+          });
         }
       }
       return arr;
@@ -817,7 +936,13 @@ async function loadFavourites() {
 
     gridEl.innerHTML = '';
     favLots.forEach((lot) => {
-      const card = buildLotCard(lot, CATALOGUE_ID);
+      // Восстанавливаем снепшот: сценарий и порядок танков на момент добавления
+      const snapshot = favGetSnapshot(String(lot.id));
+      const card = buildLotCard(lot, CATALOGUE_ID, {
+        scenarioId: snapshot ? snapshot.scenarioId : null,
+        scenarioTanks: snapshot ? snapshot.scenarioTanks : null,
+        isFavSnapshot: true,
+      });
       // Переопределяем обработчик кнопки избранного — удаляем карточку при снятии
       const favBtn = card.querySelector('.btn-fav');
       if (favBtn) {
@@ -825,7 +950,7 @@ async function loadFavourites() {
         const newFavBtn = card.querySelector('.btn-fav');
         newFavBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          favToggle(String(lot.id));
+          favToggleWithSnapshot(String(lot.id), null);
           card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
           card.style.opacity = '0';
           card.style.transform = 'scale(0.93)';
@@ -847,6 +972,5 @@ async function loadFavourites() {
     if (gridEl) gridEl.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⚠️</div><h2>Ошибка загрузки</h2><p>' + esc(e.message) + '</p></div>';
   }
 }
-
 // ── Обратная совместимость: loadShop → loadCatalogue ─────────────
 function loadShop() { loadCatalogue(); }
