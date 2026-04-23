@@ -844,7 +844,7 @@
 
 .admin-tab.is-active .admin-tab-count {
   background: var(--accent);
-  color: #fff;
+  color: #000000;
 }
 
 /* ── Import status bar ─────────────────────────────────────────── */
