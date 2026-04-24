@@ -10,10 +10,12 @@ const FilterEngine = (() => {
   // ── Определения сценариев ─────────────────────────────────────
   //
   // requirements:
-  //   min_tags:  { tag: minCount }  — лот должен иметь tagCounts[tag] >= minCount
-  //   any_of:    [{ tag, min }]     — хотя бы одно условие должно быть true
-  //   min_fields: { field: minValue } — числовое поле лота >= minValue
-  //   boolean:   { field: true/false } — булево поле лота === значение
+  //   min_tags:     { tag: minCount }  — лот должен иметь tagCounts[tag] >= minCount
+  //   any_of:       [{ tag, min }]     — хотя бы одно условие должно быть true
+  //   min_fields:   { field: minValue } — числовое поле лота >= minValue
+  //   boolean:      { field: true/false } — булево поле лота === значение
+  //   majority:     [tags]             — count(any of tags) >= count(not any of tags)
+  //   majority_any: [[tags], [tags]]   — count(union of groups) >= count(rest); хотя бы 1 группа
   //
   const SCENARIOS = [
     {
@@ -38,6 +40,8 @@ const FilterEngine = (() => {
           { tag: 'strongest', min: 1 },
           { tag: 'strong', min: 1 },
         ],
+        // count(imba OR strongest OR strong) >= count(остальных)
+        majority: ['imba', 'strongest', 'strong'],
       },
       weights: { imba: 10, strongest: 10, strong: 3, alpha: 2 },
       type: 'score',
@@ -61,8 +65,10 @@ const FilterEngine = (() => {
       subtitle: 'Стабильная, сильная техника, которую легче освоить с первых боёв (прощает ошибки)',
       requirements: {
         min_tags: { forgiving: 1 },
+        // count(forgiving) >= count(не forgiving)
+        majority: ['forgiving'],
       },
-      weights: { forgiving: 10, armor_heavy: 2, strong: 2, alpha: 1 },
+      weights: { forgiving: 10, armor_heavy: 2, strong: 2, strongest: 3, alpha: 1 },
       type: 'score',
       tankFilter: { tags: ['forgiving'] },
     },
@@ -76,8 +82,10 @@ const FilterEngine = (() => {
           { tag: 'new', min: 1 },
           { tag: 'meta_buffed', min: 1 },
         ],
+        // count(new OR meta_buffed) >= count(остальных)
+        majority: ['new', 'meta_buffed'],
       },
-      weights: { new: 10, meta_buffed: 10, strong: 2, popular: 1 },
+      weights: { new: 10, meta_buffed: 10, strong: 2, strongest: 3, popular: 1 },
       type: 'score',
       tankFilter: { tags: ['new', 'meta_buffed'] },
     },
@@ -89,7 +97,7 @@ const FilterEngine = (() => {
       requirements: {
         min_tags: { mechanics: 1 },
       },
-      weights: { mechanics: 10, strong: 2, imba: 2 },
+      weights: { mechanics: 10, strongest: 3, strong: 2, imba: 2 },
       type: 'score',
       tankFilter: { tags: ['mechanics'] },
     },
@@ -123,9 +131,12 @@ const FilterEngine = (() => {
       subtitle: 'Тяжёлая и штурмовая техника для агрессивной игры в ближнем бою',
       requirements: {
         min_tags: { close_combat: 1 },
+        // count(close_combat) >= count(не close_combat)
+        majority: ['close_combat'],
       },
-      weights: { close_combat: 10, armor_medium: 2, armor_heavy: 2, alpha: 2 },
+      weights: { close_combat: 10, imba: 3, strongest: 3, strong: 2, armor_medium: 2, armor_heavy: 2, alpha: 2 },
       type: 'score',
+      tankFilter: { tags: ['close_combat'] },
     },
     {
       id: 'sniper',
@@ -134,9 +145,12 @@ const FilterEngine = (() => {
       subtitle: 'Точная и дальнобойная техника для игры со второй линии',
       requirements: {
         min_tags: { sniper_top: 1 },
+        // count(sniper_top OR sniper_medium) >= count(остальных)
+        majority: ['sniper_top', 'sniper_medium'],
       },
-      weights: { sniper_top: 10, sniper_medium: 2, alpha: 1 },
+      weights: { sniper_top: 10, sniper_medium: 2, imba: 3, strongest: 3, strong: 2, alpha: 1 },
       type: 'score',
+      tankFilter: { tags: ['sniper_top', 'sniper_medium'] },
     },
     {
       id: 'advanced',
@@ -148,6 +162,11 @@ const FilterEngine = (() => {
       type: 'advanced',
     },
   ];
+
+  // ── Вспомогательная: нормализовать no_battles ─────────────────
+  function normalizeBool(val) {
+    return val === true || val === 'true' || val === 'Без боёв';
+  }
 
   // ── Проверка requirements лота ────────────────────────────────
   /**
@@ -176,6 +195,31 @@ const FilterEngine = (() => {
       if (!anyPassed) return false;
     }
 
+    // majority: count(теги из списка) >= count(остальных танков)
+    // Иными словами: count_matching >= total / 2
+    // (если total нечётное — count_matching >= ceil(total/2))
+    if (req.majority && req.majority.length > 0) {
+      const matchingTags = new Set(req.majority);
+      // Считаем общее количество танков (сумма всех тегов / кол-во уник. танков не известно,
+      // поэтому считаем через scoreBase.totalTanks если есть, иначе через сумму тегов)
+      const total = (lot.scoreBase && lot.scoreBase.totalTanks) ? lot.scoreBase.totalTanks : null;
+      let countMatching = 0;
+      for (const tag of matchingTags) {
+        countMatching += (tagCounts[tag] || 0);
+      }
+      if (total !== null) {
+        // Используем точный счётчик танков
+        const countOther = total - countMatching;
+        if (countMatching < countOther) return false;
+      } else {
+        // Fallback: считаем сумму всех тегов
+        let totalTagSum = 0;
+        for (const cnt of Object.values(tagCounts)) totalTagSum += cnt;
+        // Оцениваем: matching >= total - matching → matching * 2 >= total
+        if (countMatching * 2 < totalTagSum) return false;
+      }
+    }
+
     // min_fields: числовые поля лота
     if (req.min_fields) {
       for (const [field, minVal] of Object.entries(req.min_fields)) {
@@ -188,7 +232,7 @@ const FilterEngine = (() => {
     if (req.boolean) {
       for (const [field, expectedVal] of Object.entries(req.boolean)) {
         const lotVal = lot[field];
-        const normalizedLotVal = (lotVal === true || lotVal === 'true');
+        const normalizedLotVal = normalizeBool(lotVal);
         if (normalizedLotVal !== expectedVal) return false;
       }
     }
@@ -197,11 +241,6 @@ const FilterEngine = (() => {
   }
 
   // ── Расчёт score лота по сценарию ─────────────────────────────
-  /**
-   * @param {object} lot      - нормализованный лот (содержит scoreBase)
-   * @param {object} scenario - сценарий из SCENARIOS
-   * @returns {number}
-   */
   function calculateLotScore(lot, scenario) {
     if (!scenario || !scenario.weights) return 0;
     const tagCounts = (lot.scoreBase && lot.scoreBase.tagCounts) ? lot.scoreBase.tagCounts : {};
@@ -214,9 +253,6 @@ const FilterEngine = (() => {
   }
 
   // ── Сортировка лотов ──────────────────────────────────────────
-  /**
-   * Финальная сортировка: score DESC → premcount DESC → id ASC (стабильная)
-   */
   function sortLots(lots) {
     return [...lots].sort((a, b) => {
       const scoreDiff = (b._score || 0) - (a._score || 0);
@@ -230,10 +266,6 @@ const FilterEngine = (() => {
   // ── Применить сценарий к набору лотов ─────────────────────────
   /**
    * Пайплайн: 1) requirements → 2) scoring → 3) sorting
-   *
-   * @param {Array}  lots     - массив нормализованных лотов
-   * @param {object} scenario - сценарий из SCENARIOS
-   * @returns {Array} - отфильтрованный и отсортированный массив лотов с _score
    */
   function applyScenario(lots, scenario) {
     if (!scenario || scenario.type === 'advanced') return lots;
@@ -268,6 +300,7 @@ const FilterEngine = (() => {
     calculateLotScore,
     sortLots,
     lotPassesRequirements,
+    normalizeBool,
   };
 
 })();

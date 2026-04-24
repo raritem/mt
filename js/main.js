@@ -510,8 +510,8 @@ async function loadCatalogue() {
             images:          u.images || [],
             thumb:           u.thumb  || '',
             isHidden:        u.isHidden || false,
-            scoreBase:       lot.scoreBase || { tagCounts: {} },
-            no_battles:      lot.no_battles === true || lot.no_battles === 'true',
+            scoreBase:       lot.scoreBase || { tagCounts: {}, totalTanks: 0 },
+            no_battles:      lot.no_battles === true || lot.no_battles === 'true' || lot.no_battles === 'Без боёв',
             prems_8_9_array: Array.isArray(d.prems_8_9) ? d.prems_8_9 : (d.prems_8_9 ? String(d.prems_8_9).split(',').map(s=>s.trim()).filter(Boolean) : []),
           });
         }

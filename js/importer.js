@@ -205,10 +205,12 @@ const CSVImporter = (() => {
       // Колонка 24 в CSV: "Без боёв" → true, всё остальное → false
       const noBattlesRaw = csvData['no_battles'] || '';
       const no_battles = (noBattlesRaw.trim() === 'Без боёв');
+      // Удаляем сырую строку из normalizedData — булево значение хранится на уровне лота
+      delete normalizedData['no_battles'];
 
-      // ── Precompute scoreBase (tagCounts) для сценарной фильтрации ──
+      // ── Precompute scoreBase (tagCounts + totalTanks) для сценарной фильтрации ──
       // Учитываем ТОЛЬКО prems_8_9 — каждый тег 1 раз на танк
-      // Хранятся только теги с count > 0
+      // totalTanks = количество уникальных танков в prems_8_9 (для majority requirement)
       const tagCounts = {};
       for (const tankName of normalizedData.prems_8_9) {
         const info = tanksMap[tankName];
@@ -219,7 +221,7 @@ const CSVImporter = (() => {
         }
       }
       // scoreBase хранится на уровне лота (не внутри data)
-      const scoreBase = { tagCounts };
+      const scoreBase = { tagCounts, totalTanks: normalizedData.prems_8_9.length };
 
       if (lots[id]) {
         // Уже есть — обновляем data, не трогаем ui
@@ -248,6 +250,16 @@ const CSVImporter = (() => {
           }
         };
         stats.added++;
+      }
+    }
+
+    // === Миграция: нормализовать no_battles в существующих лотах ===
+    // Конвертирует "Без боёв" / undefined → true/false булево значение
+    for (const lot of Object.values(lots)) {
+      if (lot.no_battles === 'Без боёв') {
+        lot.no_battles = true;
+      } else if (lot.no_battles === undefined || lot.no_battles === null || lot.no_battles === '') {
+        lot.no_battles = false;
       }
     }
 
