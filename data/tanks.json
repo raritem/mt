@@ -998,7 +998,7 @@
         "popular",
         "meta_buffed",
         "rare",
-        "strong",
+        "strongest",
         "mobility",
         "sniper_medium"
       ]
@@ -1016,7 +1016,7 @@
       "tags": [
         "popular",
         "new",
-        "strong",
+        "strongest",
         "mechanics",
         "armor_medium",
         "mobility",
@@ -1036,7 +1036,7 @@
       "tags": [
         "popular",
         "new",
-        "strong",
+        "strongest",
         "mobility",
         "sniper_medium",
         "alpha"
@@ -1291,7 +1291,7 @@
       "tags": [
         "popular",
         "rare",
-        "strong",
+        "strongest",
         "mobility",
         "sniper_top",
         "alpha"
@@ -1309,7 +1309,7 @@
       "description_c": "",
       "tags": [
         "popular",
-        "strong",
+        "strongest",
         "mobility",
         "sniper_top",
         "alpha"
@@ -1327,7 +1327,7 @@
       "description_c": "",
       "tags": [
         "popular",
-        "strong",
+        "strongest",
         "mobility",
         "sniper_top",
         "alpha"
@@ -1345,7 +1345,7 @@
       "description_c": "",
       "tags": [
         "popular",
-        "strong",
+        "strongest",
         "mobility",
         "sniper_top",
         "alpha"
@@ -1364,7 +1364,7 @@
       "tags": [
         "popular",
         "meta_buffed",
-        "strong",
+        "strongest",
         "mobility",
         "sniper_medium"
       ]
@@ -1383,7 +1383,7 @@
         "popular",
         "forgiving",
         "meta_buffed",
-        "strong",
+        "strongest",
         "mechanics",
         "close_combat",
         "armor_heavy",
@@ -1404,7 +1404,7 @@
         "popular",
         "forgiving",
         "meta_buffed",
-        "strong",
+        "strongest",
         "close_combat",
         "armor_medium"
       ]
@@ -1443,7 +1443,7 @@
         "popular",
         "forgiving",
         "meta_buffed",
-        "strong",
+        "strongest",
         "close_combat",
         "armor_heavy",
         "alpha"
@@ -1479,7 +1479,7 @@
       "description_c": "",
       "tags": [
         "popular",
-        "strong",
+        "strongest",
         "sniper_top",
         "alpha"
       ]
@@ -1644,7 +1644,7 @@
         "popular",
         "forgiving",
         "meta_buffed",
-        "strong",
+        "strongest",
         "close_combat",
         "armor_heavy",
         "alpha"
@@ -1778,7 +1778,7 @@
         "popular",
         "forgiving",
         "meta_buffed",
-        "strong",
+        "strongest",
         "close_combat",
         "armor_heavy",
         "alpha"
