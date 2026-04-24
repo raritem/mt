@@ -8,69 +8,134 @@
 const FilterEngine = (() => {
 
   // ── Определения сценариев ─────────────────────────────────────
+  //
+  // requirements:
+  //   min_tags:  { tag: minCount }  — лот должен иметь tagCounts[tag] >= minCount
+  //   any_of:    [{ tag, min }]     — хотя бы одно условие должно быть true
+  //   min_fields: { field: minValue } — числовое поле лота >= minValue
+  //   boolean:   { field: true/false } — булево поле лота === значение
+  //
   const SCENARIOS = [
     {
       id: 'popular',
       emoji: '🎁',
       title: 'Не знаю что выбрать',
       subtitle: 'Аккаунты с техникой, которую чаще всего выбирают игроки',
-      weights: { popular: 3, strong: 2, imba: 2, forgiving: 2, alpha: 1 },
+      requirements: {
+        min_tags: { popular: 1 },
+      },
+      weights: { popular: 10, strongest: 3, strong: 2, imba: 3, forgiving: 2, alpha: 1 },
       type: 'score',
     },
     {
       id: 'fat_start',
       emoji: '🚀',
       title: 'Жирный старт',
-      subtitle: null, // подпись добавится позже
-      weights: { imba: 3, strong: 3, alpha: 2 },
+      subtitle: 'Аккаунты с самой мощной премиум техникой для быстрого старта',
+      requirements: {
+        any_of: [
+          { tag: 'imba', min: 1 },
+          { tag: 'strongest', min: 1 },
+          { tag: 'strong', min: 1 },
+        ],
+      },
+      weights: { imba: 10, strongest: 10, strong: 3, alpha: 2 },
       type: 'score',
     },
     {
       id: 'many_prems',
       emoji: '💎',
       title: 'Много PREM танков',
-      subtitle: 'От 14 PREM\'ов для разнообразия геймплея и стабильного фарма',
-      weights: { popular: 2, rare: 1 },
-      type: 'prems_count', // основная сортировка по prems_8_9_count
+      subtitle: "От 14 PREM'ов для разнообразия геймплея и стабильного фарма",
+      requirements: {
+        min_fields: { premcount: 14 },
+      },
+      weights: { imba: 10, strongest: 10, strong: 3, alpha: 2, popular: 2, rare: 1 },
+      type: 'prems_count',
+      hideBadge: true,
     },
     {
       id: 'newbie',
       emoji: '👶',
       title: 'Идеально для новичка',
       subtitle: 'Стабильная, сильная техника, которую легче освоить с первых боёв (прощает ошибки)',
-      weights: { forgiving: 3, armor_heavy: 2, strong: 2, alpha: 1 },
+      requirements: {
+        min_tags: { forgiving: 1 },
+      },
+      weights: { forgiving: 10, armor_heavy: 2, strong: 2, alpha: 1 },
       type: 'score',
+      tankFilter: { tags: ['forgiving'] },
     },
     {
       id: 'return',
       emoji: '🔄',
       title: 'Вернуться в игру',
-      subtitle: 'Мощные новинки и старые машины, которые раскрылись в новом формате боёв ±1 уровень',
-      weights: { new: 3, meta_buffed: 3, strong: 2, popular: 1 },
+      subtitle: 'Мощные новинки и старые машины, которые раскрылись в новом формате боёв',
+      requirements: {
+        any_of: [
+          { tag: 'new', min: 1 },
+          { tag: 'meta_buffed', min: 1 },
+        ],
+      },
+      weights: { new: 10, meta_buffed: 10, strong: 2, popular: 1 },
       type: 'score',
+      tankFilter: { tags: ['new', 'meta_buffed'] },
     },
     {
       id: 'unusual',
       emoji: '🧪',
       title: 'Необычный геймплей',
       subtitle: 'Танки с уникальной механикой — двустволки, ракеты, турбины и другие',
-      weights: { mechanics: 3, strong: 2, imba: 2 },
+      requirements: {
+        min_tags: { mechanics: 1 },
+      },
+      weights: { mechanics: 10, strong: 2, imba: 2 },
       type: 'score',
+      tankFilter: { tags: ['mechanics'] },
     },
     {
       id: 'collector',
       emoji: '👑',
       title: 'Коллекционная техника',
       subtitle: 'Редкие танки, которые есть далеко не у всех',
-      weights: { rare: 3, popular: 1, mechanics: 1 },
+      requirements: {
+        min_tags: { rare: 1 },
+      },
+      weights: { rare: 10, popular: 1, mechanics: 1 },
       type: 'score',
+      tankFilter: { tags: ['rare'] },
     },
     {
       id: 'twink',
       emoji: '📃',
       title: 'Твинк',
       subtitle: 'Чистая статистика без боёв',
-      weights: { strong: 3, imba: 2, meta_buffed: 2, popular: 1 },
+      requirements: {
+        boolean: { no_battles: true },
+      },
+      weights: { imba: 10, strongest: 10, strong: 3, meta_buffed: 2, alpha: 2 },
+      type: 'score',
+    },
+    {
+      id: 'close_combat',
+      emoji: '🧱',
+      title: 'Ближний бой',
+      subtitle: 'Тяжёлая и штурмовая техника для агрессивной игры в ближнем бою',
+      requirements: {
+        min_tags: { close_combat: 1 },
+      },
+      weights: { close_combat: 10, armor_medium: 2, armor_heavy: 2, alpha: 2 },
+      type: 'score',
+    },
+    {
+      id: 'sniper',
+      emoji: '🥷',
+      title: 'Снайперский стиль',
+      subtitle: 'Точная и дальнобойная техника для игры со второй линии',
+      requirements: {
+        min_tags: { sniper_top: 1 },
+      },
+      weights: { sniper_top: 10, sniper_medium: 2, alpha: 1 },
       type: 'score',
     },
     {
@@ -78,10 +143,58 @@ const FilterEngine = (() => {
       emoji: '⚙️',
       title: 'Расширенный подбор',
       subtitle: 'Детальный фильтр по технике и другим параметрам',
+      requirements: {},
       weights: {},
-      type: 'advanced', // особый тип — будущий фильтр
+      type: 'advanced',
     },
   ];
+
+  // ── Проверка requirements лота ────────────────────────────────
+  /**
+   * Возвращает true если лот проходит все requirements сценария.
+   * @param {object} lot      - нормализованный лот
+   * @param {object} scenario - сценарий из SCENARIOS
+   * @returns {boolean}
+   */
+  function lotPassesRequirements(lot, scenario) {
+    if (!scenario || !scenario.requirements) return true;
+    const req = scenario.requirements;
+    const tagCounts = (lot.scoreBase && lot.scoreBase.tagCounts) ? lot.scoreBase.tagCounts : {};
+
+    // min_tags: все условия обязательны
+    if (req.min_tags) {
+      for (const [tag, minCount] of Object.entries(req.min_tags)) {
+        if ((tagCounts[tag] || 0) < minCount) return false;
+      }
+    }
+
+    // any_of: хотя бы одно условие должно выполняться
+    if (req.any_of && req.any_of.length > 0) {
+      const anyPassed = req.any_of.some(cond => {
+        return (tagCounts[cond.tag] || 0) >= (cond.min || 1);
+      });
+      if (!anyPassed) return false;
+    }
+
+    // min_fields: числовые поля лота
+    if (req.min_fields) {
+      for (const [field, minVal] of Object.entries(req.min_fields)) {
+        const lotVal = lot[field] !== undefined ? Number(lot[field]) : 0;
+        if (lotVal < minVal) return false;
+      }
+    }
+
+    // boolean: булевы поля лота
+    if (req.boolean) {
+      for (const [field, expectedVal] of Object.entries(req.boolean)) {
+        const lotVal = lot[field];
+        const normalizedLotVal = (lotVal === true || lotVal === 'true');
+        if (normalizedLotVal !== expectedVal) return false;
+      }
+    }
+
+    return true;
+  }
 
   // ── Расчёт score лота по сценарию ─────────────────────────────
   /**
@@ -102,46 +215,42 @@ const FilterEngine = (() => {
 
   // ── Сортировка лотов ──────────────────────────────────────────
   /**
-   * Финальная сортировка: score DESC → prems_8_9_count DESC → id ASC (стабильная)
-   * @param {Array} lots
-   * @returns {Array}
+   * Финальная сортировка: score DESC → premcount DESC → id ASC (стабильная)
    */
   function sortLots(lots) {
     return [...lots].sort((a, b) => {
-      // 1. score DESC
       const scoreDiff = (b._score || 0) - (a._score || 0);
       if (scoreDiff !== 0) return scoreDiff;
-      // 2. prems_8_9_count DESC
-      const aPrems = a.prems_8_9_count != null ? a.prems_8_9_count : (a.premcount || 0);
-      const bPrems = b.prems_8_9_count != null ? b.prems_8_9_count : (b.premcount || 0);
-      const premsDiff = bPrems - aPrems;
+      const premsDiff = (b.premcount || 0) - (a.premcount || 0);
       if (premsDiff !== 0) return premsDiff;
-      // 3. id ASC (стабильная)
       return String(a.id) < String(b.id) ? -1 : String(a.id) > String(b.id) ? 1 : 0;
     });
   }
 
   // ── Применить сценарий к набору лотов ─────────────────────────
   /**
+   * Пайплайн: 1) requirements → 2) scoring → 3) sorting
+   *
    * @param {Array}  lots     - массив нормализованных лотов
    * @param {object} scenario - сценарий из SCENARIOS
-   * @returns {Array} - отсортированный массив лотов с _score
+   * @returns {Array} - отфильтрованный и отсортированный массив лотов с _score
    */
   function applyScenario(lots, scenario) {
     if (!scenario || scenario.type === 'advanced') return lots;
 
-    const scored = lots.map(lot => {
-      const score = calculateLotScore(lot, scenario);
-      return { ...lot, _score: score };
-    });
+    // Шаг 1: фильтрация
+    const filtered = lots.filter(lot => lotPassesRequirements(lot, scenario));
 
+    // Шаг 2: скоринг
+    const scored = filtered.map(lot => ({
+      ...lot,
+      _score: calculateLotScore(lot, scenario),
+    }));
+
+    // Шаг 3: сортировка
     if (scenario.type === 'prems_count') {
-      // Сценарий "Много PREM'ов": основная сортировка по prems_8_9_count,
-      // досортировка по score тегов
       return [...scored].sort((a, b) => {
-        const aPrems = a.prems_8_9_count != null ? a.prems_8_9_count : (a.premcount || 0);
-        const bPrems = b.prems_8_9_count != null ? b.prems_8_9_count : (b.premcount || 0);
-        const premsDiff = bPrems - aPrems;
+        const premsDiff = (b.premcount || 0) - (a.premcount || 0);
         if (premsDiff !== 0) return premsDiff;
         const scoreDiff = (b._score || 0) - (a._score || 0);
         if (scoreDiff !== 0) return scoreDiff;
@@ -158,6 +267,7 @@ const FilterEngine = (() => {
     applyScenario,
     calculateLotScore,
     sortLots,
+    lotPassesRequirements,
   };
 
 })();

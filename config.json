@@ -28,6 +28,7 @@
     "boosters": 20,
     "crew": 21,
     "camo": 22,
-    "3dstyles": 23
+    "3dstyles": 23,
+    "no_battles": 24
   }
 }

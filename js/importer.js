@@ -201,6 +201,11 @@ const CSVImporter = (() => {
       normalizedData.bonus_tanks_count = counts.bonus_tanks_count;
       normalizedData.premcount        = counts.premcount;
 
+      // ── Нормализация no_battles ───────────────────────────────
+      // Колонка 24 в CSV: "Без боёв" → true, всё остальное → false
+      const noBattlesRaw = csvData['no_battles'] || '';
+      const no_battles = (noBattlesRaw.trim() === 'Без боёв');
+
       // ── Precompute scoreBase (tagCounts) для сценарной фильтрации ──
       // Учитываем ТОЛЬКО prems_8_9 — каждый тег 1 раз на танк
       // Хранятся только теги с count > 0
@@ -224,6 +229,7 @@ const CSVImporter = (() => {
         lots[id].onFunpay      = onFunpay;
         lots[id].data          = normalizedData;
         lots[id].scoreBase     = scoreBase;
+        lots[id].no_battles    = no_battles;
         stats.updated++;
       } else {
         // Нового добавляем с дефолтным ui
@@ -234,6 +240,7 @@ const CSVImporter = (() => {
           onFunpay:      onFunpay,
           data: normalizedData,
           scoreBase,
+          no_battles,
           ui: {
             images:   [],
             thumb:    '',

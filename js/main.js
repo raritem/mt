@@ -381,7 +381,12 @@ function buildLotCard(lot, catalogueId, opts) {
     const scenarioDef = opts.scenarioId && typeof FilterEngine !== 'undefined'
       ? FilterEngine.SCENARIOS.find(s => s.id === opts.scenarioId)
       : null;
-    const labelHtml = scenarioDef
+    // Бейдж показываем только если аккаунт реально прошёл requirements сценария
+    // и у сценария нет hideBadge
+    const showBadge = scenarioDef
+      && !scenarioDef.hideBadge
+      && FilterEngine.lotPassesRequirements(lot, scenarioDef);
+    const labelHtml = showBadge
       ? `<span class="sc-tanks-label">${scenarioDef.emoji} ${esc(scenarioDef.title)}</span>`
       : '';
     return `<div class="lot-card-sc-tanks">${labelHtml}<div class="sc-tanks-row">${tankItems}</div></div>`;
@@ -506,6 +511,7 @@ async function loadCatalogue() {
             thumb:           u.thumb  || '',
             isHidden:        u.isHidden || false,
             scoreBase:       lot.scoreBase || { tagCounts: {} },
+            no_battles:      lot.no_battles === true || lot.no_battles === 'true',
             prems_8_9_array: Array.isArray(d.prems_8_9) ? d.prems_8_9 : (d.prems_8_9 ? String(d.prems_8_9).split(',').map(s=>s.trim()).filter(Boolean) : []),
           });
         }
@@ -525,14 +531,27 @@ async function loadCatalogue() {
     // ── Сценарии ─────────────────────────────────────────────────
     let activeScenarioId = null;
 
-    // Вычисляет упорядоченный по сценарию список премиум танков 8-9 лота
+    // Вычисляет упорядоченный по сценарию список премиум танков 8-9 лота.
+    // Если у сценария есть tankFilter.tags — показывает только танки с этими тегами.
     function getScenarioTanksForLot(lot, scenarioId) {
-      const tanks = lot.prems_8_9_array || [];
+      let tanks = lot.prems_8_9_array || [];
       if (!scenarioId || typeof FilterEngine === 'undefined') return tanks;
       const scenario = FilterEngine.SCENARIOS.find(s => s.id === scenarioId);
-      if (!scenario || !scenario.weights || Object.keys(scenario.weights).length === 0) return tanks;
+      if (!scenario) return tanks;
       const tanksMap = window._tanksData || {};
-      // Сортируем по сумме весов сценария × кол-во совпадающих тегов танка
+
+      // Фильтрация по tankFilter.tags (до сортировки)
+      if (scenario.tankFilter && Array.isArray(scenario.tankFilter.tags) && scenario.tankFilter.tags.length > 0) {
+        const filterTags = scenario.tankFilter.tags;
+        tanks = tanks.filter(name => {
+          const info = tanksMap[name];
+          if (!info || !Array.isArray(info.tags)) return false;
+          return filterTags.some(ft => info.tags.includes(ft));
+        });
+      }
+
+      if (!scenario.weights || Object.keys(scenario.weights).length === 0) return tanks;
+      // Сортируем по сумме весов сценария × совпадающих тегов танка
       return [...tanks].sort((a, b) => {
         const tagsA = (tanksMap[a] && tanksMap[a].tags) || [];
         const tagsB = (tanksMap[b] && tanksMap[b].tags) || [];
