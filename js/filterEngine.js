@@ -40,8 +40,6 @@ const FilterEngine = (() => {
           { tag: 'strongest', min: 1 },
           { tag: 'strong', min: 1 },
         ],
-        // count(imba OR strongest OR strong) >= count(остальных)
-        majority: ['imba', 'strongest', 'strong'],
       },
       weights: { imba: 10, strongest: 10, strong: 3, alpha: 2 },
       type: 'score',
@@ -65,8 +63,6 @@ const FilterEngine = (() => {
       subtitle: 'Стабильная, сильная техника, которую легче освоить с первых боёв (прощает ошибки)',
       requirements: {
         min_tags: { forgiving: 1 },
-        // count(forgiving) >= count(не forgiving)
-        majority: ['forgiving'],
       },
       weights: { forgiving: 10, armor_heavy: 2, strong: 2, strongest: 3, alpha: 1 },
       type: 'score',
@@ -82,8 +78,6 @@ const FilterEngine = (() => {
           { tag: 'new', min: 1 },
           { tag: 'meta_buffed', min: 1 },
         ],
-        // count(new OR meta_buffed) >= count(остальных)
-        majority: ['new', 'meta_buffed'],
       },
       weights: { new: 10, meta_buffed: 10, strong: 2, strongest: 3, popular: 1 },
       type: 'score',
@@ -131,8 +125,6 @@ const FilterEngine = (() => {
       subtitle: 'Тяжёлая и штурмовая техника для агрессивной игры в ближнем бою',
       requirements: {
         min_tags: { close_combat: 1 },
-        // count(close_combat) >= count(не close_combat)
-        majority: ['close_combat'],
       },
       weights: { close_combat: 10, imba: 3, strongest: 3, strong: 2, armor_medium: 2, armor_heavy: 2, alpha: 2 },
       type: 'score',
@@ -145,8 +137,6 @@ const FilterEngine = (() => {
       subtitle: 'Точная и дальнобойная техника для игры со второй линии',
       requirements: {
         min_tags: { sniper_top: 1 },
-        // count(sniper_top OR sniper_medium) >= count(остальных)
-        majority: ['sniper_top', 'sniper_medium'],
       },
       weights: { sniper_top: 10, sniper_medium: 2, imba: 3, strongest: 3, strong: 2, alpha: 1 },
       type: 'score',
