@@ -79,8 +79,14 @@ const AdaptiveFilter = (() => {
 
   function toggleTank(tankName) {
     const idx = _state.tanks.indexOf(tankName);
-    if (idx === -1) _state.tanks = [..._state.tanks, tankName];
-    else _state.tanks = _state.tanks.filter(t => t !== tankName);
+    if (idx === -1) {
+      // Добавляем танк — сбрасываем нацию и класс
+      _state.tanks = [..._state.tanks, tankName];
+      _state.nation = [];
+      _state.type = [];
+    } else {
+      _state.tanks = _state.tanks.filter(t => t !== tankName);
+    }
     _notify();
   }
 
