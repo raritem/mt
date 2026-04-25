@@ -79,35 +79,96 @@ const Precompute = (() => {
   }
 
   /**
+   * Строит forward-индекс аккаунтов для быстрой фильтрации и расчёта available options.
+   *
+   * @param {object} lots     - объект { [id]: { data: { all_tanks, price, bonds, gold, silver }, no_battles } }
+   * @param {object} tanksMap - объект из tanks.json: { [tankName]: { tier, type, nation, … } }
+   * @returns {object} accountsIndex - { [accountId]: { tanks, nations, tiers, types, price, bonds, gold, silver, hasBattles } }
+   */
+  function buildAccountsIndex(lots, tanksMap) {
+    const accountsIndex = {};
+
+    for (const [id, lot] of Object.entries(lots)) {
+      // Пропускаем неактивные лоты
+      if (lot.status === 'inactive') continue;
+
+      const data = lot.data || {};
+      const allTanks = Array.isArray(data.all_tanks) ? data.all_tanks : [];
+
+      // Собираем уникальные nations/tiers/types через Set для скорости
+      const nationsSet = new Set();
+      const tiersSet   = new Set();
+      const typesSet   = new Set();
+
+      for (const tankName of allTanks) {
+        const info = tanksMap[tankName];
+        if (!info) continue; // танк не найден в tanks.json — пропускаем
+
+        if (info.nation) nationsSet.add(String(info.nation));
+        if (info.tier   || info.tier === 0) tiersSet.add(String(info.tier));
+        if (info.type)  typesSet.add(String(info.type));
+      }
+
+      // Ресурсы — приводим к числам
+      const price  = Number(data.price)  || 0;
+      const bonds  = Number(data.bonds)  || 0;
+      const gold   = Number(data.gold)   || 0;
+      const silver = Number(data.silver) || 0;
+
+      // hasBattles: true если у лота ЕСТЬ бои (no_battles === false)
+      // Используем тот же флаг, что проставляет importer.js
+      const hasBattles = !(lot.no_battles === true || lot.no_battles === 'true' || lot.no_battles === 'Без боёв');
+
+      accountsIndex[id] = {
+        tanks:   allTanks,
+        nations: [...nationsSet],
+        tiers:   [...tiersSet],
+        types:   [...typesSet],
+        price,
+        bonds,
+        gold,
+        silver,
+        hasBattles,
+      };
+    }
+
+    return accountsIndex;
+  }
+
+  /**
    * Основная точка входа: строит индексы и сохраняет их на GitHub.
    *
    * @param {object}   lots        - lots из обновлённого lots.json
    * @param {object}   tanksMap    - объект из tanks.json
    * @param {function} onProgress  - колбэк(msg) для прогресса
-   * @returns {Promise<{ tanksIndex, nationIndex, tierIndex, typeIndex }>}
+   * @returns {Promise<{ tanksIndex, nationIndex, tierIndex, typeIndex, accountsIndex }>}
    */
   async function run(lots, tanksMap, onProgress = () => {}) {
     onProgress('Precompute: строю индексы…');
 
     const { tanksIndex, nationIndex, tierIndex, typeIndex } = buildIndexes(lots, tanksMap);
+    const accountsIndex = buildAccountsIndex(lots, tanksMap);
 
     const indexFiles = [
-      { path: 'data/indexes/tanks_index.json',  data: tanksIndex  },
-      { path: 'data/indexes/nation_index.json', data: nationIndex },
-      { path: 'data/indexes/tier_index.json',   data: tierIndex   },
-      { path: 'data/indexes/type_index.json',   data: typeIndex   },
+      { path: 'data/indexes/tanks_index.json',    data: tanksIndex    },
+      { path: 'data/indexes/nation_index.json',   data: nationIndex   },
+      { path: 'data/indexes/tier_index.json',     data: tierIndex     },
+      { path: 'data/indexes/type_index.json',     data: typeIndex     },
+      { path: 'data/indexes/accounts_index.json', data: accountsIndex },
     ];
 
     const summary = {
-      tanks:   Object.keys(tanksIndex).length,
-      nations: Object.keys(nationIndex).length,
-      tiers:   Object.keys(tierIndex).length,
-      types:   Object.keys(typeIndex).length,
+      tanks:    Object.keys(tanksIndex).length,
+      nations:  Object.keys(nationIndex).length,
+      tiers:    Object.keys(tierIndex).length,
+      types:    Object.keys(typeIndex).length,
+      accounts: Object.keys(accountsIndex).length,
     };
 
     onProgress(
       `Precompute: уникальных танков ${summary.tanks}, ` +
-      `наций ${summary.nations}, тиров ${summary.tiers}, типов ${summary.types}`
+      `наций ${summary.nations}, тиров ${summary.tiers}, типов ${summary.types}, ` +
+      `аккаунтов ${summary.accounts}`
     );
 
     // Сохраняем на GitHub (идемпотентно — просто перезаписываем)
@@ -127,7 +188,7 @@ const Precompute = (() => {
       onProgress('Precompute: GitHub не настроен, индексы сгенерированы локально');
     }
 
-    return { tanksIndex, nationIndex, tierIndex, typeIndex };
+    return { tanksIndex, nationIndex, tierIndex, typeIndex, accountsIndex };
   }
 
   /**
@@ -173,5 +234,5 @@ const Precompute = (() => {
     return [...result];
   }
 
-  return { run, buildIndexes, loadIndex, intersect };
+  return { run, buildIndexes, buildAccountsIndex, loadIndex, intersect };
 })();
