@@ -69,11 +69,13 @@ const AdaptiveFilter = (() => {
   // ── Установка отдельных параметров ────────────────────────────
   function setSearch(query) {
     _state.search = (query || '').trim();
+    _validateTanksAgainstHardConstraints();
     _notify();
   }
 
   function setScenario(scenarioId) {
     _state.scenario = scenarioId || null;
+    _validateTanksAgainstHardConstraints();
     _notify();
   }
 
@@ -91,31 +93,19 @@ const AdaptiveFilter = (() => {
 
   function toggleNation(nation) {
     _state.nation = _toggle(_state.nation, nation);
-    _state.tanks = _state.tanks.filter(t => {
-      const info = _tanksData[t];
-      if (!info) return true;
-      return _state.nation.length === 0 || _state.nation.includes(info.nation);
-    });
+    // Мягкий фильтр — выбранные танки НЕ удаляются
     _notify();
   }
 
   function toggleTier(tier) {
     _state.tier = _toggle(_state.tier, String(tier));
-    _state.tanks = _state.tanks.filter(t => {
-      const info = _tanksData[t];
-      if (!info) return true;
-      return _state.tier.length === 0 || _state.tier.includes(String(info.tier));
-    });
+    // Мягкий фильтр — выбранные танки НЕ удаляются
     _notify();
   }
 
   function toggleType(type) {
     _state.type = _toggle(_state.type, type);
-    _state.tanks = _state.tanks.filter(t => {
-      const info = _tanksData[t];
-      if (!info) return true;
-      return _state.type.length === 0 || _state.type.includes(info.type);
-    });
+    // Мягкий фильтр — выбранные танки НЕ удаляются
     _notify();
   }
 
@@ -164,6 +154,50 @@ const AdaptiveFilter = (() => {
       noBattles: false,
     };
     _notify();
+  }
+
+  // ── Валидация выбранных танков по жёстким ограничениям ───────
+  // Удаляет танки, которые отсутствуют в активном сценарии или поиске.
+  // Мягкие фильтры (nation/tier/type) на выбранные танки НЕ влияют.
+  function _validateTanksAgainstHardConstraints() {
+    if (_state.tanks.length === 0) return;
+
+    // Собираем допустимые IDs по жёстким ограничениям
+    let hardIds = null;
+
+    // Жёсткое ограничение: сценарий
+    if (_state.scenario && typeof FilterEngine !== 'undefined') {
+      const scenario = FilterEngine.SCENARIOS.find(s => s.id === _state.scenario);
+      if (scenario && scenario.type !== 'advanced') {
+        const scenarioLots = FilterEngine.applyScenario(_allLots, scenario);
+        hardIds = _intersect(hardIds, scenarioLots.map(l => String(l.id)));
+      }
+    }
+
+    // Жёсткое ограничение: поиск
+    if (_state.search) {
+      const q = _normStr(_state.search);
+      const searchIds = _allLots
+        .filter(l => {
+          const title = _normStr(l.title || '');
+          const tanks10 = _normStr(l.tanks10 || '');
+          const prems = (l.prems_8_9_array || []).map(t => _normStr(t)).join(' ');
+          return title.includes(q) || tanks10.includes(q) || prems.includes(q);
+        })
+        .map(l => String(l.id));
+      hardIds = _intersect(hardIds, searchIds);
+    }
+
+    // Если нет жёстких ограничений — танки не трогаем
+    if (hardIds === null) return;
+
+    const hardIdSet = new Set(hardIds);
+
+    // Удаляем танки, которых нет ни в одном лоте из допустимого набора
+    _state.tanks = _state.tanks.filter(tankName => {
+      const lotIds = (_tanksIndex[tankName] || []).map(String);
+      return lotIds.some(id => hardIdSet.has(id));
+    });
   }
 
   // ── Вспомогательная: toggle элемента в массиве ────────────────
@@ -336,43 +370,94 @@ const AdaptiveFilter = (() => {
   }
 
   // ── Доступные опции фильтра (для динамического UI) ────────────
-  // Вычисляет, какие значения доступны с учётом текущего state,
-  // при этом НЕ учитывает параметр самого этого поля (чтобы не блокировать себя)
+  // Вычисляет доступные nation/tier/type через РЕАЛЬНЫЕ данные танков на лоте.
+  // Это исключает ложные комбинации: nation-index и type-index могут оба
+  // включать лот, не имея пересечения по одному конкретному танку.
+  // Пример: лот с СУ-130ПМ (ПТ/СССР) и Progetto (СТ/Италия) попал бы
+  // в пересечение СССР+СТ через индексы, хотя советского СТ на нём нет.
+  //
+  // Алгоритм:
+  //   1. Берём базовые лоты: жёсткие ограничения + выбранные танки + цена/ресурсы
+  //   2. Для каждого лота смотрим реальные танки (через tanksIndex + tanksData)
+  //   3. Нация N доступна, если на лоте есть танк нации N, который при этом
+  //      соответствует выбранным tier и type (если те выбраны)
+  //   4. Аналогично для tier и type
   function getAvailableOptions() {
-    // Вычисляем базовые IDs (без учёта конкретных полей — для подсчёта доступных значений)
+    // Базовые лоты: жёсткие ограничения + танки, без nation/tier/type
     const baseIds = _getBaseIds();
-    const baseIdSet = new Set(baseIds);
+    const baseLots = _applyLotFilters(_allLots.filter(l => baseIds.includes(String(l.id))));
 
-    const lotsBase = _allLots.filter(l => baseIdSet.has(String(l.id)));
-    const filteredLots = _applyLotFilters(lotsBase);
-    const filteredIds = new Set(filteredLots.map(l => String(l.id)));
+    // Обратный индекс: lotId -> [tankName, ...]
+    const lotTankNames = _buildLotTankNames(baseLots);
 
-    // Подсчёт доступных наций
     const nations = {};
-    for (const [nation, ids] of Object.entries(_nationIndex)) {
-      const count = ids.filter(id => filteredIds.has(String(id))).length;
-      if (count > 0) nations[nation] = count;
+    const tiers   = {};
+    const types   = {};
+
+    for (const lot of baseLots) {
+      const lid = String(lot.id);
+      const tankNames = lotTankNames[lid] || [];
+
+      // Для каждого лота определяем доступные нации/уровни/типы
+      // с учётом текущих мягких фильтров (кроме самого себя)
+
+      const seenNations = new Set();
+      const seenTiers   = new Set();
+      const seenTypes   = new Set();
+
+      for (const tankName of tankNames) {
+        const info = _tanksData[tankName];
+        if (!info) continue;
+        const n  = info.nation;
+        const ti = String(info.tier);
+        const tp = info.type;
+
+        // --- Считаем нацию N доступной, если:
+        //     на лоте есть хоть один танк нации N,
+        //     удовлетворяющий выбранным tier И type (если выбраны)
+        if (n && !seenNations.has(n)) {
+          const tierOk = _state.tier.length === 0 || _state.tier.includes(ti);
+          const typeOk = _state.type.length === 0 || _state.type.includes(tp);
+          if (tierOk && typeOk) {
+            seenNations.add(n);
+            nations[n] = (nations[n] || 0) + 1;
+          }
+        }
+
+        // --- Считаем уровень T доступным, если:
+        //     на лоте есть хоть один танк уровня T,
+        //     удовлетворяющий выбранным nation И type
+        if (ti && !seenTiers.has(ti)) {
+          const nationOk = _state.nation.length === 0 || _state.nation.includes(n);
+          const typeOk   = _state.type.length   === 0 || _state.type.includes(tp);
+          if (nationOk && typeOk) {
+            seenTiers.add(ti);
+            tiers[ti] = (tiers[ti] || 0) + 1;
+          }
+        }
+
+        // --- Считаем тип TP доступным, если:
+        //     на лоте есть хоть один танк типа TP,
+        //     удовлетворяющий выбранным nation И tier
+        if (tp && !seenTypes.has(tp)) {
+          const nationOk = _state.nation.length === 0 || _state.nation.includes(n);
+          const tierOk   = _state.tier.length   === 0 || _state.tier.includes(ti);
+          if (nationOk && tierOk) {
+            seenTypes.add(tp);
+            types[tp] = (types[tp] || 0) + 1;
+          }
+        }
+      }
     }
 
-    // Подсчёт доступных уровней
-    const tiers = {};
-    for (const [tier, ids] of Object.entries(_tierIndex)) {
-      const count = ids.filter(id => filteredIds.has(String(id))).length;
-      if (count > 0) tiers[tier] = count;
-    }
+    // Диапазоны цен/ресурсов — по полному отфильтрованному результату
+    const resultIds = new Set(_getFilteredIds());
+    const resultLots = _applyLotFilters(_allLots.filter(l => resultIds.has(String(l.id))));
 
-    // Подсчёт доступных типов
-    const types = {};
-    for (const [tp, ids] of Object.entries(_typeIndex)) {
-      const count = ids.filter(id => filteredIds.has(String(id))).length;
-      if (count > 0) types[tp] = count;
-    }
-
-    // Доступные диапазоны цен и ресурсов
-    const prices = filteredLots.map(l => _parseNum(l.price)).filter(x => x > 0);
-    const bonds  = filteredLots.map(l => _parseNum((l.resources || {}).bonds)).filter(x => x > 0);
-    const gold   = filteredLots.map(l => _parseNum((l.resources || {}).gold)).filter(x => x > 0);
-    const silver = filteredLots.map(l => _parseNum((l.resources || {}).silver)).filter(x => x > 0);
+    const prices = resultLots.map(l => _parseNum(l.price)).filter(x => x > 0);
+    const bonds  = resultLots.map(l => _parseNum((l.resources || {}).bonds)).filter(x => x > 0);
+    const gold   = resultLots.map(l => _parseNum((l.resources || {}).gold)).filter(x => x > 0);
+    const silver = resultLots.map(l => _parseNum((l.resources || {}).silver)).filter(x => x > 0);
 
     return {
       nations,
@@ -382,14 +467,31 @@ const AdaptiveFilter = (() => {
       bonds:  { min: bonds.length  ? Math.min(...bonds)  : 0, max: bonds.length  ? Math.max(...bonds)  : 0 },
       gold:   { min: gold.length   ? Math.min(...gold)   : 0, max: gold.length   ? Math.max(...gold)   : 0 },
       silver: { min: silver.length ? Math.min(...silver) : 0, max: silver.length ? Math.max(...silver) : 0 },
-      totalFiltered: filteredLots.length,
+      totalFiltered: resultLots.length,
     };
   }
 
-  // Базовые IDs (без учёта nation/tier/type/tanks — для вычисления доступных опций)
+  // Строим обратный индекс lotId -> [tankName, ...]
+  // из tanksIndex (tankName -> [lotId]), ограничиваясь лотами из массива
+  function _buildLotTankNames(lots) {
+    const result = {};
+    const lotIds = new Set(lots.map(l => String(l.id)));
+    for (const lid of lotIds) result[lid] = [];
+    for (const [tankName, ids] of Object.entries(_tanksIndex)) {
+      for (const id of ids) {
+        const sid = String(id);
+        if (result[sid]) result[sid].push(tankName);
+      }
+    }
+    return result;
+  }
+
+  // Базовые IDs: жёсткие ограничения (scenario + search) + выбранные танки.
+  // НЕ включает nation/tier/type — они считаются отдельно в getAvailableOptions.
   function _getBaseIds() {
     let result = null;
 
+    // Жёсткие ограничения
     if (_state.scenario && typeof FilterEngine !== 'undefined') {
       const scenario = FilterEngine.SCENARIOS.find(s => s.id === _state.scenario);
       if (scenario && scenario.type !== 'advanced') {
@@ -411,22 +513,34 @@ const AdaptiveFilter = (() => {
       result = _intersect(result, searchIds);
     }
 
+    // Выбранные танки (AND-логика) — учитываются в базе,
+    // чтобы доступные nation/tier/type отражали реальный остаток
+    if (_state.tanks.length > 0) {
+      for (const tankName of _state.tanks) {
+        const ids = (_tanksIndex[tankName] || []).map(String);
+        result = _intersect(result, ids);
+      }
+    }
+
     if (result === null) result = _allLots.map(l => String(l.id));
     return result;
   }
 
-  // ── Доступные танки для выбора (с учётом нации/уровня/типа) ──
+  // ── Доступные танки для выбора (с учётом всех активных фильтров) ──
   function getAvailableTanks() {
+    // Считаем по полному результату (с учётом nation/tier/type и танков)
     const ids = _getFilteredIds();
     const idSet = new Set(ids);
 
     const tankCounts = {};
     for (const [tankName, lotIds] of Object.entries(_tanksIndex)) {
+      // Пропускаем уже выбранные танки — они показываются как капсулы, не в списке выбора
+      if (_state.tanks.includes(tankName)) continue;
       const count = lotIds.filter(id => idSet.has(String(id))).length;
       if (count > 0) {
         const info = _tanksData[tankName];
         if (!info) continue;
-        // Фильтруем по выбранным нации/уровню/типу
+        // Фильтруем по выбранным нации/уровню/типу (для панели выбора танков)
         if (_state.nation.length > 0 && !_state.nation.includes(info.nation)) continue;
         if (_state.tier.length > 0 && !_state.tier.includes(String(info.tier))) continue;
         if (_state.type.length > 0 && !_state.type.includes(info.type)) continue;
