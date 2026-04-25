@@ -69,24 +69,20 @@ const AdaptiveFilter = (() => {
   // ── Установка отдельных параметров ────────────────────────────
   function setSearch(query) {
     _state.search = (query || '').trim();
+    _validateTanksAgainstHardConstraints();
     _notify();
   }
 
   function setScenario(scenarioId) {
     _state.scenario = scenarioId || null;
+    _validateTanksAgainstHardConstraints();
     _notify();
   }
 
   function toggleTank(tankName) {
     const idx = _state.tanks.indexOf(tankName);
-    if (idx === -1) {
-      // Добавляем танк — сбрасываем нацию и класс
-      _state.tanks = [..._state.tanks, tankName];
-      _state.nation = [];
-      _state.type = [];
-    } else {
-      _state.tanks = _state.tanks.filter(t => t !== tankName);
-    }
+    if (idx === -1) _state.tanks = [..._state.tanks, tankName];
+    else _state.tanks = _state.tanks.filter(t => t !== tankName);
     _notify();
   }
 
@@ -97,31 +93,19 @@ const AdaptiveFilter = (() => {
 
   function toggleNation(nation) {
     _state.nation = _toggle(_state.nation, nation);
-    _state.tanks = _state.tanks.filter(t => {
-      const info = _tanksData[t];
-      if (!info) return true;
-      return _state.nation.length === 0 || _state.nation.includes(info.nation);
-    });
+    // Мягкий фильтр — выбранные танки НЕ удаляются
     _notify();
   }
 
   function toggleTier(tier) {
     _state.tier = _toggle(_state.tier, String(tier));
-    _state.tanks = _state.tanks.filter(t => {
-      const info = _tanksData[t];
-      if (!info) return true;
-      return _state.tier.length === 0 || _state.tier.includes(String(info.tier));
-    });
+    // Мягкий фильтр — выбранные танки НЕ удаляются
     _notify();
   }
 
   function toggleType(type) {
     _state.type = _toggle(_state.type, type);
-    _state.tanks = _state.tanks.filter(t => {
-      const info = _tanksData[t];
-      if (!info) return true;
-      return _state.type.length === 0 || _state.type.includes(info.type);
-    });
+    // Мягкий фильтр — выбранные танки НЕ удаляются
     _notify();
   }
 
@@ -170,6 +154,50 @@ const AdaptiveFilter = (() => {
       noBattles: false,
     };
     _notify();
+  }
+
+  // ── Валидация выбранных танков по жёстким ограничениям ───────
+  // Удаляет танки, которые отсутствуют в активном сценарии или поиске.
+  // Мягкие фильтры (nation/tier/type) на выбранные танки НЕ влияют.
+  function _validateTanksAgainstHardConstraints() {
+    if (_state.tanks.length === 0) return;
+
+    // Собираем допустимые IDs по жёстким ограничениям
+    let hardIds = null;
+
+    // Жёсткое ограничение: сценарий
+    if (_state.scenario && typeof FilterEngine !== 'undefined') {
+      const scenario = FilterEngine.SCENARIOS.find(s => s.id === _state.scenario);
+      if (scenario && scenario.type !== 'advanced') {
+        const scenarioLots = FilterEngine.applyScenario(_allLots, scenario);
+        hardIds = _intersect(hardIds, scenarioLots.map(l => String(l.id)));
+      }
+    }
+
+    // Жёсткое ограничение: поиск
+    if (_state.search) {
+      const q = _normStr(_state.search);
+      const searchIds = _allLots
+        .filter(l => {
+          const title = _normStr(l.title || '');
+          const tanks10 = _normStr(l.tanks10 || '');
+          const prems = (l.prems_8_9_array || []).map(t => _normStr(t)).join(' ');
+          return title.includes(q) || tanks10.includes(q) || prems.includes(q);
+        })
+        .map(l => String(l.id));
+      hardIds = _intersect(hardIds, searchIds);
+    }
+
+    // Если нет жёстких ограничений — танки не трогаем
+    if (hardIds === null) return;
+
+    const hardIdSet = new Set(hardIds);
+
+    // Удаляем танки, которых нет ни в одном лоте из допустимого набора
+    _state.tanks = _state.tanks.filter(tankName => {
+      const lotIds = (_tanksIndex[tankName] || []).map(String);
+      return lotIds.some(id => hardIdSet.has(id));
+    });
   }
 
   // ── Вспомогательная: toggle элемента в массиве ────────────────
