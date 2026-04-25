@@ -2958,6 +2958,25 @@ body.qv-open {
 
 .af-chip--active .af-chip-count { color: var(--accent); opacity: 0.7; }
 
+/* ── Нация-чипы с PNG флагами ─────────────────────────────────── */
+.af-chip--nation {
+  padding: 4px 10px 4px 6px;
+}
+
+.af-nation-flag {
+  width: 20px;
+  height: 14px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.af-nation-name {
+  font-size: 12px;
+}
+
 /* ── Выбор танков ────────────────────────────────────────────── */
 .af-tank-selector {
   flex: 1;
@@ -3081,6 +3100,14 @@ body.qv-open {
   border-radius: var(--radius);
   color: var(--text-primary);
   font-size: 13px;
+  /* убираем стрелочки у number-полей */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.af-range-input::-webkit-outer-spin-button,
+.af-range-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .af-range-input:focus {

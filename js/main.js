@@ -740,6 +740,10 @@ async function loadCatalogue() {
     function onFilterResult(filteredLots) {
       renderLotsFromFiltered(filteredLots, true);
       renderScenariosBlock();
+      // Обновляем UI фильтра (капсулы, счётчик, доступные опции)
+      if (typeof FilterUI !== 'undefined') {
+        FilterUI.onFilterChange(filteredLots);
+      }
     }
 
     // ── Инициализируем FilterUI ───────────────────────────────────

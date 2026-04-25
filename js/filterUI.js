@@ -15,13 +15,28 @@ const FilterUI = (() => {
   let _isPanelOpen = false;
   let _currentOptions = {};
 
-  // ── Иконки нации (флаги) ──────────────────────────────────────
-  const NATION_FLAGS = {
-    'СССР': '🇷🇺', 'США': '🇺🇸', 'Германия': '🇩🇪', 'Франция': '🇫🇷',
-    'Британия': '🇬🇧', 'Япония': '🇯🇵', 'Китай': '🇨🇳', 'Швеция': '🇸🇪',
-    'Польша': '🇵🇱', 'Италия': '🇮🇹', 'Чехословакия': '🇨🇿',
-    'Сборная нация': '🌍',
+  // ── Иконки нации (флаги PNG) ──────────────────────────────────
+  const NATION_FLAG_FILES = {
+    'СССР':         'ussr.png',
+    'США':          'usa.png',
+    'Германия':     'germany.png',
+    'Франция':      'france.png',
+    'Британия':     'uk.png',
+    'Япония':       'japan.png',
+    'Китай':        'china.png',
+    'Швеция':       'sweden.png',
+    'Польша':       'poland.png',
+    'Италия':       'italy.png',
+    'Чехословакия': 'czech.png',
+    'Сборная нация':'intunion.png',
   };
+
+  function _flagImg(nation) {
+    const file = NATION_FLAG_FILES[nation];
+    if (!file) return '';
+    const base = (typeof assetUrl === 'function') ? assetUrl('icons/flags/' + file) : ('icons/flags/' + file);
+    return `<img src="${base}" alt="${nation}" class="af-nation-flag" onerror="this.style.display='none'">`;
+  }
 
   const TYPE_ICONS = {
     'ТТ': '🛡️', 'СТ': '⚡', 'ЛТ': '💨', 'ПТ': '🎯', 'САУ': '💥',
@@ -32,7 +47,11 @@ const FilterUI = (() => {
     _container = document.getElementById(containerId);
     if (!_container) return;
     _render();
-    AdaptiveFilter.onChange(_onFilterChange);
+  }
+
+  // Вызывается из main.js через AdaptiveFilter.onChange
+  function onFilterChange(filteredLots) {
+    _onFilterChange(filteredLots);
   }
 
   function _render() {
@@ -64,9 +83,8 @@ const FilterUI = (() => {
         <div class="af-panel" id="af-panel" style="display:none">
           <div class="af-panel-inner">
 
-            <!-- 1. Премиум техника (5–9 уровни) -->
+            <!-- Техника -->
             <div class="af-section">
-              <div class="af-section-title">Премиум техника</div>
               <div class="af-section-row">
                 <span class="af-section-label">Уровень</span>
                 <div class="af-chips" id="af-tier-chips"></div>
@@ -90,20 +108,7 @@ const FilterUI = (() => {
               </div>
             </div>
 
-            <!-- 2. Топ-10 (уровень 10) -->
-            <div class="af-section">
-              <div class="af-section-title">Танки 10 уровня</div>
-              <div class="af-section-row">
-                <div class="af-tier10-badge" id="af-tier10-badge">
-                  <label class="af-checkbox-label">
-                    <input type="checkbox" id="af-tier10-check" class="af-checkbox">
-                    <span>Есть танки 10 уровня</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- 3. Дополнительно -->
+            <!-- Дополнительно -->
             <div class="af-section">
               <div class="af-section-title">Дополнительно</div>
               <div class="af-section-row">
@@ -230,15 +235,13 @@ const FilterUI = (() => {
     _currentOptions = options;
     const state = AdaptiveFilter.getState();
 
-    // Уровни (только 5–9 для премиум, плюс 10 отдельно)
+    // Уровни (5–10 в едином блоке)
     _renderChips('af-tier-chips', options.tiers, state.tier, (tier) => {
       AdaptiveFilter.toggleTier(tier);
-    }, (k) => `${k} ур.`, ['5','6','7','8','9']);
+    }, (k) => `${k} ур.`, ['5','6','7','8','9','10']);
 
-    // Нации
-    _renderChips('af-nation-chips', options.nations, state.nation, (nat) => {
-      AdaptiveFilter.toggleNation(nat);
-    }, (k) => `${NATION_FLAGS[k] || ''} ${k}`);
+    // Нации — с PNG флагами
+    _renderNationChips('af-nation-chips', options.nations, state.nation);
 
     // Типы
     _renderChips('af-type-chips', options.types, state.type, (tp) => {
@@ -278,6 +281,30 @@ const FilterUI = (() => {
       chip.innerHTML = `${_esc(labelFn(k))}<span class="af-chip-count">${count}</span>`;
       if (count > 0) {
         chip.addEventListener('click', () => onClick(k));
+      }
+      el.appendChild(chip);
+    });
+  }
+
+  // Специальный рендер нация-чипов с PNG-флагами
+  function _renderNationChips(containerId, optionsMap, selected) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = '';
+
+    const NATION_ORDER = ['СССР','США','Германия','Франция','Британия','Япония','Китай','Швеция','Польша','Италия','Чехословакия','Сборная нация'];
+    const keys = NATION_ORDER.filter(k => optionsMap[k] !== undefined);
+
+    keys.forEach(k => {
+      const count = optionsMap[k] || 0;
+      const isActive = selected.includes(k);
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'af-chip af-chip--nation' + (isActive ? ' af-chip--active' : '') + (count === 0 ? ' af-chip--disabled' : '');
+      const flagHtml = _flagImg(k);
+      chip.innerHTML = `${flagHtml}<span class="af-nation-name">${_esc(k)}</span><span class="af-chip-count">${count}</span>`;
+      if (count > 0) {
+        chip.addEventListener('click', () => AdaptiveFilter.toggleNation(k));
       }
       el.appendChild(chip);
     });
@@ -359,23 +386,34 @@ const FilterUI = (() => {
     const maxVal = currentMax !== null ? currentMax : '';
 
     el.innerHTML = `
-      <input type="number" class="af-range-input" data-key="${resourceKey}" data-bound="min"
-        placeholder="${Math.floor(range.min)}" value="${minVal}" min="0" max="${range.max}">
+      <input type="text" inputmode="numeric" pattern="[0-9]*" class="af-range-input" data-key="${resourceKey}" data-bound="min"
+        placeholder="${Math.floor(range.min)}" value="${minVal}">
       <span class="af-range-dash">—</span>
-      <input type="number" class="af-range-input" data-key="${resourceKey}" data-bound="max"
-        placeholder="${Math.ceil(range.max)}" value="${maxVal}" min="0" max="${range.max * 10}">
+      <input type="text" inputmode="numeric" pattern="[0-9]*" class="af-range-input" data-key="${resourceKey}" data-bound="max"
+        placeholder="${Math.ceil(range.max)}" value="${maxVal}">
     `;
 
     el.querySelectorAll('.af-range-input').forEach(input => {
-      input.addEventListener('change', () => {
+      const applyValue = () => {
         const key = input.dataset.key;
         const bound = input.dataset.bound;
-        const val = input.value === '' ? null : parseFloat(input.value);
-        const state = AdaptiveFilter.getState();
+        let val = input.value === '' ? null : parseFloat(input.value.replace(/\s/g, '').replace(',', '.'));
 
+        // Clamp: если ввод меньше мин — ставим мин, если больше макс — ставим макс
+        if (val !== null && !isNaN(val)) {
+          if (bound === 'min' && val < range.min) { val = range.min; input.value = val; }
+          if (bound === 'min' && val > range.max) { val = range.max; input.value = val; }
+          if (bound === 'max' && val < range.min) { val = range.min; input.value = val; }
+          if (bound === 'max' && val > range.max) { val = range.max; input.value = val; }
+        } else if (val !== null && isNaN(val)) {
+          val = null;
+          input.value = '';
+        }
+
+        const state = AdaptiveFilter.getState();
         if (key === 'price') {
-          const min = bound === 'min' ? val : (state.priceMin);
-          const max = bound === 'max' ? val : (state.priceMax);
+          const min = bound === 'min' ? val : state.priceMin;
+          const max = bound === 'max' ? val : state.priceMax;
           AdaptiveFilter.setPrice(min, max);
         } else {
           const minK = key + 'Min';
@@ -384,7 +422,9 @@ const FilterUI = (() => {
           const max = bound === 'max' ? val : state[maxK];
           AdaptiveFilter.setResources(key, min, max);
         }
-      });
+      };
+      input.addEventListener('change', applyValue);
+      input.addEventListener('blur', applyValue);
     });
   }
 
@@ -416,6 +456,7 @@ const FilterUI = (() => {
   // ── Публичный API ─────────────────────────────────────────────
   return {
     init,
+    onFilterChange,
   };
 
 })();
