@@ -28,6 +28,7 @@ const FilterEngine = (() => {
       },
       weights: { popular: 10, strongest: 3, strong: 2, imba: 3, forgiving: 2, alpha: 1 },
       type: 'score',
+      tankFilter: { tags: ['popular', 'imba', 'strongest', 'strong', 'forgiving'] },
     },
     {
       id: 'fat_start',
@@ -43,6 +44,7 @@ const FilterEngine = (() => {
       },
       weights: { imba: 10, strongest: 10, strong: 3, alpha: 2 },
       type: 'score',
+      tankFilter: { tags: ['imba', 'strongest', 'strong'] },
     },
     {
       id: 'many_prems',
@@ -72,7 +74,7 @@ const FilterEngine = (() => {
       id: 'return',
       emoji: '🔄',
       title: 'Вернуться в игру',
-      subtitle: 'Мощные новинки и старые машины, которые раскрылись в новом формате боёв',
+      subtitle: 'Мощные новинки и старые машины, которые раскрылись в новом формате боёв ±1 уровень',
       requirements: {
         any_of: [
           { tag: 'new', min: 1 },

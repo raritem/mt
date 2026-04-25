@@ -895,6 +895,13 @@ input, textarea { font-family: var(--font-body); }
   gap: 10px;
 }
 
+/* ── Список лотов (табличный вид) ──────────────────────────────── */
+#lots-grid-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .lot-row-card {
   background: var(--bg-card);
   border: 0px solid var(--border);
