@@ -190,10 +190,18 @@ const FilterUI = (() => {
   }
 
   // ── Обработчик изменений фильтра ──────────────────────────────
+  let _uiUpdateTimer = null;
   function _onFilterChange(filteredLots) {
+    // Капсулы и счётчик — сразу (дёшево)
     _renderCapsules();
-    _renderOptions(AdaptiveFilter.getAvailableOptions());
     _updateCounters(filteredLots.length);
+    // Опции (чипы нации/уровня/класса + список танков) — с небольшим debounce,
+    // чтобы не перерисовывать DOM при каждом нажатии клавиши в поиске
+    if (_uiUpdateTimer) clearTimeout(_uiUpdateTimer);
+    _uiUpdateTimer = setTimeout(() => {
+      _uiUpdateTimer = null;
+      _renderOptions(AdaptiveFilter.getAvailableOptions());
+    }, 60);
   }
 
   // ── Рендер капсул ─────────────────────────────────────────────

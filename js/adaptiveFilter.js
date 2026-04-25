@@ -37,6 +37,21 @@ const AdaptiveFilter = (() => {
 
   let _onChangeCallback = null;
 
+  // ── Кэш вычислений (сбрасывается при каждом изменении state) ──
+  let _cache = null;
+
+  function _invalidateCache() {
+    _cache = null;
+  }
+
+  // Получить (или вычислить) Set ID без навигационных фильтров
+  function _getNoNavIdSet() {
+    if (_cache && _cache.noNavIdSet) return _cache.noNavIdSet;
+    if (!_cache) _cache = {};
+    _cache.noNavIdSet = _getFilteredIds_noNav();
+    return _cache.noNavIdSet;
+  }
+
   // ── Инициализация ─────────────────────────────────────────────
   function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, tanksData }) {
     _allLots = allLots || [];
@@ -57,8 +72,16 @@ const AdaptiveFilter = (() => {
     _onChangeCallback = cb;
   }
 
+  let _notifyTimer = null;
   function _notify() {
-    if (_onChangeCallback) _onChangeCallback(getResult());
+    _invalidateCache();
+    if (!_onChangeCallback) return;
+    // Debounce: схлопываем серию быстрых изменений в один вызов
+    if (_notifyTimer) clearTimeout(_notifyTimer);
+    _notifyTimer = setTimeout(() => {
+      _notifyTimer = null;
+      if (_onChangeCallback) _onChangeCallback(getResult());
+    }, 40);
   }
 
   // ── Получение состояния ───────────────────────────────────────
@@ -164,50 +187,10 @@ const AdaptiveFilter = (() => {
     return a.filter(id => setB.has(id));
   }
 
-  // ── Основная фильтрация через индексы ─────────────────────────
   function _getFilteredIds() {
-    let result = null; // null = все
-
-    // 1. Сценарий
-    if (_state.scenario && typeof FilterEngine !== 'undefined') {
-      const scenario = FilterEngine.SCENARIOS.find(s => s.id === _state.scenario);
-      if (scenario && scenario.type !== 'advanced') {
-        const scenarioLots = FilterEngine.applyScenario(_allLots, scenario);
-        result = _intersect(result, scenarioLots.map(l => String(l.id)));
-      }
-    }
-
-    // 2. Поиск
-    if (_state.search) {
-      const q = _normStr(_state.search);
-      const searchIds = _allLots
-        .filter(l => {
-          const title = _normStr(l.title || '');
-          const tanks10 = _normStr(l.tanks10 || '');
-          const prems = (l.prems_8_9_array || []).map(t => _normStr(t)).join(' ');
-          return title.includes(q) || tanks10.includes(q) || prems.includes(q);
-        })
-        .map(l => String(l.id));
-      result = _intersect(result, searchIds);
-    }
-
-    // 3. Нация / уровень / тип — НЕ фильтруют аккаунты,
-    //    они только сужают список доступных танков в UI (см. getAvailableTanks).
-
-    // 4. Конкретные танки (AND-логика) — единственный реальный фильтр аккаунтов
-    if (_state.tanks.length > 0) {
-      for (const tankName of _state.tanks) {
-        const ids = (_tanksIndex[tankName] || []).map(String);
-        result = _intersect(result, ids);
-      }
-    }
-
-    // 5. Если result null — возвращаем все IDs
-    if (result === null) {
-      result = _allLots.map(l => String(l.id));
-    }
-
-    return result;
+    // Берём базу из кэша (сценарий + поиск + танки)
+    const baseIdSet = _getNoNavIdSet();
+    return [...baseIdSet];
   }
 
   function _normStr(str) {
@@ -295,13 +278,9 @@ const AdaptiveFilter = (() => {
 
   // ── Доступные опции фильтра (для динамического UI) ────────────
   function getAvailableOptions() {
-    // Лоты, отфильтрованные только по реальным фильтрам (танки, поиск, сценарий)
-    // nation/tier/type — навигационные, не влияют на базу
+    const baseIdSet = _getNoNavIdSet();
     const filteredLots = _applyLotFilters(
-      _allLots.filter(l => {
-        const id = String(l.id);
-        return _getFilteredIds_noNav().has(id);
-      })
+      _allLots.filter(l => baseIdSet.has(String(l.id)))
     );
     const filteredIds = new Set(filteredLots.map(l => String(l.id)));
 
@@ -380,8 +359,7 @@ const AdaptiveFilter = (() => {
 
   // ── Доступные танки для выбора (с учётом навигации нация/уровень/тип) ──
   function getAvailableTanks() {
-    // Базовые аккаунты (с учётом уже выбранных танков и поиска)
-    const baseIdSet = _getFilteredIds_noNav();
+    const baseIdSet = _getNoNavIdSet();
 
     const tankCounts = {};
     for (const [tankName, lotIds] of Object.entries(_tanksIndex)) {
