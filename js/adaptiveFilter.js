@@ -37,21 +37,6 @@ const AdaptiveFilter = (() => {
 
   let _onChangeCallback = null;
 
-  // ── Кэш вычислений (сбрасывается при каждом изменении state) ──
-  let _cache = null;
-
-  function _invalidateCache() {
-    _cache = null;
-  }
-
-  // Получить (или вычислить) Set ID без навигационных фильтров
-  function _getNoNavIdSet() {
-    if (_cache && _cache.noNavIdSet) return _cache.noNavIdSet;
-    if (!_cache) _cache = {};
-    _cache.noNavIdSet = _getFilteredIds_noNav();
-    return _cache.noNavIdSet;
-  }
-
   // ── Инициализация ─────────────────────────────────────────────
   function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, tanksData }) {
     _allLots = allLots || [];
@@ -72,16 +57,8 @@ const AdaptiveFilter = (() => {
     _onChangeCallback = cb;
   }
 
-  let _notifyTimer = null;
   function _notify() {
-    _invalidateCache();
-    if (!_onChangeCallback) return;
-    // Debounce: схлопываем серию быстрых изменений в один вызов
-    if (_notifyTimer) clearTimeout(_notifyTimer);
-    _notifyTimer = setTimeout(() => {
-      _notifyTimer = null;
-      if (_onChangeCallback) _onChangeCallback(getResult());
-    }, 40);
+    if (_onChangeCallback) _onChangeCallback(getResult());
   }
 
   // ── Получение состояния ───────────────────────────────────────
@@ -114,16 +91,31 @@ const AdaptiveFilter = (() => {
 
   function toggleNation(nation) {
     _state.nation = _toggle(_state.nation, nation);
+    _state.tanks = _state.tanks.filter(t => {
+      const info = _tanksData[t];
+      if (!info) return true;
+      return _state.nation.length === 0 || _state.nation.includes(info.nation);
+    });
     _notify();
   }
 
   function toggleTier(tier) {
     _state.tier = _toggle(_state.tier, String(tier));
+    _state.tanks = _state.tanks.filter(t => {
+      const info = _tanksData[t];
+      if (!info) return true;
+      return _state.tier.length === 0 || _state.tier.includes(String(info.tier));
+    });
     _notify();
   }
 
   function toggleType(type) {
     _state.type = _toggle(_state.type, type);
+    _state.tanks = _state.tanks.filter(t => {
+      const info = _tanksData[t];
+      if (!info) return true;
+      return _state.type.length === 0 || _state.type.includes(info.type);
+    });
     _notify();
   }
 
@@ -187,10 +179,77 @@ const AdaptiveFilter = (() => {
     return a.filter(id => setB.has(id));
   }
 
+  // ── Основная фильтрация через индексы ─────────────────────────
   function _getFilteredIds() {
-    // Берём базу из кэша (сценарий + поиск + танки)
-    const baseIdSet = _getNoNavIdSet();
-    return [...baseIdSet];
+    let result = null; // null = все
+
+    // 1. Сценарий: сначала получаем IDs через сценарий
+    if (_state.scenario && typeof FilterEngine !== 'undefined') {
+      const scenario = FilterEngine.SCENARIOS.find(s => s.id === _state.scenario);
+      if (scenario && scenario.type !== 'advanced') {
+        const scenarioLots = FilterEngine.applyScenario(_allLots, scenario);
+        result = _intersect(result, scenarioLots.map(l => String(l.id)));
+      }
+    }
+
+    // 2. Поиск (отдельный фильтр, может дать 0)
+    if (_state.search) {
+      const q = _normStr(_state.search);
+      const searchIds = _allLots
+        .filter(l => {
+          const title = _normStr(l.title || '');
+          const tanks10 = _normStr(l.tanks10 || '');
+          const prems = (l.prems_8_9_array || []).map(t => _normStr(t)).join(' ');
+          return title.includes(q) || tanks10.includes(q) || prems.includes(q);
+        })
+        .map(l => String(l.id));
+      result = _intersect(result, searchIds);
+    }
+
+    // 3. Нации (через индекс)
+    if (_state.nation.length > 0) {
+      let nationIds = [];
+      for (const nat of _state.nation) {
+        const ids = (_nationIndex[nat] || []).map(String);
+        nationIds = [...new Set([...nationIds, ...ids])];
+      }
+      result = _intersect(result, nationIds);
+    }
+
+    // 4. Уровни (через индекс)
+    if (_state.tier.length > 0) {
+      let tierIds = [];
+      for (const tier of _state.tier) {
+        const ids = (_tierIndex[tier] || []).map(String);
+        tierIds = [...new Set([...tierIds, ...ids])];
+      }
+      result = _intersect(result, tierIds);
+    }
+
+    // 5. Типы (через индекс)
+    if (_state.type.length > 0) {
+      let typeIds = [];
+      for (const tp of _state.type) {
+        const ids = (_typeIndex[tp] || []).map(String);
+        typeIds = [...new Set([...typeIds, ...ids])];
+      }
+      result = _intersect(result, typeIds);
+    }
+
+    // 6. Конкретные танки (через индекс, AND-логика)
+    if (_state.tanks.length > 0) {
+      for (const tankName of _state.tanks) {
+        const ids = (_tanksIndex[tankName] || []).map(String);
+        result = _intersect(result, ids);
+      }
+    }
+
+    // 7. Если результат null — возвращаем все IDs
+    if (result === null) {
+      result = _allLots.map(l => String(l.id));
+    }
+
+    return result;
   }
 
   function _normStr(str) {
@@ -277,33 +336,39 @@ const AdaptiveFilter = (() => {
   }
 
   // ── Доступные опции фильтра (для динамического UI) ────────────
+  // Вычисляет, какие значения доступны с учётом текущего state,
+  // при этом НЕ учитывает параметр самого этого поля (чтобы не блокировать себя)
   function getAvailableOptions() {
-    const baseIdSet = _getNoNavIdSet();
-    const filteredLots = _applyLotFilters(
-      _allLots.filter(l => baseIdSet.has(String(l.id)))
-    );
+    // Вычисляем базовые IDs (без учёта конкретных полей — для подсчёта доступных значений)
+    const baseIds = _getBaseIds();
+    const baseIdSet = new Set(baseIds);
+
+    const lotsBase = _allLots.filter(l => baseIdSet.has(String(l.id)));
+    const filteredLots = _applyLotFilters(lotsBase);
     const filteredIds = new Set(filteredLots.map(l => String(l.id)));
 
-    // Нации/уровни/типы — считаем только по отфильтрованным лотам
-    // (т.е. нации, которые реально присутствуют на аккаунтах с выбранными танками)
+    // Подсчёт доступных наций
     const nations = {};
     for (const [nation, ids] of Object.entries(_nationIndex)) {
       const count = ids.filter(id => filteredIds.has(String(id))).length;
       if (count > 0) nations[nation] = count;
     }
 
+    // Подсчёт доступных уровней
     const tiers = {};
     for (const [tier, ids] of Object.entries(_tierIndex)) {
       const count = ids.filter(id => filteredIds.has(String(id))).length;
       if (count > 0) tiers[tier] = count;
     }
 
+    // Подсчёт доступных типов
     const types = {};
     for (const [tp, ids] of Object.entries(_typeIndex)) {
       const count = ids.filter(id => filteredIds.has(String(id))).length;
       if (count > 0) types[tp] = count;
     }
 
+    // Доступные диапазоны цен и ресурсов
     const prices = filteredLots.map(l => _parseNum(l.price)).filter(x => x > 0);
     const bonds  = filteredLots.map(l => _parseNum((l.resources || {}).bonds)).filter(x => x > 0);
     const gold   = filteredLots.map(l => _parseNum((l.resources || {}).gold)).filter(x => x > 0);
@@ -321,8 +386,8 @@ const AdaptiveFilter = (() => {
     };
   }
 
-  // IDs без учёта навигационных (nation/tier/type) — для расчёта доступных опций
-  function _getFilteredIds_noNav() {
+  // Базовые IDs (без учёта nation/tier/type/tanks — для вычисления доступных опций)
+  function _getBaseIds() {
     let result = null;
 
     if (_state.scenario && typeof FilterEngine !== 'undefined') {
@@ -346,39 +411,27 @@ const AdaptiveFilter = (() => {
       result = _intersect(result, searchIds);
     }
 
-    if (_state.tanks.length > 0) {
-      for (const tankName of _state.tanks) {
-        const ids = (_tanksIndex[tankName] || []).map(String);
-        result = _intersect(result, ids);
-      }
-    }
-
     if (result === null) result = _allLots.map(l => String(l.id));
-    return new Set(result);
+    return result;
   }
 
-  // ── Доступные танки для выбора (с учётом навигации нация/уровень/тип) ──
+  // ── Доступные танки для выбора (с учётом нации/уровня/типа) ──
   function getAvailableTanks() {
-    const baseIdSet = _getNoNavIdSet();
+    const ids = _getFilteredIds();
+    const idSet = new Set(ids);
 
     const tankCounts = {};
     for (const [tankName, lotIds] of Object.entries(_tanksIndex)) {
-      const count = lotIds.filter(id => baseIdSet.has(String(id))).length;
-      const info = _tanksData[tankName];
-      if (!info) continue;
-
-      // Уже выбранный танк — всегда включаем (не скрываем при смене навигации)
-      const isSelected = _state.tanks.includes(tankName);
-
-      if (!isSelected) {
-        // Невыбранный — показываем только если проходит навигационные фильтры
+      const count = lotIds.filter(id => idSet.has(String(id))).length;
+      if (count > 0) {
+        const info = _tanksData[tankName];
+        if (!info) continue;
+        // Фильтруем по выбранным нации/уровню/типу
         if (_state.nation.length > 0 && !_state.nation.includes(info.nation)) continue;
         if (_state.tier.length > 0 && !_state.tier.includes(String(info.tier))) continue;
         if (_state.type.length > 0 && !_state.type.includes(info.type)) continue;
-        if (count === 0) continue; // нет аккаунтов с этим танком
+        tankCounts[tankName] = { count, ...info };
       }
-
-      tankCounts[tankName] = { count, ...info };
     }
     return tankCounts;
   }
@@ -402,12 +455,21 @@ const AdaptiveFilter = (() => {
       capsules.push({ type: 'search', value: _state.search, label: `🔍 ${short}` });
     }
 
-    // Только выбранные танки — реальные фильтры аккаунтов
     for (const tank of _state.tanks) {
       capsules.push({ type: 'tank', value: tank, label: tank });
     }
 
-    // nation/tier/type — навигационные, в капсулы НЕ добавляются
+    for (const n of _state.nation) {
+      capsules.push({ type: 'nation', value: n, label: n });
+    }
+
+    for (const t of _state.tier) {
+      capsules.push({ type: 'tier', value: t, label: `${t} ур.` });
+    }
+
+    for (const tp of _state.type) {
+      capsules.push({ type: 'type', value: tp, label: tp });
+    }
 
     if (_state.priceMin !== null || _state.priceMax !== null) {
       const label = `₽ ${_state.priceMin || '0'}–${_state.priceMax || '∞'}`;
@@ -438,6 +500,9 @@ const AdaptiveFilter = (() => {
       _state.search !== '' ||
       _state.scenario !== null ||
       _state.tanks.length > 0 ||
+      _state.nation.length > 0 ||
+      _state.tier.length > 0 ||
+      _state.type.length > 0 ||
       _state.priceMin !== null || _state.priceMax !== null ||
       _state.bondsMin !== null || _state.bondsMax !== null ||
       _state.goldMin !== null  || _state.goldMax !== null  ||
