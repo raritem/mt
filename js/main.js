@@ -469,7 +469,7 @@ async function loadCatalogue() {
 
   try {
     const rawBase = getGhRawBase();
-    const [data, tanksDataRaw, nationIndex, tierIndex, typeIndex, tanksIndex, comboIndex] = await Promise.all([
+    const [data, tanksDataRaw, nationIndex, tierIndex, typeIndex, tanksIndex] = await Promise.all([
       rawBase
         ? fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
         : fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json'),
@@ -488,9 +488,6 @@ async function loadCatalogue() {
       rawBase
         ? fetchJSON(rawBase + 'data/indexes/tanks_index.json').catch(() => ({}))
         : fetchJSON(ROOT + 'data/indexes/tanks_index.json').catch(() => ({})),
-      rawBase
-        ? fetchJSON(rawBase + 'data/indexes/combo_index.json').catch(() => ({}))
-        : fetchJSON(ROOT + 'data/indexes/combo_index.json').catch(() => ({})),
     ]);
 
     window._tanksData = tanksDataRaw.tanks || {};
@@ -547,7 +544,6 @@ async function loadCatalogue() {
         nationIndex,
         tierIndex,
         typeIndex,
-        comboIndex,
         tanksData: window._tanksData,
       });
     }

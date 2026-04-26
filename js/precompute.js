@@ -26,7 +26,6 @@ const Precompute = (() => {
     const nationIndex = {};  // nation    → Set<id>
     const tierIndex   = {};  // tier(str) → Set<id>
     const typeIndex   = {};  // type      → Set<id>
-    const comboIndex  = {};  // "nation|tier|type" → Set<id>
 
     // Вспомогательная функция: добавить id в группу, создав её при необходимости
     function addToIndex(index, key, id) {
@@ -59,10 +58,6 @@ const Precompute = (() => {
         addToIndex(nationIndex, info.nation, id);
         addToIndex(tierIndex,   info.tier,   id);
         addToIndex(typeIndex,   info.type,   id);
-
-        // 5. Составной индекс "nation|tier|type" для точной адаптации фильтра
-        const comboKey = `${info.nation}|${info.tier}|${info.type}`;
-        addToIndex(comboIndex, comboKey, id);
       }
     }
 
@@ -80,7 +75,6 @@ const Precompute = (() => {
       nationIndex: setsToArrays(nationIndex),
       tierIndex:   setsToArrays(tierIndex),
       typeIndex:   setsToArrays(typeIndex),
-      comboIndex:  setsToArrays(comboIndex),
     };
   }
 
@@ -95,14 +89,13 @@ const Precompute = (() => {
   async function run(lots, tanksMap, onProgress = () => {}) {
     onProgress('Precompute: строю индексы…');
 
-    const { tanksIndex, nationIndex, tierIndex, typeIndex, comboIndex } = buildIndexes(lots, tanksMap);
+    const { tanksIndex, nationIndex, tierIndex, typeIndex } = buildIndexes(lots, tanksMap);
 
     const indexFiles = [
       { path: 'data/indexes/tanks_index.json',  data: tanksIndex  },
       { path: 'data/indexes/nation_index.json', data: nationIndex },
       { path: 'data/indexes/tier_index.json',   data: tierIndex   },
       { path: 'data/indexes/type_index.json',   data: typeIndex   },
-      { path: 'data/indexes/combo_index.json',  data: comboIndex  },
     ];
 
     const summary = {
@@ -110,12 +103,11 @@ const Precompute = (() => {
       nations: Object.keys(nationIndex).length,
       tiers:   Object.keys(tierIndex).length,
       types:   Object.keys(typeIndex).length,
-      combos:  Object.keys(comboIndex).length,
     };
 
     onProgress(
       `Precompute: уникальных танков ${summary.tanks}, ` +
-      `наций ${summary.nations}, тиров ${summary.tiers}, типов ${summary.types}, комбо ${summary.combos}`
+      `наций ${summary.nations}, тиров ${summary.tiers}, типов ${summary.types}`
     );
 
     // Сохраняем на GitHub (идемпотентно — просто перезаписываем)
@@ -135,7 +127,7 @@ const Precompute = (() => {
       onProgress('Precompute: GitHub не настроен, индексы сгенерированы локально');
     }
 
-    return { tanksIndex, nationIndex, tierIndex, typeIndex, comboIndex };
+    return { tanksIndex, nationIndex, tierIndex, typeIndex };
   }
 
   /**

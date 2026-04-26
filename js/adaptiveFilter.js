@@ -32,20 +32,18 @@ const AdaptiveFilter = (() => {
   let _nationIndex = {};   // nation -> [lotId, ...]
   let _tierIndex = {};     // tier -> [lotId, ...]
   let _typeIndex = {};     // type -> [lotId, ...]
-  let _comboIndex = {};    // "nation|tier|type" -> [lotId, ...]
   let _lotsById = {};      // lotId -> lot
   let _tanksData = {};     // tankName -> { tier, type, nation, tags, ... }
 
   let _onChangeCallback = null;
 
   // ── Инициализация ─────────────────────────────────────────────
-  function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, comboIndex, tanksData }) {
+  function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, tanksData }) {
     _allLots = allLots || [];
     _tanksIndex = tanksIndex || {};
     _nationIndex = nationIndex || {};
     _tierIndex = tierIndex || {};
     _typeIndex = typeIndex || {};
-    _comboIndex = comboIndex || {};
     _tanksData = tanksData || {};
 
     // Строим лоты по ID
@@ -338,61 +336,43 @@ const AdaptiveFilter = (() => {
   }
 
   // ── Доступные опции фильтра (для динамического UI) ────────────
-  //
-  // Используем _comboIndex ("nation|tier|type" -> [lotIds]) для точного подсчёта:
-  // при выборе нации+уровня проверяем только комбо ?|tier|type,
-  // при выборе нации+типа — только nation|?|type, и т.д.
-  // Это исключает "призрачные" чипы — типы/нации/уровни других танков
-  // на тех же аккаунтах, которые не соответствуют выбранной комбинации.
+  // Вычисляет, какие значения доступны с учётом текущего state,
+  // при этом НЕ учитывает параметр самого этого поля (чтобы не блокировать себя)
   function getAvailableOptions() {
-    // ── Вспомогательная: получить лоты для конкретного поля ───────────
-    // Возвращает Set lotId, которые проходят все активные фильтры
-    // КРОМЕ поля excludeField, и с учётом combo-ограничений.
-    const baseFilteredIds = _getBaseIdsExcluding(null); // все фильтры (для цен/ресурсов)
+    // Вычисляем базовые IDs (без учёта конкретных полей — для подсчёта доступных значений)
+    const baseIds = _getBaseIds();
+    const baseIdSet = new Set(baseIds);
 
-    // Собираем все уникальные значения каждого измерения из combo_index
-    const _allNations = new Set();
-    const _allTiers   = new Set();
-    const _allTypes   = new Set();
-    for (const key of Object.keys(_comboIndex)) {
-      const [n, t, tp] = key.split('|');
-      _allNations.add(n); _allTiers.add(t); _allTypes.add(tp);
-    }
+    const lotsBase = _allLots.filter(l => baseIdSet.has(String(l.id)));
+    const filteredLots = _applyLotFilters(lotsBase);
+    const filteredIds = new Set(filteredLots.map(l => String(l.id)));
 
-    // ── Базовые IDs с учётом танков, сценария, поиска ─────────────────
-    // (без nation/tier/type — они будут применяться через combo)
-    const tankBaseIds = _getBaseIdsExcluding('all-dimensional');
-
-    // ── Подсчёт доступных НАЦИЙ ────────────────────────────────────────
-    // Фиксируем tier и type (если выбраны), перебираем нации через combo
+    // Подсчёт доступных наций
     const nations = {};
-    for (const nation of _allNations) {
-      const ids = _getComboIds(nation, null, null, tankBaseIds);
-      if (ids.size > 0) nations[nation] = ids.size;
+    for (const [nation, ids] of Object.entries(_nationIndex)) {
+      const count = ids.filter(id => filteredIds.has(String(id))).length;
+      if (count > 0) nations[nation] = count;
     }
 
-    // ── Подсчёт доступных УРОВНЕЙ ──────────────────────────────────────
+    // Подсчёт доступных уровней
     const tiers = {};
-    for (const tier of _allTiers) {
-      const ids = _getComboIds(null, tier, null, tankBaseIds);
-      if (ids.size > 0) tiers[tier] = ids.size;
+    for (const [tier, ids] of Object.entries(_tierIndex)) {
+      const count = ids.filter(id => filteredIds.has(String(id))).length;
+      if (count > 0) tiers[tier] = count;
     }
 
-    // ── Подсчёт доступных ТИПОВ ────────────────────────────────────────
+    // Подсчёт доступных типов
     const types = {};
-    for (const tp of _allTypes) {
-      const ids = _getComboIds(null, null, tp, tankBaseIds);
-      if (ids.size > 0) types[tp] = ids.size;
+    for (const [tp, ids] of Object.entries(_typeIndex)) {
+      const count = ids.filter(id => filteredIds.has(String(id))).length;
+      if (count > 0) types[tp] = count;
     }
 
-    // ── Диапазоны цен и ресурсов (по полностью отфильтрованным лотам) ─
-    const allFilteredLots = _applyLotFilters(
-      _allLots.filter(l => baseFilteredIds.has(String(l.id)))
-    );
-    const prices = allFilteredLots.map(l => _parseNum(l.price)).filter(x => x > 0);
-    const bonds  = allFilteredLots.map(l => _parseNum((l.resources || {}).bonds)).filter(x => x > 0);
-    const gold   = allFilteredLots.map(l => _parseNum((l.resources || {}).gold)).filter(x => x > 0);
-    const silver = allFilteredLots.map(l => _parseNum((l.resources || {}).silver)).filter(x => x > 0);
+    // Доступные диапазоны цен и ресурсов
+    const prices = filteredLots.map(l => _parseNum(l.price)).filter(x => x > 0);
+    const bonds  = filteredLots.map(l => _parseNum((l.resources || {}).bonds)).filter(x => x > 0);
+    const gold   = filteredLots.map(l => _parseNum((l.resources || {}).gold)).filter(x => x > 0);
+    const silver = filteredLots.map(l => _parseNum((l.resources || {}).silver)).filter(x => x > 0);
 
     return {
       nations,
@@ -402,68 +382,14 @@ const AdaptiveFilter = (() => {
       bonds:  { min: bonds.length  ? Math.min(...bonds)  : 0, max: bonds.length  ? Math.max(...bonds)  : 0 },
       gold:   { min: gold.length   ? Math.min(...gold)   : 0, max: gold.length   ? Math.max(...gold)   : 0 },
       silver: { min: silver.length ? Math.min(...silver) : 0, max: silver.length ? Math.max(...silver) : 0 },
-      totalFiltered: allFilteredLots.length,
+      totalFiltered: filteredLots.length,
     };
   }
 
-  // Возвращает Set lotId, проходящих через combo_index с заданными фиксированными
-  // значениями измерений. null-значение = "не фиксировать, суммировать по всем".
-  // Дополнительно пересекает с tankBaseIds (результат сценария + поиска + танков).
-  // Для поля, которое сейчас "не выбрано", берём активное значение из _state;
-  // для поля, которое мы "считаем" (переданное как null-候选), перебираем все значения.
-  //
-  // Логика:
-  //   _getComboIds(nation=X, tier=null, type=null, base)
-  //     → суммирует combo[X|*|*] с учётом активных _state.tier и _state.type
-  //
-  // Правило фиксации:
-  //   - если параметр передан явно (не null) — используем его
-  //   - если параметр == null И в _state выбраны значения — фиксируем по ним (intersection)
-  //   - если параметр == null И в _state ничего не выбрано — суммируем по всем значениям
-  function _getComboIds(fixNation, fixTier, fixType, tankBaseIds) {
-    // Определяем наборы значений для каждого измерения
-    const nations = fixNation !== null
-      ? [fixNation]
-      : (_state.nation.length > 0 ? _state.nation : [...new Set(Object.keys(_comboIndex).map(k => k.split('|')[0]))]);
-
-    const tiers = fixTier !== null
-      ? [fixTier]
-      : (_state.tier.length > 0 ? _state.tier : [...new Set(Object.keys(_comboIndex).map(k => k.split('|')[1]))]);
-
-    const types = fixType !== null
-      ? [fixType]
-      : (_state.type.length > 0 ? _state.type : [...new Set(Object.keys(_comboIndex).map(k => k.split('|')[2]))]);
-
-    // Объединяем (union) все подходящие combo-ключи
-    let result = new Set();
-    for (const n of nations) {
-      for (const t of tiers) {
-        for (const tp of types) {
-          const ids = _comboIndex[`${n}|${t}|${tp}`] || [];
-          for (const id of ids) result.add(String(id));
-        }
-      }
-    }
-
-    // Пересекаем с tankBaseIds (сценарий + поиск + танки)
-    if (tankBaseIds !== null) {
-      result = new Set([...result].filter(id => tankBaseIds.has(id)));
-    }
-
-    return result;
-  }
-
-  // Вычисляет Set ID лотов со всеми активными фильтрами,
-  // кроме поля excludeField ('nation'|'tier'|'type'|null).
-  // Всегда включает танки (AND-логика), сценарий и поиск.
-  // Возвращает Set lotId после применения фильтров:
-  //   null            → все фильтры (сценарий + поиск + танки + нации + уровни + типы)
-  //   'all-dimensional' → только сценарий + поиск + танки (без nation/tier/type,
-  //                        они обрабатываются через combo_index в _getComboIds)
-  function _getBaseIdsExcluding(excludeField) {
+  // Базовые IDs (без учёта nation/tier/type/tanks — для вычисления доступных опций)
+  function _getBaseIds() {
     let result = null;
 
-    // Сценарий
     if (_state.scenario && typeof FilterEngine !== 'undefined') {
       const scenario = FilterEngine.SCENARIOS.find(s => s.id === _state.scenario);
       if (scenario && scenario.type !== 'advanced') {
@@ -472,7 +398,6 @@ const AdaptiveFilter = (() => {
       }
     }
 
-    // Поиск
     if (_state.search) {
       const q = _normStr(_state.search);
       const searchIds = _allLots
@@ -486,50 +411,8 @@ const AdaptiveFilter = (() => {
       result = _intersect(result, searchIds);
     }
 
-    // Танки (AND-логика) — всегда учитываем
-    if (_state.tanks.length > 0) {
-      for (const tankName of _state.tanks) {
-        const ids = (_tanksIndex[tankName] || []).map(String);
-        result = _intersect(result, ids);
-      }
-    }
-
-    // При 'all-dimensional' nation/tier/type не применяем —
-    // они учитываются через _getComboIds с combo_index
-    if (excludeField !== 'all-dimensional') {
-      // Нации
-      if (_state.nation.length > 0) {
-        let nationIds = [];
-        for (const nat of _state.nation) {
-          const ids = (_nationIndex[nat] || []).map(String);
-          nationIds = [...new Set([...nationIds, ...ids])];
-        }
-        result = _intersect(result, nationIds);
-      }
-
-      // Уровни
-      if (_state.tier.length > 0) {
-        let tierIds = [];
-        for (const tier of _state.tier) {
-          const ids = (_tierIndex[tier] || []).map(String);
-          tierIds = [...new Set([...tierIds, ...ids])];
-        }
-        result = _intersect(result, tierIds);
-      }
-
-      // Типы
-      if (_state.type.length > 0) {
-        let typeIds = [];
-        for (const tp of _state.type) {
-          const ids = (_typeIndex[tp] || []).map(String);
-          typeIds = [...new Set([...typeIds, ...ids])];
-        }
-        result = _intersect(result, typeIds);
-      }
-    }
-
     if (result === null) result = _allLots.map(l => String(l.id));
-    return new Set(result);
+    return result;
   }
 
   // ── Доступные танки для выбора (с учётом нации/уровня/типа) ──
