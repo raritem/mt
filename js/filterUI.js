@@ -283,7 +283,7 @@ const FilterUI = (() => {
       chip.className = 'af-chip' + (isActive ? ' af-chip--active' : '') + (count === 0 ? ' af-chip--disabled' : '');
       chip.innerHTML = `${_esc(labelFn(k))}`;
       if (count > 0) {
-        chip.addEventListener('click', () => onClick(k));
+        chip.addEventListener('click', () => { chip.blur(); onClick(k); });
       }
       el.appendChild(chip);
     });
@@ -307,7 +307,7 @@ const FilterUI = (() => {
       const flagHtml = _flagImg(k);
       chip.innerHTML = `${flagHtml}<span class="af-nation-name">${_esc(k)}</span>`;
       if (count > 0) {
-        chip.addEventListener('click', () => AdaptiveFilter.toggleNation(k));
+        chip.addEventListener('click', () => { chip.blur(); AdaptiveFilter.toggleNation(k); });
       }
       el.appendChild(chip);
     });
@@ -342,20 +342,9 @@ const FilterUI = (() => {
     shown.forEach(([name, info]) => {
       const isActive = state.tanks.includes(name);
 
-      // Определяем, является ли этот выбранный танк "пришпиленным" (не совпадает с текущими фильтрами)
-      const isPinnedOutOfFilter = isActive && (() => {
-        if (!info) return false;
-        if (state.tier.length > 0 && !state.tier.includes(String(info.tier))) return true;
-        if (state.nation.length > 0 && !state.nation.includes(info.nation)) return true;
-        if (state.type.length > 0 && !state.type.includes(info.type)) return true;
-        return false;
-      })();
-
       const item = document.createElement('button');
       item.type = 'button';
-      item.className = 'af-tank-item' +
-        (isActive ? ' af-tank-item--active' : '') +
-        (isPinnedOutOfFilter ? ' af-tank-item--pinned' : '');
+      item.className = 'af-tank-item' + (isActive ? ' af-tank-item--active' : '');
 
       const iconUrl = info.icon && typeof assetUrl === 'function'
         ? assetUrl('icons/small/' + info.icon)
@@ -370,7 +359,7 @@ const FilterUI = (() => {
         <span class="af-tank-name">${_esc(name)}</span>
         ${tierBadge}
       `;
-      item.addEventListener('click', () => AdaptiveFilter.toggleTank(name));
+      item.addEventListener('click', () => { item.blur(); AdaptiveFilter.toggleTank(name); });
       el.appendChild(item);
     });
 

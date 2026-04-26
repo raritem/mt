@@ -2700,6 +2700,25 @@ body.qv-open {
   margin-bottom: 16px;
 }
 
+/* Убираем синюю/серую подсветку после тапа на мобилке для всех кнопок фильтра */
+.af-root button,
+.af-chip,
+.af-tank-item,
+.af-capsule-remove {
+  -webkit-tap-highlight-color: transparent;
+}
+.af-root button:focus,
+.af-tank-item:focus,
+.af-capsule-remove:focus {
+  outline: none;
+}
+.af-root button:focus-visible,
+.af-tank-item:focus-visible,
+.af-capsule-remove:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ── Строка поиска + кнопка фильтра ─────────────────────────── */
 .af-searchrow {
   display: flex;
@@ -2950,6 +2969,10 @@ body.qv-open {
   border-color: var(--accent);
   color: var(--text-primary);
 }
+
+/* Убираем focus-outline после тапа на мобилке — оставляем только для keyboard nav */
+.af-chip:focus { outline: none; }
+.af-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .af-chip--active {
   background: rgba(245,197,24,0.12);
