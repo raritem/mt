@@ -91,31 +91,19 @@ const AdaptiveFilter = (() => {
 
   function toggleNation(nation) {
     _state.nation = _toggle(_state.nation, nation);
-    _state.tanks = _state.tanks.filter(t => {
-      const info = _tanksData[t];
-      if (!info) return true;
-      return _state.nation.length === 0 || _state.nation.includes(info.nation);
-    });
+    // Выбранные танки НЕ удаляются при смене нации — они защищены как явный выбор пользователя
     _notify();
   }
 
   function toggleTier(tier) {
     _state.tier = _toggle(_state.tier, String(tier));
-    _state.tanks = _state.tanks.filter(t => {
-      const info = _tanksData[t];
-      if (!info) return true;
-      return _state.tier.length === 0 || _state.tier.includes(String(info.tier));
-    });
+    // Выбранные танки НЕ удаляются при смене уровня — они защищены как явный выбор пользователя
     _notify();
   }
 
   function toggleType(type) {
     _state.type = _toggle(_state.type, type);
-    _state.tanks = _state.tanks.filter(t => {
-      const info = _tanksData[t];
-      if (!info) return true;
-      return _state.type.length === 0 || _state.type.includes(info.type);
-    });
+    // Выбранные танки НЕ удаляются при смене типа — они защищены как явный выбор пользователя
     _notify();
   }
 
@@ -304,6 +292,20 @@ const AdaptiveFilter = (() => {
     const ids = _getFilteredIds();
     const idSet = new Set(ids);
 
+    // Автоудаление защищённого танка: если в результатах фильтрации нет ни одного
+    // аккаунта с этим танком — удаляем его из выбранных (кейсы: поиск или сценарий
+    // исключили все аккаунты с этим танком).
+    if (_state.tanks.length > 0) {
+      const tanksToRemove = _state.tanks.filter(tankName => {
+        const lotIds = (_tanksIndex[tankName] || []).map(String);
+        return !lotIds.some(id => idSet.has(id));
+      });
+      if (tanksToRemove.length > 0) {
+        _state.tanks = _state.tanks.filter(t => !tanksToRemove.includes(t));
+        // Пересчитываем IDs после удаления (рекурсивный вызов не нужен — просто продолжаем)
+      }
+    }
+
     // Получаем объекты лотов в порядке из _allLots
     let lots = _allLots.filter(l => idSet.has(String(l.id)));
 
@@ -422,11 +424,22 @@ const AdaptiveFilter = (() => {
 
     const tankCounts = {};
     for (const [tankName, lotIds] of Object.entries(_tanksIndex)) {
+      const info = _tanksData[tankName];
+      if (!info) continue;
+
+      // Выбранный пользователем танк — защищённый слой:
+      // всегда отображается в списке как активный, даже если текущие фильтры
+      // уровня/нации/типа его не включают.
+      const isSelected = _state.tanks.includes(tankName);
+      if (isSelected) {
+        const count = lotIds.filter(id => idSet.has(String(id))).length;
+        tankCounts[tankName] = { count, ...info };
+        continue;
+      }
+
+      // Для не-выбранных танков применяем фильтрацию по нации/уровню/типу
       const count = lotIds.filter(id => idSet.has(String(id))).length;
       if (count > 0) {
-        const info = _tanksData[tankName];
-        if (!info) continue;
-        // Фильтруем по выбранным нации/уровню/типу
         if (_state.nation.length > 0 && !_state.nation.includes(info.nation)) continue;
         if (_state.tier.length > 0 && !_state.tier.includes(String(info.tier))) continue;
         if (_state.type.length > 0 && !_state.type.includes(info.type)) continue;

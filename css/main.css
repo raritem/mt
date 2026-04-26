@@ -3037,6 +3037,16 @@ body.qv-open {
   color: var(--accent);
 }
 
+/* Выбранный танк, не совпадающий с текущими фильтрами уровня/нации/типа.
+   Отображается как активный, но с пунктирной рамкой — сигнал о "другом слое". */
+.af-tank-item--active.af-tank-item--pinned {
+  background: rgba(245,197,24,0.08);
+  border-color: var(--accent);
+  border-style: dashed;
+  color: var(--accent);
+  opacity: 0.85;
+}
+
 .af-tank-icon {
   width: 28px;
   height: 20px;

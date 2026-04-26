@@ -338,9 +338,21 @@ const FilterUI = (() => {
 
     shown.forEach(([name, info]) => {
       const isActive = state.tanks.includes(name);
+
+      // Определяем, является ли этот выбранный танк "пришпиленным" (не совпадает с текущими фильтрами)
+      const isPinnedOutOfFilter = isActive && (() => {
+        if (!info) return false;
+        if (state.tier.length > 0 && !state.tier.includes(String(info.tier))) return true;
+        if (state.nation.length > 0 && !state.nation.includes(info.nation)) return true;
+        if (state.type.length > 0 && !state.type.includes(info.type)) return true;
+        return false;
+      })();
+
       const item = document.createElement('button');
       item.type = 'button';
-      item.className = 'af-tank-item' + (isActive ? ' af-tank-item--active' : '');
+      item.className = 'af-tank-item' +
+        (isActive ? ' af-tank-item--active' : '') +
+        (isPinnedOutOfFilter ? ' af-tank-item--pinned' : '');
 
       const iconUrl = info.icon && typeof assetUrl === 'function'
         ? assetUrl('icons/small/' + info.icon)
