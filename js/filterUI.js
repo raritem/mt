@@ -90,12 +90,12 @@ const FilterUI = (() => {
                 <div class="af-chips" id="af-tier-chips"></div>
               </div>
               <div class="af-section-row">
-                <span class="af-section-label">Нация</span>
-                <div class="af-chips" id="af-nation-chips"></div>
-              </div>
-              <div class="af-section-row">
                 <span class="af-section-label">Класс</span>
                 <div class="af-chips" id="af-type-chips"></div>
+              </div>
+              <div class="af-section-row">
+                <span class="af-section-label">Нация</span>
+                <div class="af-chips" id="af-nation-chips"></div>
               </div>
               <div class="af-section-row">
                 <span class="af-section-label">Техника</span>
@@ -200,11 +200,14 @@ const FilterUI = (() => {
   function _renderCapsules() {
     if (!_capsulesEl) return;
     const capsules = AdaptiveFilter.getActiveCapsules();
+    const inactiveTanks = new Set(AdaptiveFilter.getInactiveTanks());
     _capsulesEl.innerHTML = '';
 
     capsules.forEach(cap => {
       const el = document.createElement('span');
-      el.className = 'af-capsule';
+      // Танк-капсула: серая и пунктирная если в текущей выборке нет аккаунтов с этим танком
+      const isInactiveTank = cap.type === 'tank' && inactiveTanks.has(cap.value);
+      el.className = 'af-capsule' + (isInactiveTank ? ' af-capsule--inactive' : '');
       el.innerHTML = `<span class="af-capsule-label">${_esc(cap.label)}</span><button class="af-capsule-remove" aria-label="Удалить">✕</button>`;
       el.querySelector('.af-capsule-remove').addEventListener('click', () => {
         AdaptiveFilter.removeParam(cap.type, cap.value);
@@ -278,7 +281,7 @@ const FilterUI = (() => {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'af-chip' + (isActive ? ' af-chip--active' : '') + (count === 0 ? ' af-chip--disabled' : '');
-      chip.innerHTML = `${_esc(labelFn(k))}<span class="af-chip-count">${count}</span>`;
+      chip.innerHTML = `${_esc(labelFn(k))}`;
       if (count > 0) {
         chip.addEventListener('click', () => onClick(k));
       }
@@ -302,7 +305,7 @@ const FilterUI = (() => {
       chip.type = 'button';
       chip.className = 'af-chip af-chip--nation' + (isActive ? ' af-chip--active' : '') + (count === 0 ? ' af-chip--disabled' : '');
       const flagHtml = _flagImg(k);
-      chip.innerHTML = `${flagHtml}<span class="af-nation-name">${_esc(k)}</span><span class="af-chip-count">${count}</span>`;
+      chip.innerHTML = `${flagHtml}<span class="af-nation-name">${_esc(k)}</span>`;
       if (count > 0) {
         chip.addEventListener('click', () => AdaptiveFilter.toggleNation(k));
       }
@@ -366,7 +369,6 @@ const FilterUI = (() => {
         ${imgHtml}
         <span class="af-tank-name">${_esc(name)}</span>
         ${tierBadge}
-        <span class="af-tank-count">${info.count}</span>
       `;
       item.addEventListener('click', () => AdaptiveFilter.toggleTank(name));
       el.appendChild(item);
@@ -442,14 +444,9 @@ const FilterUI = (() => {
 
   // ── Счётчик результатов ───────────────────────────────────────
   function _updateCounters(count) {
+    // Счётчик результатов скрыт по дизайн-решению
     const el = document.getElementById('af-results-count');
-    if (!el) return;
-    if (AdaptiveFilter.hasActiveFilters()) {
-      el.style.display = '';
-      el.textContent = `Найдено: ${count} ${_plural(count, 'аккаунт', 'аккаунта', 'аккаунтов')}`;
-    } else {
-      el.style.display = 'none';
-    }
+    if (el) el.style.display = 'none';
   }
 
   function _plural(n, one, few, many) {
