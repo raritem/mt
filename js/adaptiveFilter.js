@@ -168,8 +168,6 @@ const AdaptiveFilter = (() => {
   }
 
   // ── Основная фильтрация через индексы ─────────────────────────
-  // tier/nation/type НЕ фильтруют аккаунты — они используются только для
-  // сужения списка техники внутри панели фильтра (см. getAvailableTanks, _idsWithout).
   function _getFilteredIds() {
     let result = null; // null = все
 
@@ -196,7 +194,37 @@ const AdaptiveFilter = (() => {
       result = _intersect(result, searchIds);
     }
 
-    // 3. Конкретные танки (AND-логика)
+    // 3. Нации (через индекс)
+    if (_state.nation.length > 0) {
+      let nationIds = [];
+      for (const nat of _state.nation) {
+        const ids = (_nationIndex[nat] || []).map(String);
+        nationIds = [...new Set([...nationIds, ...ids])];
+      }
+      result = _intersect(result, nationIds);
+    }
+
+    // 4. Уровни (через индекс)
+    if (_state.tier.length > 0) {
+      let tierIds = [];
+      for (const tier of _state.tier) {
+        const ids = (_tierIndex[tier] || []).map(String);
+        tierIds = [...new Set([...tierIds, ...ids])];
+      }
+      result = _intersect(result, tierIds);
+    }
+
+    // 5. Типы (через индекс)
+    if (_state.type.length > 0) {
+      let typeIds = [];
+      for (const tp of _state.type) {
+        const ids = (_typeIndex[tp] || []).map(String);
+        typeIds = [...new Set([...typeIds, ...ids])];
+      }
+      result = _intersect(result, typeIds);
+    }
+
+    // 6. Конкретные танки (AND-логика)
     if (_state.tanks.length > 0) {
       for (const tankName of _state.tanks) {
         const ids = (_tanksIndex[tankName] || []).map(String);
@@ -204,7 +232,7 @@ const AdaptiveFilter = (() => {
       }
     }
 
-    // 4. Если результат null — возвращаем все IDs
+    // 7. Если результат null — возвращаем все IDs
     if (result === null) {
       result = _allLots.map(l => String(l.id));
     }
@@ -510,8 +538,17 @@ const AdaptiveFilter = (() => {
       capsules.push({ type: 'tank', value: tank, label: tank });
     }
 
-    // tier/nation/type — вспомогательные фильтры для панели техники,
-    // не порождают капсулы и не считаются «активными фильтрами»
+    for (const n of _state.nation) {
+      capsules.push({ type: 'nation', value: n, label: n });
+    }
+
+    for (const t of _state.tier) {
+      capsules.push({ type: 'tier', value: t, label: `${t} ур.` });
+    }
+
+    for (const tp of _state.type) {
+      capsules.push({ type: 'type', value: tp, label: tp });
+    }
 
     if (_state.priceMin !== null || _state.priceMax !== null) {
       const label = `₽ ${_state.priceMin || '0'}–${_state.priceMax || '∞'}`;
@@ -542,6 +579,9 @@ const AdaptiveFilter = (() => {
       _state.search !== '' ||
       _state.scenario !== null ||
       _state.tanks.length > 0 ||
+      _state.nation.length > 0 ||
+      _state.tier.length > 0 ||
+      _state.type.length > 0 ||
       _state.priceMin !== null || _state.priceMax !== null ||
       _state.bondsMin !== null || _state.bondsMax !== null ||
       _state.goldMin !== null  || _state.goldMax !== null  ||
