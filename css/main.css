@@ -2798,6 +2798,16 @@ body.qv-open {
 
 .af-filter-btn svg { width: 15px; height: 15px; }
 
+.af-filter-btn:hover,
+.af-filter-btn--active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.af-filter-btn--active {
+  background: rgba(245,197,24,0.08);
+}
+
 .af-filter-count {
   display: inline-flex;
   align-items: center;
@@ -2812,7 +2822,6 @@ body.qv-open {
   margin-left: 2px;
 }
 
-/* ── Кнопка сброса ──────────────────────────────────────────── */
 .af-reset-btn {
   padding: 9px 14px;
   background: none;
@@ -2825,22 +2834,12 @@ body.qv-open {
   transition: color 0.15s, border-color 0.15s;
 }
 
-.af-filter-btn--active {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: rgba(245,197,24,0.08);
+.af-reset-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .af-filter-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .af-reset-btn:hover {
-    color: var(--text-primary);
-    border-color: var(--text-muted);
-  }
-} ─────────────────────────────────────────────────── */
+/* ── Капсулы ─────────────────────────────────────────────────── */
 .af-capsules {
   display: flex;
   flex-wrap: wrap;
@@ -2884,9 +2883,7 @@ body.qv-open {
   flex-shrink: 0;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .af-capsule-remove:hover { color: var(--text-primary); }
-}
+.af-capsule-remove:hover { color: var(--text-primary); }
 
 /* Капсула танка, которого нет ни в одном аккаунте текущей выборки */
 .af-capsule--inactive {
@@ -2968,12 +2965,9 @@ body.qv-open {
   white-space: nowrap;
 }
 
-/* hover только на устройствах с курсором — не залипает на мобилке после тапа */
-@media (hover: hover) and (pointer: fine) {
-  .af-chip:hover:not(.af-chip--disabled) {
-    border-color: var(--accent);
-    color: var(--text-primary);
-  }
+.af-chip:hover:not(.af-chip--disabled) {
+  border-color: var(--accent);
+  color: var(--text-primary);
 }
 
 /* Убираем focus-outline после тапа на мобилке — оставляем только для keyboard nav */
@@ -3067,11 +3061,9 @@ body.qv-open {
   white-space: nowrap;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .af-tank-item:hover {
-    border-color: var(--accent);
-    color: var(--text-primary);
-  }
+.af-tank-item:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
 }
 
 .af-tank-item--active {
