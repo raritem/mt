@@ -196,12 +196,13 @@ const AdaptiveFilter = (() => {
       result = _intersect(result, searchIds);
     }
 
-    // 3. Конкретные танки (AND-логика)
+    // 3. Конкретные танки (OR-логика: аккаунт содержит хотя бы 1 из выбранных)
     if (_state.tanks.length > 0) {
+      let tankIds = new Set();
       for (const tankName of _state.tanks) {
-        const ids = (_tanksIndex[tankName] || []).map(String);
-        result = _intersect(result, ids);
+        for (const id of (_tanksIndex[tankName] || [])) tankIds.add(String(id));
       }
+      result = _intersect(result, Array.from(tankIds));
     }
 
     // 4. Если результат null — возвращаем все IDs
@@ -339,9 +340,13 @@ const AdaptiveFilter = (() => {
         }).map(l => String(l.id));
         result = _intersect(result, searchIds);
       }
-      // Выбранные танки
-      for (const tankName of _state.tanks) {
-        result = _intersect(result, (_tanksIndex[tankName] || []).map(String));
+      // Выбранные танки (OR-логика)
+      if (_state.tanks.length > 0) {
+        let tankIds = new Set();
+        for (const tankName of _state.tanks) {
+          for (const id of (_tanksIndex[tankName] || [])) tankIds.add(String(id));
+        }
+        result = _intersect(result, Array.from(tankIds));
       }
       // Tier (если не исключаем)
       if (withoutDimension !== 'tier' && _state.tier.length > 0) {
@@ -442,13 +447,13 @@ const AdaptiveFilter = (() => {
       result = _intersect(result, searchIds);
     }
 
-    // Выбранные танки — включаем в базу, чтобы доступные tier/nation/type
-    // вычислялись только среди аккаунтов, на которых есть эти танки
+    // Выбранные танки (OR-логика)
     if (_state.tanks.length > 0) {
+      let tankIds = new Set();
       for (const tankName of _state.tanks) {
-        const ids = (_tanksIndex[tankName] || []).map(String);
-        result = _intersect(result, ids);
+        for (const id of (_tanksIndex[tankName] || [])) tankIds.add(String(id));
       }
+      result = _intersect(result, Array.from(tankIds));
     }
 
     if (result === null) result = _allLots.map(l => String(l.id));

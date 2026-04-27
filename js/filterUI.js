@@ -328,12 +328,25 @@ const FilterUI = (() => {
       entries = entries.filter(([name]) => name.toLowerCase().includes(filterQuery));
     }
 
-    // Сортировка: выбранные сначала, потом по количеству
+    // Сортировка: выбранные сначала, потом по группе (прем 8-9 → 10 → прем 7 → 6 → 5) и interest_level
+    function _groupOrder(info) {
+      const tier   = String(info.tier || '');
+      const isPrem = !!info.isPrem;
+      if ((tier === '8' || tier === '9') && isPrem) return 0;
+      if (tier === '10') return 1;
+      if (tier === '7' && isPrem) return 2;
+      if (tier === '6' && isPrem) return 3;
+      if (tier === '5' && isPrem) return 4;
+      return 5;
+    }
     entries.sort(([a, ai], [b, bi]) => {
       const aS = state.tanks.includes(a) ? 1 : 0;
       const bS = state.tanks.includes(b) ? 1 : 0;
       if (bS !== aS) return bS - aS;
-      return (bi.count || 0) - (ai.count || 0);
+      const ga = _groupOrder(ai), gb = _groupOrder(bi);
+      if (ga !== gb) return ga - gb;
+      return (parseInt(bi.interest_level || '0', 10) || 0) -
+             (parseInt(ai.interest_level || '0', 10) || 0);
     });
 
     // Ограничиваем количество отображаемых (чтобы не тормозить)

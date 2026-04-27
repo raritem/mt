@@ -33,7 +33,7 @@ const ConfiguratorEngine = (() => {
   let _tanksData = {};
   let _lotsById = {};
 
-  let _onChangeCallback = null;
+  let _onChangeCallbacks = [];
 
   // ── Init ─────────────────────────────────────────────────────
   function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, tanksData }) {
@@ -49,10 +49,13 @@ const ConfiguratorEngine = (() => {
     }
   }
 
-  function onChange(cb) { _onChangeCallback = cb; }
+  function onChange(cb) {
+    if (typeof cb === 'function') _onChangeCallbacks.push(cb);
+  }
 
   function _notify() {
-    if (_onChangeCallback) _onChangeCallback(getResult());
+    const result = getResult();
+    for (const cb of _onChangeCallbacks) cb(result);
   }
 
   function getState() { return { ..._state }; }
@@ -416,8 +419,28 @@ const ConfiguratorUI = (() => {
   let _currentOptions = {};
   let _onResultCallback = null;
 
+  // ── Сортировка танков: прем 8-9 → 10 ур → прем 7 → 6 → 5, внутри — по interest_level desc ──
+  function _sortTankEntries(entries) {
+    function _groupOrder(info) {
+      const tier   = String(info.tier || '');
+      const isPrem = !!info.isPrem;
+      if ((tier === '8' || tier === '9') && isPrem) return 0;
+      if (tier === '10') return 1;
+      if (tier === '7' && isPrem) return 2;
+      if (tier === '6' && isPrem) return 3;
+      if (tier === '5' && isPrem) return 4;
+      return 5;
+    }
+    return [...entries].sort(([, a], [, b]) => {
+      const ga = _groupOrder(a), gb = _groupOrder(b);
+      if (ga !== gb) return ga - gb;
+      const ia = parseInt(a.interest_level || '0', 10) || 0;
+      const ib = parseInt(b.interest_level || '0', 10) || 0;
+      return ib - ia;
+    });
+  }
+
   const NATION_FLAG_FILES = {
-    'СССР':         'ussr.png',
     'США':          'usa.png',
     'Германия':     'germany.png',
     'Франция':      'france.png',
@@ -729,18 +752,18 @@ const ConfiguratorUI = (() => {
           ? entries.filter(([name]) => name.toLowerCase().includes(filterQuery))
           : entries;
 
-        filtered.sort(([,a],[,b]) => (b.count || 0) - (a.count || 0));
+        const sorted = _sortTankEntries(filtered);
 
-        combosSection.style.display = filtered.length > 0 ? '' : 'none';
+        combosSection.style.display = sorted.length > 0 ? '' : 'none';
         combosList.innerHTML = '';
-        const shown = filtered.slice(0, 40);
+        const shown = sorted.slice(0, 40);
         shown.forEach(([name, info]) => {
           combosList.appendChild(_buildTankItem(name, info, false, false));
         });
-        if (filtered.length > 40) {
+        if (sorted.length > 40) {
           const more = document.createElement('div');
           more.className = 'cfg-tank-more';
-          more.textContent = `+${filtered.length - 40} — уточните фильтры`;
+          more.textContent = `+${sorted.length - 40} — уточните фильтры`;
           combosList.appendChild(more);
         }
         if (shown.length === 0) {
@@ -766,7 +789,7 @@ const ConfiguratorUI = (() => {
         entries = entries.filter(([name]) => name.toLowerCase().includes(filterQuery));
       }
 
-      entries.sort(([,a],[,b]) => (b.count || 0) - (a.count || 0));
+      entries = _sortTankEntries(entries);
 
       if (entries.length === 0) {
         if (state.tier || state.type || state.nation) {
@@ -935,5 +958,9 @@ const ConfiguratorUI = (() => {
     return many;
   }
 
-  return { init };
+  function _setOpen(val) {
+    _isOpen = !!val;
+  }
+
+  return { init, _setOpen };
 })();
