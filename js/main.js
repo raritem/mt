@@ -548,18 +548,6 @@ async function loadCatalogue() {
       });
     }
 
-    // ── Инициализируем ConfiguratorEngine ─────────────────────────
-    if (typeof ConfiguratorEngine !== 'undefined') {
-      ConfiguratorEngine.init({
-        allLots,
-        tanksIndex,
-        nationIndex,
-        tierIndex,
-        typeIndex,
-        tanksData: window._tanksData,
-      });
-    }
-
     // ── Сценарии ─────────────────────────────────────────────────
     function renderScenariosBlock() {
       const block = document.getElementById('scenarios-block');
@@ -758,11 +746,6 @@ async function loadCatalogue() {
       }
     }
 
-    // Обработчик изменения конфигуратора
-    function onConfiguratorResult(filteredLots) {
-      renderLotsFromFiltered(filteredLots, true);
-    }
-
     // ── Инициализируем FilterUI ───────────────────────────────────
     if (typeof AdaptiveFilter !== 'undefined') {
       AdaptiveFilter.onChange(onFilterResult);
@@ -770,52 +753,6 @@ async function loadCatalogue() {
 
     if (typeof FilterUI !== 'undefined') {
       FilterUI.init('af-filter-root');
-    }
-
-    // ── Инициализируем ConfiguratorUI ────────────────────────────
-    if (typeof ConfiguratorUI !== 'undefined' && typeof ConfiguratorEngine !== 'undefined') {
-      ConfiguratorUI.init('cfg-filter-root', onConfiguratorResult);
-
-      // Взаимное исключение: при открытии конфигуратора — деактивировать сценарий и поиск
-      // Реализуем через перехват toggleOpen — патчим кнопку после рендера
-      const cfgToggleBtn = document.getElementById('cfg-toggle');
-      if (cfgToggleBtn) {
-        cfgToggleBtn.addEventListener('click', () => {
-          // Проверяем, открылся ли конфигуратор (после клика)
-          const cfgBody = document.getElementById('cfg-body');
-          if (cfgBody && cfgBody.style.display !== 'none') {
-            // Конфигуратор открыт — сбрасываем сценарий и поиск в AdaptiveFilter
-            if (typeof AdaptiveFilter !== 'undefined') {
-              if (AdaptiveFilter.getState().scenario) {
-                AdaptiveFilter.setScenario(null);
-                renderScenariosBlock();
-              }
-              if (AdaptiveFilter.getState().search) {
-                AdaptiveFilter.setSearch('');
-                const si = document.getElementById('af-search-input');
-                const sc = document.getElementById('af-search-clear');
-                if (si) si.value = '';
-                if (sc) sc.style.display = 'none';
-              }
-            }
-            // Конфигуратор работает по всей базе — показываем его результаты
-            onConfiguratorResult(ConfiguratorEngine.getResult());
-          } else {
-            // Конфигуратор закрыт — возвращаем управление AdaptiveFilter
-            onFilterResult(AdaptiveFilter.getResult());
-          }
-        }, true); // capture=true чтобы сработал после внутреннего обработчика
-      }
-
-      // Когда конфигуратор активен и меняются его параметры — не перебиваем его результаты AdaptiveFilter
-      const _origCfgonChange = ConfiguratorEngine.onChange;
-      // Синхронизация: если конфигуратор открыт — его результаты главные
-      ConfiguratorEngine.onChange((filteredLots) => {
-        const cfgBody = document.getElementById('cfg-body');
-        if (cfgBody && cfgBody.style.display !== 'none') {
-          onConfiguratorResult(filteredLots);
-        }
-      });
     }
 
     // Первый рендер — убираем спиннер
