@@ -68,45 +68,24 @@
     return String(val).split(',').map(s => s.trim()).filter(Boolean);
   }
 
-  // ── Сортировка: прем 8-9 → 10 → прем 7 → 6 → 5, внутри — по interest_level desc ──
-  function sortTankNames(names) {
-    function groupOrder(info) {
-      const tier   = String(info.tier || '');
-      const isPrem = !!info.isPrem;
-      if ((tier === '8' || tier === '9') && isPrem) return 0;
-      if (tier === '10') return 1;
-      if (tier === '7' && isPrem) return 2;
-      if (tier === '6' && isPrem) return 3;
-      if (tier === '5' && isPrem) return 4;
-      return 5;
-    }
-    return [...names].sort((a, b) => {
-      const ia = tanksMap[a] || {}, ib = tanksMap[b] || {};
-      const ga = groupOrder(ia), gb = groupOrder(ib);
-      if (ga !== gb) return ga - gb;
-      return (parseInt(ib.interest_level || '0', 10) || 0) -
-             (parseInt(ia.interest_level || '0', 10) || 0);
-    });
-  }
-
   const sections = [
     {
       key:   'prems_8_9',
       label: 'PREM танки 8–9 уровня',
-      names: sortTankNames(asTankArray(d.prems_8_9)),
+      names: asTankArray(d.prems_8_9),
     },
     {
       key:   'tanks_10',
       label: 'Танки 10 уровня',
-      names: sortTankNames(asTankArray(d.tanks_10)),
+      names: asTankArray(d.tanks_10),
     },
     {
       key:   'prems_6_7_bonus',
       label: 'PREM танки 5–7 уровня',
-      names: sortTankNames([
+      names: [
         ...asTankArray(d.prems_6_7),
         ...asTankArray(d.bonus_tanks),
-      ]),
+      ],
     },
   ];
 
