@@ -3085,7 +3085,7 @@ body.qv-open {
 }
 
 .af-tank-icon {
-  width: 134px;
+  width: 163px;
   height: 130px;
   object-fit: cover;
   flex-shrink: 0;
@@ -3217,3 +3217,228 @@ body.qv-open {
   .af-range-input { width: 80px; }
 }
 
+
+/* ================================================================
+   TANKNEXUS — ConfiguratorUI styles
+   Стили конфигуратора — переиспользуют af-* классы для элементов
+   внутри панели (chips, tank-list, ranges, capsules).
+   Собственный CSS нужен только для обёртки и шапки.
+   ================================================================ */
+
+.cfg-root {
+  margin-bottom: 0;
+}
+
+/* ── Строка-переключатель ─────────────────────────────────────── */
+.cfg-headerrow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.cfg-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  position: relative;
+}
+
+.cfg-toggle-btn svg {
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.cfg-toggle-btn:hover,
+.cfg-toggle-btn--active {
+  background: var(--bg-elevated, var(--bg-surface));
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.cfg-toggle-btn--active {
+  color: var(--accent);
+}
+
+.cfg-toggle-label {
+  /* скрываем на узких экранах */
+}
+
+.cfg-active-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── Панель конфигуратора ─────────────────────────────────────── */
+.cfg-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.cfg-panel-inner {
+  padding: 12px 16px 0;
+}
+
+/* Переиспользуем af-section* стили внутри cfg-panel */
+.cfg-section {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+.cfg-section:last-child {
+  border-bottom: none;
+}
+
+.cfg-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.cfg-section-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.cfg-section-row:last-child { margin-bottom: 0; }
+
+.cfg-section-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  min-width: 110px;
+  padding-top: 4px;
+  flex-shrink: 0;
+}
+
+.cfg-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.cfg-tank-selector {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-base, var(--bg-surface));
+}
+
+.cfg-tank-search-wrap {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cfg-tank-search {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+}
+
+.cfg-tank-list {
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 4px 4px;
+}
+
+.cfg-range-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.cfg-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+.cfg-checkbox-label:hover { color: var(--text-primary); }
+.cfg-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+/* ── Подвал панели: капсулы + сброс ─────────────────────────── */
+.cfg-panel-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-base, var(--bg-surface));
+}
+
+.cfg-capsules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.cfg-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.cfg-reset-btn:hover {
+  background: var(--bg-elevated, var(--bg-surface));
+  color: var(--text-primary);
+}
+
+/* ── Адаптив ─────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .cfg-section-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cfg-section-label {
+    min-width: unset;
+    padding-top: 0;
+  }
+  .cfg-toggle-label { display: none; }
+}
