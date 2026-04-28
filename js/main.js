@@ -801,38 +801,6 @@ async function loadCatalogue() {
       }
     }
 
-    // ── Патч: открытие панели фильтра сворачивает конфигуратор ───
-    const _filterToggleBtn = document.getElementById('af-filter-toggle');
-    if (_filterToggleBtn) {
-      _filterToggleBtn.addEventListener('click', () => {
-        collapseConfigurator();
-        if (_activeSource === 'configurator') {
-          _activeSource = null;
-          if (typeof AdaptiveFilter !== 'undefined') {
-            renderLotsFromFiltered(AdaptiveFilter.getResult(), true);
-            renderScenariosBlock();
-          }
-        }
-      }, true);
-    }
-
-    // ── Патч: клик на сценарий сворачивает конфигуратор ──────────
-    const _scenariosBlockEl = document.getElementById('scenarios-block');
-    if (_scenariosBlockEl) {
-      _scenariosBlockEl.addEventListener('click', () => {
-        collapseConfigurator();
-        if (_activeSource === 'configurator') {
-          _activeSource = null;
-          if (typeof AdaptiveFilter !== 'undefined') {
-            setTimeout(() => {
-              renderLotsFromFiltered(AdaptiveFilter.getResult(), true);
-              renderScenariosBlock();
-            }, 0);
-          }
-        }
-      }, true);
-    }
-
     // ── Инициализируем AdaptiveConfigurator ──────────────────────
     if (typeof AdaptiveConfigurator !== 'undefined') {
       AdaptiveConfigurator.init({
@@ -862,6 +830,44 @@ async function loadCatalogue() {
 
     if (typeof FilterUI !== 'undefined') {
       FilterUI.init('af-filter-root');
+    }
+
+    // ── Патч: клик на кнопку фильтра сворачивает конфигуратор ────
+    // Вешаем на контейнер #af-filter-root, т.к. FilterUI.init() только что
+    // создал кнопку #af-filter-toggle внутри него. Capture=true гарантирует
+    // что наш обработчик отработает раньше обработчика FilterUI на кнопке.
+    const _afFilterRoot = document.getElementById('af-filter-root');
+    if (_afFilterRoot) {
+      _afFilterRoot.addEventListener('click', (e) => {
+        // Реагируем только на клик по кнопке переключения панели фильтра
+        const btn = e.target.closest('#af-filter-toggle');
+        if (!btn) return;
+        collapseConfigurator();
+        if (_activeSource === 'configurator') {
+          _activeSource = null;
+          if (typeof AdaptiveFilter !== 'undefined') {
+            renderLotsFromFiltered(AdaptiveFilter.getResult(), true);
+            renderScenariosBlock();
+          }
+        }
+      }, true);
+    }
+
+    // ── Патч: клик на сценарий сворачивает конфигуратор ──────────
+    const _scenariosBlockEl = document.getElementById('scenarios-block');
+    if (_scenariosBlockEl) {
+      _scenariosBlockEl.addEventListener('click', () => {
+        collapseConfigurator();
+        if (_activeSource === 'configurator') {
+          _activeSource = null;
+          if (typeof AdaptiveFilter !== 'undefined') {
+            setTimeout(() => {
+              renderLotsFromFiltered(AdaptiveFilter.getResult(), true);
+              renderScenariosBlock();
+            }, 0);
+          }
+        }
+      }, true);
     }
 
     // Первый рендер — убираем спиннер
