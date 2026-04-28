@@ -375,6 +375,10 @@
   border-color: var(--accent);
 }
 
+.cf-tank-search::placeholder {
+  color: var(--text-muted);
+}
+
 .cf-tank-list {
   display: flex;
   flex-wrap: wrap;
@@ -520,6 +524,10 @@
 .cf-range-input:focus {
   outline: none;
   border-color: var(--accent);
+}
+
+.cf-range-input::placeholder {
+  color: var(--text-muted);
 }
 
 .cf-range-dash {
