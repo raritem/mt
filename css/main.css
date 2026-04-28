@@ -2766,6 +2766,10 @@ body.qv-open {
   border-color: var(--accent);
 }
 
+.af-search-input::placeholder {
+  color: var(--text-muted);
+}
+
 .af-search-clear {
   position: absolute;
   right: 8px;
@@ -3040,6 +3044,10 @@ body.qv-open {
   border-color: var(--accent);
 }
 
+.af-tank-search::placeholder {
+  color: var(--text-muted);
+}
+
 .af-tank-list {
   display: flex;
   flex-wrap: wrap;
@@ -3186,6 +3194,10 @@ body.qv-open {
 .af-range-input:focus {
   outline: none;
   border-color: var(--accent);
+}
+
+.af-range-input::placeholder {
+  color: var(--text-muted);
 }
 
 .af-range-dash {
