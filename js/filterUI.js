@@ -271,18 +271,18 @@ const FilterUI = (() => {
     if (!el) return;
     el.innerHTML = '';
 
-    let keys = order
-      ? order.filter(k => optionsMap[k] !== undefined)
-      : Object.keys(optionsMap).sort();
+    // Показываем все ключи из order — недоступные серые, но не скрыты
+    let keys = order || Object.keys(optionsMap).sort();
 
     keys.forEach(k => {
-      const count = optionsMap[k] || 0;
+      const count = optionsMap[k] !== undefined ? optionsMap[k] : 0;
       const isActive = selected.includes(k);
+      const isDisabled = count === 0;
       const chip = document.createElement('button');
       chip.type = 'button';
-      chip.className = 'af-chip' + (isActive ? ' af-chip--active' : '') + (count === 0 ? ' af-chip--disabled' : '');
+      chip.className = 'af-chip' + (isActive ? ' af-chip--active' : '') + (isDisabled ? ' af-chip--disabled' : '');
       chip.innerHTML = `${_esc(labelFn(k))}`;
-      if (count > 0) {
+      if (!isDisabled) {
         chip.addEventListener('click', () => { chip.blur(); onClick(k); });
       }
       el.appendChild(chip);
@@ -296,17 +296,19 @@ const FilterUI = (() => {
     el.innerHTML = '';
 
     const NATION_ORDER = ['СССР','США','Германия','Франция','Британия','Япония','Китай','Швеция','Польша','Италия','Чехословакия','Сборная нация'];
-    const keys = NATION_ORDER.filter(k => optionsMap[k] !== undefined);
+    // Показываем все нации, недоступные — серые
+    const keys = NATION_ORDER;
 
     keys.forEach(k => {
-      const count = optionsMap[k] || 0;
+      const count = optionsMap[k] !== undefined ? optionsMap[k] : 0;
       const isActive = selected.includes(k);
+      const isDisabled = count === 0;
       const chip = document.createElement('button');
       chip.type = 'button';
-      chip.className = 'af-chip af-chip--nation' + (isActive ? ' af-chip--active' : '') + (count === 0 ? ' af-chip--disabled' : '');
+      chip.className = 'af-chip af-chip--nation' + (isActive ? ' af-chip--active' : '') + (isDisabled ? ' af-chip--disabled' : '');
       const flagHtml = _flagImg(k);
       chip.innerHTML = `${flagHtml}<span class="af-nation-name">${_esc(k)}</span>`;
-      if (count > 0) {
+      if (!isDisabled) {
         chip.addEventListener('click', () => { chip.blur(); AdaptiveFilter.toggleNation(k); });
       }
       el.appendChild(chip);

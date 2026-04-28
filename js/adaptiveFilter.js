@@ -371,25 +371,22 @@ const AdaptiveFilter = (() => {
     const idsForNation = _idsWithout('nation');
     const idsForType   = _idsWithout('type');
 
-    // Доступные уровни: те, у которых есть хотя бы 1 аккаунт в idsForTier
+    // Все уровни — всегда показываем, count=0 → недоступен (серый)
     const tiers = {};
     for (const [tier, lotIds] of Object.entries(_tierIndex)) {
-      const count = lotIds.filter(id => idsForTier.has(String(id))).length;
-      if (count > 0) tiers[tier] = count;
+      tiers[tier] = lotIds.filter(id => idsForTier.has(String(id))).length;
     }
 
-    // Доступные нации
+    // Все нации
     const nations = {};
     for (const [nation, lotIds] of Object.entries(_nationIndex)) {
-      const count = lotIds.filter(id => idsForNation.has(String(id))).length;
-      if (count > 0) nations[nation] = count;
+      nations[nation] = lotIds.filter(id => idsForNation.has(String(id))).length;
     }
 
-    // Доступные типы
+    // Все типы
     const types = {};
     for (const [tp, lotIds] of Object.entries(_typeIndex)) {
-      const count = lotIds.filter(id => idsForType.has(String(id))).length;
-      if (count > 0) types[tp] = count;
+      types[tp] = lotIds.filter(id => idsForType.has(String(id))).length;
     }
 
     // Диапазоны цен/ресурсов — по текущей полной фильтрации

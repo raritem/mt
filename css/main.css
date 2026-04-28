@@ -3044,6 +3044,26 @@ body.qv-open {
   max-height: 280px;
   overflow-y: auto;
   padding: 4px 0;
+  /* Прозрачный фон скроллбара */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+.af-tank-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.af-tank-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.af-tank-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+}
+
+.af-tank-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.22);
 }
 
 .af-tank-item {

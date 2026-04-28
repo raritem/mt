@@ -129,12 +129,13 @@ const ConfiguratorUI = (() => {
         <!-- Развёрнутое состояние: фильтр конфигуратора -->
         <div class="cf-expanded" id="cf-expanded" style="display:none">
 
-          <!-- Заголовок панели с кнопками управления -->
-          <div class="cf-panel-header">
-            <div class="cf-panel-header-left">
-              <span class="cf-panel-header-title">Подбери аккаунт по комбинации техники</span>
-            </div>
-            <div class="cf-panel-header-right">
+          <!-- Заголовок над панелью -->
+          <div class="cf-above-title">Подбери аккаунт по комбинации техники</div>
+
+          <!-- Строка: капсулы слева, кнопки справа -->
+          <div class="cf-capsules-row">
+            <div class="cf-capsules" id="cf-capsules"></div>
+            <div class="cf-capsules-actions">
               <button class="cf-reset-btn" id="cf-reset-btn" type="button" style="display:none" aria-label="Сбросить всё">
                 Сбросить
               </button>
@@ -143,9 +144,6 @@ const ConfiguratorUI = (() => {
               </button>
             </div>
           </div>
-
-          <!-- Капсулы активных фильтров -->
-          <div class="cf-capsules" id="cf-capsules"></div>
 
           <!-- Панель конфигуратора (всегда открыта) -->
           <div class="cf-panel" id="cf-panel">
@@ -334,18 +332,18 @@ const ConfiguratorUI = (() => {
     if (!el) return;
     el.innerHTML = '';
 
-    let keys = order
-      ? order.filter(k => optionsMap[k] !== undefined)
-      : Object.keys(optionsMap).sort();
+    // Показываем все ключи из order — недоступные становятся серыми, но не скрываются
+    let keys = order || Object.keys(optionsMap).sort();
 
     keys.forEach(k => {
-      const count = optionsMap[k] || 0;
+      const count = optionsMap[k] !== undefined ? optionsMap[k] : 0;
       const isActive = selected.includes(k);
+      const isDisabled = count === 0;
       const chip = document.createElement('button');
       chip.type = 'button';
-      chip.className = 'cf-chip' + (isActive ? ' cf-chip--active' : '') + (count === 0 ? ' cf-chip--disabled' : '');
+      chip.className = 'cf-chip' + (isActive ? ' cf-chip--active' : '') + (isDisabled ? ' cf-chip--disabled' : '');
       chip.innerHTML = `${_cfEsc(labelFn(k))}`;
-      if (count > 0) {
+      if (!isDisabled) {
         chip.addEventListener('click', () => { chip.blur(); onClick(k); });
       }
       el.appendChild(chip);
@@ -359,17 +357,19 @@ const ConfiguratorUI = (() => {
     el.innerHTML = '';
 
     const CF_NATION_ORDER = ['СССР','США','Германия','Франция','Британия','Япония','Китай','Швеция','Польша','Италия','Чехословакия','Сборная нация'];
-    const keys = CF_NATION_ORDER.filter(k => optionsMap[k] !== undefined);
+    // Показываем все нации из списка, недоступные — серые
+    const keys = CF_NATION_ORDER;
 
     keys.forEach(k => {
-      const count = optionsMap[k] || 0;
+      const count = optionsMap[k] !== undefined ? optionsMap[k] : 0;
       const isActive = selected.includes(k);
+      const isDisabled = count === 0;
       const chip = document.createElement('button');
       chip.type = 'button';
-      chip.className = 'cf-chip cf-chip--nation' + (isActive ? ' cf-chip--active' : '') + (count === 0 ? ' cf-chip--disabled' : '');
+      chip.className = 'cf-chip cf-chip--nation' + (isActive ? ' cf-chip--active' : '') + (isDisabled ? ' cf-chip--disabled' : '');
       const flagHtml = _cfFlagImg(k);
       chip.innerHTML = `${flagHtml}<span class="cf-nation-name">${_cfEsc(k)}</span>`;
-      if (count > 0) {
+      if (!isDisabled) {
         chip.addEventListener('click', () => { chip.blur(); ConfiguratorFilter.toggleNation(k); });
       }
       el.appendChild(chip);

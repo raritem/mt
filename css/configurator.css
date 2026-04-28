@@ -112,80 +112,40 @@
 
 /* ── Развёрнутое состояние ───────────────────────────────────── */
 .cf-expanded {
-  /* Аналогично .af-root */
   margin-bottom: 16px;
 }
 
-/* ── Заголовок развёрнутой панели ────────────────────────────── */
-.cf-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.cf-panel-header-left {
-  flex: 1;
-  min-width: 0;
-}
-
-.cf-panel-header-title {
-  font-size: 15px;
-  font-weight: 600;
+/* ── Заголовок над панелью конфигуратора ─────────────────────── */
+.cf-above-title {
+  font-size: 28px;
+  font-weight: 700;
   color: var(--text-primary);
-  line-height: 1.35;
+  line-height: 1.2;
+  margin-bottom: 14px;
 }
 
-.cf-panel-header-right {
+/* ── Строка: капсулы слева + кнопки справа ───────────────────── */
+.cf-capsules-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  flex-shrink: 0;
+  margin-bottom: 8px;
+  min-height: 0;
 }
 
-.cf-reset-btn {
-  padding: 11px 14px;
-  background: #111418;
-  border: 0px solid var(--border);
-  border-radius: 12px;
-  color: var(--text-muted);
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.cf-reset-btn:hover {
-  color: var(--text-primary);
-  border-color: var(--text-muted);
-}
-
-/* Кнопка закрытия конфигуратора */
-.cf-close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  background: var(--bg-card);
-  border: 0px solid var(--border);
-  border-radius: 12px;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color 0.15s;
-  flex-shrink: 0;
-}
-
-.cf-close-btn svg { width: 15px; height: 15px; }
-.cf-close-btn:hover { color: var(--text-primary); }
-
-/* ── Капсулы ─────────────────────────────────────────────────── */
 .cf-capsules {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 8px;
-  min-height: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.cf-capsules-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .cf-capsule {
@@ -233,6 +193,41 @@
   color: var(--text-muted);
   opacity: 0.7;
 }
+
+/* ── Кнопки управления ───────────────────────────────────────── */
+.cf-reset-btn {
+  padding: 11px 14px;
+  background: #111418;
+  border: 0px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.cf-reset-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.cf-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: var(--bg-card);
+  border: 0px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.cf-close-btn svg { width: 15px; height: 15px; }
+.cf-close-btn:hover { color: var(--text-primary); }
 
 /* ── Панель конфигуратора ─────────────────────────────────────── */
 .cf-panel {
@@ -322,6 +317,7 @@
 .cf-chip--disabled {
   opacity: 0.35;
   cursor: default;
+  pointer-events: none;
 }
 
 .cf-chip-count {
@@ -361,14 +357,17 @@
   margin-bottom: 8px;
 }
 
+/* Независимые стили поля поиска танков — не связаны с глобальным .af-search-input */
 .cf-tank-search {
   width: 100%;
   padding: 7px 12px;
-  background: var(--bg-surface);
+  background: #1a1f27;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text-primary);
   font-size: 13px;
+  font-family: var(--font-body);
+  transition: border-color 0.18s ease;
 }
 
 .cf-tank-search:focus {
@@ -383,6 +382,26 @@
   max-height: 280px;
   overflow-y: auto;
   padding: 4px 0;
+  /* Прозрачный фон скроллбара */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+.cf-tank-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cf-tank-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cf-tank-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 3px;
+}
+
+.cf-tank-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.22);
 }
 
 .cf-tank-item {
@@ -478,14 +497,17 @@
   flex: 1;
 }
 
+/* Независимые стили полей диапазонов — не связаны с глобальными стилями */
 .cf-range-input {
   width: 100px;
   padding: 6px 10px;
-  background: var(--bg-surface);
+  background: #1a1f27;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text-primary);
   font-size: 13px;
+  font-family: var(--font-body);
+  transition: border-color 0.18s ease;
   -moz-appearance: textfield;
   appearance: textfield;
 }
@@ -540,6 +562,9 @@
 
 /* ── Адаптив ─────────────────────────────────────────────────── */
 @media (max-width: 600px) {
+  .cf-above-title {
+    font-size: 20px;
+  }
   .cf-section-row {
     flex-direction: column;
     gap: 6px;

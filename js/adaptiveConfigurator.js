@@ -92,20 +92,20 @@ const ConfiguratorFilter = (() => {
   }
 
   function toggleNation(nation) {
-    _configuratorState.nation = _configuratorToggle(_configuratorState.nation, nation);
-    // Выбранные танки НЕ удаляются при смене нации — они защищены как явный выбор пользователя
+    // Радио-режим: выбор одного, повторный клик — снять
+    _configuratorState.nation = _configuratorState.nation.includes(nation) ? [] : [nation];
     _configuratorNotify();
   }
 
   function toggleTier(tier) {
-    _configuratorState.tier = _configuratorToggle(_configuratorState.tier, String(tier));
-    // Выбранные танки НЕ удаляются при смене уровня — они защищены как явный выбор пользователя
+    // Радио-режим: выбор одного, повторный клик — снять
+    _configuratorState.tier = _configuratorState.tier.includes(String(tier)) ? [] : [String(tier)];
     _configuratorNotify();
   }
 
   function toggleType(type) {
-    _configuratorState.type = _configuratorToggle(_configuratorState.type, type);
-    // Выбранные танки НЕ удаляются при смене типа — они защищены как явный выбор пользователя
+    // Радио-режим: выбор одного, повторный клик — снять
+    _configuratorState.type = _configuratorState.type.includes(type) ? [] : [type];
     _configuratorNotify();
   }
 
@@ -373,25 +373,22 @@ const ConfiguratorFilter = (() => {
     const idsForNation = _configuratorIdsWithout('nation');
     const idsForType   = _configuratorIdsWithout('type');
 
-    // Доступные уровни: те, у которых есть хотя бы 1 аккаунт в idsForTier
+    // Все уровни — всегда показываем, count=0 → недоступен (серый, некликабельный)
     const tiers = {};
     for (const [tier, lotIds] of Object.entries(_configuratorTierIndex)) {
-      const count = lotIds.filter(id => idsForTier.has(String(id))).length;
-      if (count > 0) tiers[tier] = count;
+      tiers[tier] = lotIds.filter(id => idsForTier.has(String(id))).length;
     }
 
-    // Доступные нации
+    // Все нации
     const nations = {};
     for (const [nation, lotIds] of Object.entries(_configuratorNationIndex)) {
-      const count = lotIds.filter(id => idsForNation.has(String(id))).length;
-      if (count > 0) nations[nation] = count;
+      nations[nation] = lotIds.filter(id => idsForNation.has(String(id))).length;
     }
 
-    // Доступные типы
+    // Все типы
     const types = {};
     for (const [tp, lotIds] of Object.entries(_configuratorTypeIndex)) {
-      const count = lotIds.filter(id => idsForType.has(String(id))).length;
-      if (count > 0) types[tp] = count;
+      types[tp] = lotIds.filter(id => idsForType.has(String(id))).length;
     }
 
     // Диапазоны цен/ресурсов — по текущей полной фильтрации
