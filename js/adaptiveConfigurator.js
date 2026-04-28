@@ -1,203 +1,253 @@
 /* ================================================================
    TANKNEXUS — adaptiveConfigurator.js
-   Конфигуратор аккаунтов — полностью независимый дубликат
-   логики адаптивного фильтра.
-   НЕ зависит от AdaptiveFilter, FilterUI, FilterEngine.
+   Динамический адаптивный конфигуратор аккаунтов
+   ПОЛНОСТЬЮ ИЗОЛИРОВАННАЯ КОПИЯ adaptiveFilter.js
+   Не импортирует, не вызывает, не зависит от AdaptiveFilter
    ================================================================ */
 
 'use strict';
 
-const AdaptiveConfigurator = (() => {
+const ConfiguratorFilter = (() => {
 
   // ── Состояние конфигуратора ───────────────────────────────────
-  let _state = {
-    tanks:     [],    // массив имён выбранных танков (AND-логика)
-    nation:    [],    // массив наций
-    tier:      [],    // массив уровней (строки: '5','6',...,'10')
-    type:      [],    // массив типов ('ТТ','СТ','ЛТ','ПТ','САУ')
-    priceMin:  null,
-    priceMax:  null,
-    bondsMin:  null,
-    bondsMax:  null,
-    goldMin:   null,
-    goldMax:   null,
+  let _configuratorState = {
+    search: '',          // поисковый запрос
+    scenario: null,      // id активного сценария или null
+    tanks: [],           // массив имён выбранных танков (AND-логика)
+    nation: [],          // массив наций
+    tier: [],            // массив уровней (строки: '5','6',...,'10')
+    type: [],            // массив типов ('ТТ','СТ','ЛТ','ПТ','САУ')
+    priceMin: null,      // мин. цена
+    priceMax: null,      // макс. цена
+    bondsMin: null,
+    bondsMax: null,
+    goldMin: null,
+    goldMax: null,
     silverMin: null,
     silverMax: null,
-    noBattles: false,
+    noBattles: false,    // чекбокс "без боёв"
   };
 
-  // Данные (заполняются при инициализации)
-  let _allLots   = [];
-  let _tanksIndex  = {};   // tankName -> [lotId, ...]
-  let _nationIndex = {};   // nation   -> [lotId, ...]
-  let _tierIndex   = {};   // tier     -> [lotId, ...]
-  let _typeIndex   = {};   // type     -> [lotId, ...]
-  let _tanksData   = {};   // tankName -> { tier, type, nation, tags, icon, ... }
+  // Индексы и данные (заполняются при инициализации)
+  let _configuratorAllLots = [];
+  let _configuratorTanksIndex = {};    // tankName -> [lotId, ...]
+  let _configuratorNationIndex = {};   // nation -> [lotId, ...]
+  let _configuratorTierIndex = {};     // tier -> [lotId, ...]
+  let _configuratorTypeIndex = {};     // type -> [lotId, ...]
+  let _configuratorLotsById = {};      // lotId -> lot
+  let _configuratorTanksData = {};     // tankName -> { tier, type, nation, tags, ... }
 
-  let _onChangeCallback = null;
+  let _configuratorOnChangeCallback = null;
 
   // ── Инициализация ─────────────────────────────────────────────
   function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, tanksData }) {
-    _allLots     = allLots     || [];
-    _tanksIndex  = tanksIndex  || {};
-    _nationIndex = nationIndex || {};
-    _tierIndex   = tierIndex   || {};
-    _typeIndex   = typeIndex   || {};
-    _tanksData   = tanksData   || {};
+    _configuratorAllLots = allLots || [];
+    _configuratorTanksIndex = tanksIndex || {};
+    _configuratorNationIndex = nationIndex || {};
+    _configuratorTierIndex = tierIndex || {};
+    _configuratorTypeIndex = typeIndex || {};
+    _configuratorTanksData = tanksData || {};
+
+    // Строим лоты по ID
+    _configuratorLotsById = {};
+    for (const lot of _configuratorAllLots) {
+      _configuratorLotsById[String(lot.id)] = lot;
+    }
   }
 
   function onChange(cb) {
-    _onChangeCallback = cb;
+    _configuratorOnChangeCallback = cb;
   }
 
-  function _notify() {
-    if (_onChangeCallback) _onChangeCallback(getResult());
+  function _configuratorNotify() {
+    if (_configuratorOnChangeCallback) _configuratorOnChangeCallback(getResult());
   }
 
   // ── Получение состояния ───────────────────────────────────────
   function getState() {
-    return { ..._state };
+    return { ..._configuratorState };
   }
 
-  // ── Установка параметров ──────────────────────────────────────
+  // ── Установка отдельных параметров ────────────────────────────
+  function setSearch(query) {
+    _configuratorState.search = (query || '').trim();
+    _configuratorNotify();
+  }
+
+  function setScenario(scenarioId) {
+    _configuratorState.scenario = scenarioId || null;
+    _configuratorNotify();
+  }
+
   function toggleTank(tankName) {
-    const idx = _state.tanks.indexOf(tankName);
-    if (idx === -1) _state.tanks = [..._state.tanks, tankName];
-    else _state.tanks = _state.tanks.filter(t => t !== tankName);
-    _notify();
+    const idx = _configuratorState.tanks.indexOf(tankName);
+    if (idx === -1) _configuratorState.tanks = [..._configuratorState.tanks, tankName];
+    else _configuratorState.tanks = _configuratorState.tanks.filter(t => t !== tankName);
+    _configuratorNotify();
   }
 
   function removeTank(tankName) {
-    _state.tanks = _state.tanks.filter(t => t !== tankName);
-    _notify();
+    _configuratorState.tanks = _configuratorState.tanks.filter(t => t !== tankName);
+    _configuratorNotify();
   }
 
   function toggleNation(nation) {
-    _state.nation = _toggle(_state.nation, nation);
-    _notify();
+    _configuratorState.nation = _configuratorToggle(_configuratorState.nation, nation);
+    // Выбранные танки НЕ удаляются при смене нации — они защищены как явный выбор пользователя
+    _configuratorNotify();
   }
 
   function toggleTier(tier) {
-    _state.tier = _toggle(_state.tier, String(tier));
-    _notify();
+    _configuratorState.tier = _configuratorToggle(_configuratorState.tier, String(tier));
+    // Выбранные танки НЕ удаляются при смене уровня — они защищены как явный выбор пользователя
+    _configuratorNotify();
   }
 
   function toggleType(type) {
-    _state.type = _toggle(_state.type, type);
-    _notify();
+    _configuratorState.type = _configuratorToggle(_configuratorState.type, type);
+    // Выбранные танки НЕ удаляются при смене типа — они защищены как явный выбор пользователя
+    _configuratorNotify();
   }
 
   function setPrice(min, max) {
-    _state.priceMin = min;
-    _state.priceMax = max;
-    _notify();
+    _configuratorState.priceMin = min;
+    _configuratorState.priceMax = max;
+    _configuratorNotify();
   }
 
   function setResources(type, min, max) {
-    _state[type + 'Min'] = min;
-    _state[type + 'Max'] = max;
-    _notify();
+    // type: 'bonds' | 'gold' | 'silver'
+    _configuratorState[type + 'Min'] = min;
+    _configuratorState[type + 'Max'] = max;
+    _configuratorNotify();
   }
 
   function setNoBattles(val) {
-    _state.noBattles = !!val;
-    _notify();
+    _configuratorState.noBattles = !!val;
+    _configuratorNotify();
   }
 
   function removeParam(paramType, value) {
     switch (paramType) {
-      case 'tank':     _state.tanks  = _state.tanks.filter(t => t !== value); break;
-      case 'nation':   _state.nation = _state.nation.filter(n => n !== value); break;
-      case 'tier':     _state.tier   = _state.tier.filter(t => t !== value); break;
-      case 'type':     _state.type   = _state.type.filter(t => t !== value); break;
-      case 'price':    _state.priceMin  = null; _state.priceMax  = null; break;
-      case 'bonds':    _state.bondsMin  = null; _state.bondsMax  = null; break;
-      case 'gold':     _state.goldMin   = null; _state.goldMax   = null; break;
-      case 'silver':   _state.silverMin = null; _state.silverMax = null; break;
-      case 'noBattles': _state.noBattles = false; break;
+      case 'search': _configuratorState.search = ''; break;
+      case 'scenario': _configuratorState.scenario = null; break;
+      case 'tank': _configuratorState.tanks = _configuratorState.tanks.filter(t => t !== value); break;
+      case 'nation': _configuratorState.nation = _configuratorState.nation.filter(n => n !== value); break;
+      case 'tier': _configuratorState.tier = _configuratorState.tier.filter(t => t !== value); break;
+      case 'type': _configuratorState.type = _configuratorState.type.filter(t => t !== value); break;
+      case 'price': _configuratorState.priceMin = null; _configuratorState.priceMax = null; break;
+      case 'bonds': _configuratorState.bondsMin = null; _configuratorState.bondsMax = null; break;
+      case 'gold': _configuratorState.goldMin = null; _configuratorState.goldMax = null; break;
+      case 'silver': _configuratorState.silverMin = null; _configuratorState.silverMax = null; break;
+      case 'noBattles': _configuratorState.noBattles = false; break;
     }
-    _notify();
+    _configuratorNotify();
   }
 
   function reset() {
-    _state = {
-      tanks: [], nation: [], tier: [], type: [],
+    _configuratorState = {
+      search: '', scenario: null, tanks: [], nation: [], tier: [], type: [],
       priceMin: null, priceMax: null,
       bondsMin: null, bondsMax: null,
-      goldMin:  null, goldMax:  null,
+      goldMin: null, goldMax: null,
       silverMin: null, silverMax: null,
       noBattles: false,
     };
-    _notify();
+    _configuratorNotify();
   }
 
-  // ── Вспомогательные ───────────────────────────────────────────
-  function _toggle(arr, val) {
+  // ── Вспомогательная: toggle элемента в массиве ────────────────
+  function _configuratorToggle(arr, val) {
     return arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val];
   }
 
-  function _intersect(a, b) {
+  // ── Пересечение массивов ID ────────────────────────────────────
+  function _configuratorIntersect(a, b) {
     if (a === null) return b;
     if (b === null) return a;
     const setB = new Set(b);
     return a.filter(id => setB.has(id));
   }
 
-  function _normStr(str) {
-    if (!str) return '';
-    return String(str).toLowerCase().trim();
-  }
-
-  function _parseNum(val) {
-    if (!val) return 0;
-    const n = parseFloat(String(val).replace(/\s/g, '').replace(',', '.'));
-    return isNaN(n) ? 0 : n;
-  }
-
   // ── Основная фильтрация через индексы ─────────────────────────
-  // tier/nation/type используются только для сужения списка техники в UI
-  function _getFilteredIds() {
-    let result = null;
+  // tier/nation/type НЕ фильтруют аккаунты — они используются только для
+  // сужения списка техники внутри панели конфигуратора (см. getAvailableTanks, _configuratorIdsWithout).
+  function _configuratorGetFilteredIds() {
+    let result = null; // null = все
 
-    // Конкретные танки (AND-логика)
-    if (_state.tanks.length > 0) {
-      for (const tankName of _state.tanks) {
-        const ids = (_tanksIndex[tankName] || []).map(String);
-        result = _intersect(result, ids);
+    // 1. Сценарий
+    if (_configuratorState.scenario && typeof FilterEngine !== 'undefined') {
+      const scenario = FilterEngine.SCENARIOS.find(s => s.id === _configuratorState.scenario);
+      if (scenario && scenario.type !== 'advanced') {
+        const scenarioLots = FilterEngine.applyScenario(_configuratorAllLots, scenario);
+        result = _configuratorIntersect(result, scenarioLots.map(l => String(l.id)));
       }
     }
 
+    // 2. Поиск
+    if (_configuratorState.search) {
+      const q = _configuratorNormStr(_configuratorState.search);
+      const searchIds = _configuratorAllLots
+        .filter(l => {
+          const title = _configuratorNormStr(l.title || '');
+          const tanks10 = _configuratorNormStr(l.tanks10 || '');
+          const prems = (l.prems_8_9_array || []).map(t => _configuratorNormStr(t)).join(' ');
+          return title.includes(q) || tanks10.includes(q) || prems.includes(q);
+        })
+        .map(l => String(l.id));
+      result = _configuratorIntersect(result, searchIds);
+    }
+
+    // 3. Конкретные танки (AND-логика)
+    if (_configuratorState.tanks.length > 0) {
+      for (const tankName of _configuratorState.tanks) {
+        const ids = (_configuratorTanksIndex[tankName] || []).map(String);
+        result = _configuratorIntersect(result, ids);
+      }
+    }
+
+    // 4. Если результат null — возвращаем все IDs
     if (result === null) {
-      result = _allLots.map(l => String(l.id));
+      result = _configuratorAllLots.map(l => String(l.id));
     }
 
     return result;
   }
 
+  function _configuratorNormStr(str) {
+    if (!str) return '';
+    return String(str).toLowerCase().trim();
+  }
+
   // ── Фильтрация лотов по ресурсам и цене ──────────────────────
-  function _applyLotFilters(lots) {
+  function _configuratorApplyLotFilters(lots) {
     return lots.filter(lot => {
-      if (_state.priceMin !== null || _state.priceMax !== null) {
-        const price = _parseNum(lot.price);
-        if (_state.priceMin !== null && price < _state.priceMin) return false;
-        if (_state.priceMax !== null && price > _state.priceMax) return false;
+      // Цена
+      if (_configuratorState.priceMin !== null || _configuratorState.priceMax !== null) {
+        const price = _configuratorParseNum(lot.price);
+        if (_configuratorState.priceMin !== null && price < _configuratorState.priceMin) return false;
+        if (_configuratorState.priceMax !== null && price > _configuratorState.priceMax) return false;
       }
-      if (_state.bondsMin !== null || _state.bondsMax !== null) {
-        const bonds = _parseNum((lot.resources || {}).bonds);
-        if (_state.bondsMin !== null && bonds < _state.bondsMin) return false;
-        if (_state.bondsMax !== null && bonds > _state.bondsMax) return false;
+      // Боны
+      if (_configuratorState.bondsMin !== null || _configuratorState.bondsMax !== null) {
+        const bonds = _configuratorParseNum((lot.resources || {}).bonds);
+        if (_configuratorState.bondsMin !== null && bonds < _configuratorState.bondsMin) return false;
+        if (_configuratorState.bondsMax !== null && bonds > _configuratorState.bondsMax) return false;
       }
-      if (_state.goldMin !== null || _state.goldMax !== null) {
-        const gold = _parseNum((lot.resources || {}).gold);
-        if (_state.goldMin !== null && gold < _state.goldMin) return false;
-        if (_state.goldMax !== null && gold > _state.goldMax) return false;
+      // Золото
+      if (_configuratorState.goldMin !== null || _configuratorState.goldMax !== null) {
+        const gold = _configuratorParseNum((lot.resources || {}).gold);
+        if (_configuratorState.goldMin !== null && gold < _configuratorState.goldMin) return false;
+        if (_configuratorState.goldMax !== null && gold > _configuratorState.goldMax) return false;
       }
-      if (_state.silverMin !== null || _state.silverMax !== null) {
-        const silver = _parseNum((lot.resources || {}).silver);
-        if (_state.silverMin !== null && silver < _state.silverMin) return false;
-        if (_state.silverMax !== null && silver > _state.silverMax) return false;
+      // Серебро
+      if (_configuratorState.silverMin !== null || _configuratorState.silverMax !== null) {
+        const silver = _configuratorParseNum((lot.resources || {}).silver);
+        if (_configuratorState.silverMin !== null && silver < _configuratorState.silverMin) return false;
+        if (_configuratorState.silverMax !== null && silver > _configuratorState.silverMax) return false;
       }
-      if (_state.noBattles) {
+      // Без боёв
+      if (_configuratorState.noBattles) {
         const nb = lot.no_battles === true || lot.no_battles === 'true' || lot.no_battles === 'Без боёв';
         if (!nb) return false;
       }
@@ -205,87 +255,154 @@ const AdaptiveConfigurator = (() => {
     });
   }
 
+  function _configuratorParseNum(val) {
+    if (!val) return 0;
+    const n = parseFloat(String(val).replace(/\s/g, '').replace(',', '.'));
+    return isNaN(n) ? 0 : n;
+  }
+
   // ── Основной метод: получить отфильтрованный список лотов ─────
   function getResult() {
-    const ids = _getFilteredIds();
+    const ids = _configuratorGetFilteredIds();
     const idSet = new Set(ids);
-    let lots = _allLots.filter(l => idSet.has(String(l.id)));
-    lots = _applyLotFilters(lots);
+
+    // Получаем объекты лотов в порядке из _configuratorAllLots
+    let lots = _configuratorAllLots.filter(l => idSet.has(String(l.id)));
+
+    // Применяем скоринг сценария (для сортировки)
+    if (_configuratorState.scenario && typeof FilterEngine !== 'undefined') {
+      const scenario = FilterEngine.SCENARIOS.find(s => s.id === _configuratorState.scenario);
+      if (scenario && scenario.type !== 'advanced') {
+        lots = lots.map(lot => ({
+          ...lot,
+          _score: FilterEngine.calculateLotScore(lot, scenario),
+        }));
+        if (scenario.type === 'prems_count') {
+          lots.sort((a, b) => {
+            const d = (b.premcount || 0) - (a.premcount || 0);
+            return d !== 0 ? d : (b._score || 0) - (a._score || 0);
+          });
+        } else {
+          lots.sort((a, b) => {
+            const d = (b._score || 0) - (a._score || 0);
+            return d !== 0 ? d : (b.premcount || 0) - (a.premcount || 0);
+          });
+        }
+      }
+    }
+
+    // Применяем фильтры по цене/ресурсам (не через индекс)
+    lots = _configuratorApplyLotFilters(lots);
+
     return lots;
   }
 
-  // Танки без аккаунтов в текущей выборке (для визуала капсул)
+  // Возвращает имена выбранных танков, у которых 0 аккаунтов в текущей выборке
+  // (используется UI для визуального выделения «недоступных» капсул)
   function getInactiveTanks() {
-    const ids = _getFilteredIds();
+    const ids = _configuratorGetFilteredIds();
     const idSet = new Set(ids);
-    return _state.tanks.filter(tankName => {
-      const lotIds = (_tanksIndex[tankName] || []).map(String);
+    return _configuratorState.tanks.filter(tankName => {
+      const lotIds = (_configuratorTanksIndex[tankName] || []).map(String);
       return !lotIds.some(id => idSet.has(id));
     });
   }
 
-  // ── Доступные опции (faceted search) ─────────────────────────
+  // ── Доступные опции конфигуратора (для динамического UI) ──────
+  // Классический faceted search: для каждого измерения (tier/nation/type)
+  // показываем только те значения, которые реально встречаются в лотах,
+  // прошедших через ВСЕ остальные активные фильтры (кроме самого этого измерения).
+  //
+  // Таким образом:
+  // - Нельзя выбрать уровень, который не встречается среди аккаунтов с выбранными танками
+  // - После выбора типа — показываем только нации/уровни, которые есть среди аккаунтов
+  //   с этим типом И выбранными танками
+  // - Нет парадоксов: ни расширения, ни пустых результатов после клика
   function getAvailableOptions() {
-    function _idsWithout(withoutDimension) {
+    // Вспомогательная: получить Set ID лотов, прошедших через все фильтры КРОМЕ одного измерения
+    // withoutDimension: 'tier' | 'nation' | 'type'
+    function _configuratorIdsWithout(withoutDimension) {
       let result = null;
 
+      // Сценарий
+      if (_configuratorState.scenario && typeof FilterEngine !== 'undefined') {
+        const scenario = FilterEngine.SCENARIOS.find(s => s.id === _configuratorState.scenario);
+        if (scenario && scenario.type !== 'advanced') {
+          result = _configuratorIntersect(result, FilterEngine.applyScenario(_configuratorAllLots, scenario).map(l => String(l.id)));
+        }
+      }
+      // Поиск
+      if (_configuratorState.search) {
+        const q = _configuratorNormStr(_configuratorState.search);
+        const searchIds = _configuratorAllLots.filter(l => {
+          return _configuratorNormStr(l.title || '').includes(q) ||
+                 _configuratorNormStr(l.tanks10 || '').includes(q) ||
+                 (l.prems_8_9_array || []).some(t => _configuratorNormStr(t).includes(q));
+        }).map(l => String(l.id));
+        result = _configuratorIntersect(result, searchIds);
+      }
       // Выбранные танки
-      for (const tankName of _state.tanks) {
-        result = _intersect(result, (_tanksIndex[tankName] || []).map(String));
+      for (const tankName of _configuratorState.tanks) {
+        result = _configuratorIntersect(result, (_configuratorTanksIndex[tankName] || []).map(String));
       }
-      // Tier
-      if (withoutDimension !== 'tier' && _state.tier.length > 0) {
+      // Tier (если не исключаем)
+      if (withoutDimension !== 'tier' && _configuratorState.tier.length > 0) {
         let ids = [];
-        for (const t of _state.tier) ids = [...new Set([...ids, ...(_tierIndex[t] || []).map(String)])];
-        result = _intersect(result, ids);
+        for (const t of _configuratorState.tier) ids = [...new Set([...ids, ...(_configuratorTierIndex[t] || []).map(String)])];
+        result = _configuratorIntersect(result, ids);
       }
-      // Nation
-      if (withoutDimension !== 'nation' && _state.nation.length > 0) {
+      // Nation (если не исключаем)
+      if (withoutDimension !== 'nation' && _configuratorState.nation.length > 0) {
         let ids = [];
-        for (const n of _state.nation) ids = [...new Set([...ids, ...(_nationIndex[n] || []).map(String)])];
-        result = _intersect(result, ids);
+        for (const n of _configuratorState.nation) ids = [...new Set([...ids, ...(_configuratorNationIndex[n] || []).map(String)])];
+        result = _configuratorIntersect(result, ids);
       }
-      // Type
-      if (withoutDimension !== 'type' && _state.type.length > 0) {
+      // Type (если не исключаем)
+      if (withoutDimension !== 'type' && _configuratorState.type.length > 0) {
         let ids = [];
-        for (const tp of _state.type) ids = [...new Set([...ids, ...(_typeIndex[tp] || []).map(String)])];
-        result = _intersect(result, ids);
+        for (const tp of _configuratorState.type) ids = [...new Set([...ids, ...(_configuratorTypeIndex[tp] || []).map(String)])];
+        result = _configuratorIntersect(result, ids);
       }
 
-      if (result === null) result = _allLots.map(l => String(l.id));
+      if (result === null) result = _configuratorAllLots.map(l => String(l.id));
       return new Set(result);
     }
 
-    const idsForTier   = _idsWithout('tier');
-    const idsForNation = _idsWithout('nation');
-    const idsForType   = _idsWithout('type');
+    // Базовые наборы для каждого измерения
+    const idsForTier   = _configuratorIdsWithout('tier');
+    const idsForNation = _configuratorIdsWithout('nation');
+    const idsForType   = _configuratorIdsWithout('type');
 
+    // Доступные уровни: те, у которых есть хотя бы 1 аккаунт в idsForTier
     const tiers = {};
-    for (const [tier, lotIds] of Object.entries(_tierIndex)) {
+    for (const [tier, lotIds] of Object.entries(_configuratorTierIndex)) {
       const count = lotIds.filter(id => idsForTier.has(String(id))).length;
       if (count > 0) tiers[tier] = count;
     }
 
+    // Доступные нации
     const nations = {};
-    for (const [nation, lotIds] of Object.entries(_nationIndex)) {
+    for (const [nation, lotIds] of Object.entries(_configuratorNationIndex)) {
       const count = lotIds.filter(id => idsForNation.has(String(id))).length;
       if (count > 0) nations[nation] = count;
     }
 
+    // Доступные типы
     const types = {};
-    for (const [tp, lotIds] of Object.entries(_typeIndex)) {
+    for (const [tp, lotIds] of Object.entries(_configuratorTypeIndex)) {
       const count = lotIds.filter(id => idsForType.has(String(id))).length;
       if (count > 0) types[tp] = count;
     }
 
-    const currentIds = _getFilteredIds();
+    // Диапазоны цен/ресурсов — по текущей полной фильтрации
+    const currentIds = _configuratorGetFilteredIds();
     const currentIdSet = new Set(currentIds);
-    const filteredLots = _applyLotFilters(_allLots.filter(l => currentIdSet.has(String(l.id))));
+    const filteredLots = _configuratorApplyLotFilters(_configuratorAllLots.filter(l => currentIdSet.has(String(l.id))));
 
-    const prices = filteredLots.map(l => _parseNum(l.price)).filter(x => x > 0);
-    const bonds  = filteredLots.map(l => _parseNum((l.resources || {}).bonds)).filter(x => x > 0);
-    const gold   = filteredLots.map(l => _parseNum((l.resources || {}).gold)).filter(x => x > 0);
-    const silver = filteredLots.map(l => _parseNum((l.resources || {}).silver)).filter(x => x > 0);
+    const prices = filteredLots.map(l => _configuratorParseNum(l.price)).filter(x => x > 0);
+    const bonds  = filteredLots.map(l => _configuratorParseNum((l.resources || {}).bonds)).filter(x => x > 0);
+    const gold   = filteredLots.map(l => _configuratorParseNum((l.resources || {}).gold)).filter(x => x > 0);
+    const silver = filteredLots.map(l => _configuratorParseNum((l.resources || {}).silver)).filter(x => x > 0);
 
     return {
       nations,
@@ -299,55 +416,123 @@ const AdaptiveConfigurator = (() => {
     };
   }
 
-  // ── Доступные танки (с учётом нации/уровня/типа) ─────────────
+  // Базовые IDs: сценарий + поиск + выбранные танки (без tier/nation/type)
+  // Используется как основа для вычисления доступных опций.
+  function _configuratorGetBaseIds() {
+    let result = null;
+
+    // Сценарий
+    if (_configuratorState.scenario && typeof FilterEngine !== 'undefined') {
+      const scenario = FilterEngine.SCENARIOS.find(s => s.id === _configuratorState.scenario);
+      if (scenario && scenario.type !== 'advanced') {
+        const scenarioLots = FilterEngine.applyScenario(_configuratorAllLots, scenario);
+        result = _configuratorIntersect(result, scenarioLots.map(l => String(l.id)));
+      }
+    }
+
+    // Поиск
+    if (_configuratorState.search) {
+      const q = _configuratorNormStr(_configuratorState.search);
+      const searchIds = _configuratorAllLots
+        .filter(l => {
+          const title = _configuratorNormStr(l.title || '');
+          const tanks10 = _configuratorNormStr(l.tanks10 || '');
+          const prems = (l.prems_8_9_array || []).map(t => _configuratorNormStr(t)).join(' ');
+          return title.includes(q) || tanks10.includes(q) || prems.includes(q);
+        })
+        .map(l => String(l.id));
+      result = _configuratorIntersect(result, searchIds);
+    }
+
+    // Выбранные танки — включаем в базу, чтобы доступные tier/nation/type
+    // вычислялись только среди аккаунтов, на которых есть эти танки
+    if (_configuratorState.tanks.length > 0) {
+      for (const tankName of _configuratorState.tanks) {
+        const ids = (_configuratorTanksIndex[tankName] || []).map(String);
+        result = _configuratorIntersect(result, ids);
+      }
+    }
+
+    if (result === null) result = _configuratorAllLots.map(l => String(l.id));
+    return result;
+  }
+
+  // ── Доступные танки для выбора (с учётом нации/уровня/типа) ──
   function getAvailableTanks() {
-    const ids = _getFilteredIds();
+    const ids = _configuratorGetFilteredIds();
     const idSet = new Set(ids);
 
     const tankCounts = {};
-    for (const [tankName, lotIds] of Object.entries(_tanksIndex)) {
-      const info = _tanksData[tankName];
+    for (const [tankName, lotIds] of Object.entries(_configuratorTanksIndex)) {
+      const info = _configuratorTanksData[tankName];
       if (!info) continue;
 
-      const isSelected = _state.tanks.includes(tankName);
+      // Выбранный пользователем танк — защищённый слой:
+      // всегда отображается в списке как активный, даже если текущие фильтры
+      // уровня/нации/типа его не включают.
+      const isSelected = _configuratorState.tanks.includes(tankName);
       if (isSelected) {
         const count = lotIds.filter(id => idSet.has(String(id))).length;
         tankCounts[tankName] = { count, ...info };
         continue;
       }
 
+      // Для не-выбранных танков применяем фильтрацию по нации/уровню/типу
       const count = lotIds.filter(id => idSet.has(String(id))).length;
       if (count > 0) {
-        if (_state.nation.length > 0 && !_state.nation.includes(info.nation)) continue;
-        if (_state.tier.length > 0   && !_state.tier.includes(String(info.tier))) continue;
-        if (_state.type.length > 0   && !_state.type.includes(info.type)) continue;
+        if (_configuratorState.nation.length > 0 && !_configuratorState.nation.includes(info.nation)) continue;
+        if (_configuratorState.tier.length > 0 && !_configuratorState.tier.includes(String(info.tier))) continue;
+        if (_configuratorState.type.length > 0 && !_configuratorState.type.includes(info.type)) continue;
         tankCounts[tankName] = { count, ...info };
       }
     }
     return tankCounts;
   }
 
-  // ── Активные капсулы ──────────────────────────────────────────
+  // ── Активные капсулы (для отображения в UI) ──────────────────
   function getActiveCapsules() {
     const capsules = [];
 
-    for (const tank of _state.tanks) {
+    if (_configuratorState.scenario) {
+      const scenario = typeof FilterEngine !== 'undefined'
+        ? FilterEngine.SCENARIOS.find(s => s.id === _configuratorState.scenario) : null;
+      capsules.push({
+        type: 'scenario',
+        value: _configuratorState.scenario,
+        label: scenario ? `${scenario.emoji} ${scenario.title}` : _configuratorState.scenario,
+      });
+    }
+
+    if (_configuratorState.search) {
+      const short = _configuratorState.search.length > 12 ? _configuratorState.search.slice(0, 12) + '…' : _configuratorState.search;
+      capsules.push({ type: 'search', value: _configuratorState.search, label: `🔍 ${short}` });
+    }
+
+    for (const tank of _configuratorState.tanks) {
       capsules.push({ type: 'tank', value: tank, label: tank });
     }
 
-    if (_state.priceMin !== null || _state.priceMax !== null) {
-      capsules.push({ type: 'price', value: 'price', label: `₽ ${_state.priceMin || '0'}–${_state.priceMax || '∞'}` });
+    // tier/nation/type — вспомогательные фильтры для панели техники,
+    // не порождают капсулы и не считаются «активными фильтрами»
+
+    if (_configuratorState.priceMin !== null || _configuratorState.priceMax !== null) {
+      const label = `₽ ${_configuratorState.priceMin || '0'}–${_configuratorState.priceMax || '∞'}`;
+      capsules.push({ type: 'price', value: 'price', label });
     }
-    if (_state.bondsMin !== null || _state.bondsMax !== null) {
-      capsules.push({ type: 'bonds', value: 'bonds', label: `🔵 ${_state.bondsMin || '0'}–${_state.bondsMax || '∞'} бон.` });
+
+    if (_configuratorState.bondsMin !== null || _configuratorState.bondsMax !== null) {
+      capsules.push({ type: 'bonds', value: 'bonds', label: `🔵 ${_configuratorState.bondsMin || '0'}–${_configuratorState.bondsMax || '∞'} бон.` });
     }
-    if (_state.goldMin !== null || _state.goldMax !== null) {
-      capsules.push({ type: 'gold', value: 'gold', label: `🟡 ${_state.goldMin || '0'}–${_state.goldMax || '∞'} зол.` });
+
+    if (_configuratorState.goldMin !== null || _configuratorState.goldMax !== null) {
+      capsules.push({ type: 'gold', value: 'gold', label: `🟡 ${_configuratorState.goldMin || '0'}–${_configuratorState.goldMax || '∞'} зол.` });
     }
-    if (_state.silverMin !== null || _state.silverMax !== null) {
-      capsules.push({ type: 'silver', value: 'silver', label: `⚪ ${_state.silverMin || '0'}–${_state.silverMax || '∞'} сер.` });
+
+    if (_configuratorState.silverMin !== null || _configuratorState.silverMax !== null) {
+      capsules.push({ type: 'silver', value: 'silver', label: `⚪ ${_configuratorState.silverMin || '0'}–${_configuratorState.silverMax || '∞'} сер.` });
     }
-    if (_state.noBattles) {
+
+    if (_configuratorState.noBattles) {
       capsules.push({ type: 'noBattles', value: 'noBattles', label: '0 боёв' });
     }
 
@@ -356,12 +541,14 @@ const AdaptiveConfigurator = (() => {
 
   function hasActiveFilters() {
     return (
-      _state.tanks.length > 0 ||
-      _state.priceMin  !== null || _state.priceMax  !== null ||
-      _state.bondsMin  !== null || _state.bondsMax  !== null ||
-      _state.goldMin   !== null || _state.goldMax   !== null ||
-      _state.silverMin !== null || _state.silverMax !== null ||
-      _state.noBattles
+      _configuratorState.search !== '' ||
+      _configuratorState.scenario !== null ||
+      _configuratorState.tanks.length > 0 ||
+      _configuratorState.priceMin !== null || _configuratorState.priceMax !== null ||
+      _configuratorState.bondsMin !== null || _configuratorState.bondsMax !== null ||
+      _configuratorState.goldMin !== null  || _configuratorState.goldMax !== null  ||
+      _configuratorState.silverMin !== null || _configuratorState.silverMax !== null ||
+      _configuratorState.noBattles
     );
   }
 
@@ -370,6 +557,8 @@ const AdaptiveConfigurator = (() => {
     init,
     onChange,
     getState,
+    setSearch,
+    setScenario,
     toggleTank,
     removeTank,
     toggleNation,

@@ -736,91 +736,14 @@ async function loadCatalogue() {
       renderPagination(filtered.length);
     }
 
-    // ── Флаг: кто сейчас «владеет» выборкой ──────────────────────
-    // 'filter' | 'configurator' | null
-    let _activeSource = null;
-
-    // ── Вспомогательные: collapse-функции для взаимной блокировки ─
-
-    // Сворачивает панель основного фильтра (состояние сохраняется)
-    function collapseAdaptiveFilter() {
-      const panel = document.getElementById('af-panel');
-      const btn   = document.getElementById('af-filter-toggle');
-      if (panel && panel.style.display !== 'none') {
-        panel.style.display = 'none';
-        if (btn) btn.classList.remove('af-filter-btn--active');
-      }
-    }
-
-    // Деактивирует активный сценарий (без сброса параметров фильтра)
-    function collapseActiveScenario() {
-      if (typeof AdaptiveFilter !== 'undefined') {
-        const cur = AdaptiveFilter.getState().scenario;
-        if (cur !== null) {
-          AdaptiveFilter.setScenario(null);
-          renderScenariosBlock();
-        }
-      }
-    }
-
-    // Сворачивает конфигуратор (состояние сохраняется)
-    function collapseConfigurator() {
-      if (typeof ConfiguratorUI !== 'undefined') {
-        ConfiguratorUI.collapse();
-      }
-    }
-
-    // ── Обработчик изменения основного фильтра ────────────────────
+    // ── Обработчик изменения фильтра ──────────────────────────────
     function onFilterResult(filteredLots) {
-      // Если конфигуратор активен — обновляем только его UI, лоты не трогаем
-      if (_activeSource === 'configurator') {
-        if (typeof FilterUI !== 'undefined') FilterUI.onFilterChange(filteredLots);
-        return;
-      }
-      _activeSource = 'filter';
       renderLotsFromFiltered(filteredLots, true);
       renderScenariosBlock();
-      if (typeof FilterUI !== 'undefined') FilterUI.onFilterChange(filteredLots);
-    }
-
-    // ── Обработчик изменения конфигуратора ────────────────────────
-    function onConfiguratorResult(filteredLots) {
-      _activeSource = AdaptiveConfigurator.hasActiveFilters() ? 'configurator' : null;
-      if (_activeSource === 'configurator') {
-        renderLotsFromFiltered(filteredLots, true);
-        renderScenariosBlock();
-      } else {
-        // Конфигуратор сброшен — возвращаем фильтру управление
-        _activeSource = null;
-        if (typeof AdaptiveFilter !== 'undefined') {
-          renderLotsFromFiltered(AdaptiveFilter.getResult(), true);
-        } else {
-          renderLotsFromFiltered(allLots, true);
-        }
-        renderScenariosBlock();
+      // Обновляем UI фильтра (капсулы, счётчик, доступные опции)
+      if (typeof FilterUI !== 'undefined') {
+        FilterUI.onFilterChange(filteredLots);
       }
-    }
-
-    // ── Инициализируем AdaptiveConfigurator ──────────────────────
-    if (typeof AdaptiveConfigurator !== 'undefined') {
-      AdaptiveConfigurator.init({
-        allLots,
-        tanksIndex,
-        nationIndex,
-        tierIndex,
-        typeIndex,
-        tanksData: window._tanksData,
-      });
-      AdaptiveConfigurator.onChange(onConfiguratorResult);
-    }
-
-    // ── Инициализируем ConfiguratorUI ────────────────────────────
-    if (typeof ConfiguratorUI !== 'undefined') {
-      ConfiguratorUI.init('cfg-root', {
-        onResult:         onConfiguratorResult,
-        collapseFilter:   collapseAdaptiveFilter,
-        collapseScenario: collapseActiveScenario,
-      });
     }
 
     // ── Инициализируем FilterUI ───────────────────────────────────
@@ -832,40 +755,96 @@ async function loadCatalogue() {
       FilterUI.init('af-filter-root');
     }
 
-    // ── Патч: клик на кнопку фильтра сворачивает конфигуратор ────
-    // Вешаем на контейнер #af-filter-root, т.к. FilterUI.init() только что
-    // создал кнопку #af-filter-toggle внутри него. Capture=true гарантирует
-    // что наш обработчик отработает раньше обработчика FilterUI на кнопке.
-    const _afFilterRoot = document.getElementById('af-filter-root');
-    if (_afFilterRoot) {
-      _afFilterRoot.addEventListener('click', (e) => {
-        // Реагируем только на клик по кнопке переключения панели фильтра
-        const btn = e.target.closest('#af-filter-toggle');
-        if (!btn) return;
-        collapseConfigurator();
-        if (_activeSource === 'configurator') {
-          _activeSource = null;
-          if (typeof AdaptiveFilter !== 'undefined') {
-            renderLotsFromFiltered(AdaptiveFilter.getResult(), true);
-            renderScenariosBlock();
-          }
+    // ── Инициализируем ConfiguratorFilter ────────────────────────
+    if (typeof ConfiguratorFilter !== 'undefined') {
+      ConfiguratorFilter.init({
+        allLots,
+        tanksIndex,
+        nationIndex,
+        tierIndex,
+        typeIndex,
+        tanksData: window._tanksData,
+      });
+    }
+
+    // ── Флаг: конфигуратор развёрнут ─────────────────────────────
+    let _configuratorIsExpanded = false;
+
+    // ── Активация конфигуратора ───────────────────────────────────
+    function onConfiguratorActivate() {
+      _configuratorIsExpanded = true;
+      // Сбрасываем сценарий AdaptiveFilter если был активен
+      if (typeof AdaptiveFilter !== 'undefined') {
+        if (AdaptiveFilter.getState().scenario !== null) {
+          AdaptiveFilter.setScenario(null);
+          renderScenariosBlock();
+        }
+      }
+      // Рендерим лоты по состоянию конфигуратора
+      if (typeof ConfiguratorFilter !== 'undefined') {
+        renderLotsFromFiltered(ConfiguratorFilter.getResult(), true);
+      }
+    }
+
+    // ── Деактивация конфигуратора ─────────────────────────────────
+    function onConfiguratorDeactivate() {
+      _configuratorIsExpanded = false;
+      // Возвращаем рендер через AdaptiveFilter
+      if (typeof AdaptiveFilter !== 'undefined') {
+        renderLotsFromFiltered(AdaptiveFilter.getResult(), true);
+        renderScenariosBlock();
+      }
+    }
+
+    // ── Инициализируем ConfiguratorUI ────────────────────────────
+    if (typeof ConfiguratorUI !== 'undefined') {
+      ConfiguratorUI.init('cf-configurator-root', {
+        onActivate: onConfiguratorActivate,
+        onDeactivate: onConfiguratorDeactivate,
+      });
+    }
+
+    // ── ConfiguratorFilter.onChange ───────────────────────────────
+    if (typeof ConfiguratorFilter !== 'undefined') {
+      ConfiguratorFilter.onChange((filteredByConfigurator) => {
+        if (typeof ConfiguratorUI !== 'undefined') {
+          ConfiguratorUI.onFilterChange(filteredByConfigurator);
+        }
+        if (_configuratorIsExpanded) {
+          renderLotsFromFiltered(filteredByConfigurator, true);
+        }
+      });
+    }
+
+    // ── Координация: AdaptiveFilter/сценарий → свернуть конфигуратор ──
+    const _cfScenariosBlock = document.getElementById('scenarios-block');
+    if (_cfScenariosBlock) {
+      _cfScenariosBlock.addEventListener('click', () => {
+        if (_configuratorIsExpanded && typeof ConfiguratorUI !== 'undefined') {
+          ConfiguratorUI.collapse();
+          _configuratorIsExpanded = false;
         }
       }, true);
     }
 
-    // ── Патч: клик на сценарий сворачивает конфигуратор ──────────
-    const _scenariosBlockEl = document.getElementById('scenarios-block');
-    if (_scenariosBlockEl) {
-      _scenariosBlockEl.addEventListener('click', () => {
-        collapseConfigurator();
-        if (_activeSource === 'configurator') {
-          _activeSource = null;
-          if (typeof AdaptiveFilter !== 'undefined') {
-            setTimeout(() => {
-              renderLotsFromFiltered(AdaptiveFilter.getResult(), true);
-              renderScenariosBlock();
-            }, 0);
-          }
+    // Перехватываем изменения строки поиска (af-search-input) → сворачиваем конфигуратор
+    const _afSearchInput = document.getElementById('af-search-input');
+    if (_afSearchInput) {
+      _afSearchInput.addEventListener('input', () => {
+        if (_configuratorIsExpanded && typeof ConfiguratorUI !== 'undefined') {
+          ConfiguratorUI.collapse();
+          _configuratorIsExpanded = false;
+        }
+      }, true);
+    }
+
+    // Перехватываем нажатие кнопки фильтра → сворачиваем конфигуратор
+    const _afFilterToggle = document.getElementById('af-filter-toggle');
+    if (_afFilterToggle) {
+      _afFilterToggle.addEventListener('click', () => {
+        if (_configuratorIsExpanded && typeof ConfiguratorUI !== 'undefined') {
+          ConfiguratorUI.collapse();
+          _configuratorIsExpanded = false;
         }
       }, true);
     }
