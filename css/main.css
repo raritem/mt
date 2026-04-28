@@ -1253,8 +1253,8 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   cursor: not-allowed;
 }
 
-/* ── Инпуты ──────────────────────────────────────────────────── */
-input[type="text"],
+/* ── Инпуты (глобальные — не затрагивают af- и cf- компоненты) ── */
+input[type="text"]:not(.af-search-input):not(.af-tank-search):not(.af-range-input):not(.cf-tank-search):not(.cf-range-input),
 input[type="password"],
 input[type="url"],
 input[type="email"],
@@ -1271,11 +1271,14 @@ select {
   transition: border-color var(--transition);
 }
 
-input:focus, textarea:focus, select:focus {
+input[type="text"]:not(.af-search-input):not(.af-tank-search):not(.af-range-input):not(.cf-tank-search):not(.cf-range-input):focus,
+textarea:focus,
+select:focus {
   border-color: var(--border-focus);
 }
 
-input::placeholder, textarea::placeholder { color: var(--text-muted); }
+input[type="text"]:not(.af-search-input):not(.af-tank-search):not(.af-range-input):not(.cf-tank-search):not(.cf-range-input)::placeholder,
+textarea::placeholder { color: var(--text-muted); }
 
 /* ── Спиннер загрузки ────────────────────────────────────────── */
 .loading-spinner {
