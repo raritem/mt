@@ -116,107 +116,32 @@
   margin-bottom: 16px;
 }
 
-/* ── Строка поиска + кнопка фильтра ─────────────────────────── */
-.cf-searchrow {
+/* ── Заголовок развёрнутой панели ────────────────────────────── */
+.cf-panel-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
   margin-bottom: 10px;
 }
 
-.cf-search-wrap {
+.cf-panel-header-left {
   flex: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
+  min-width: 0;
 }
 
-.cf-search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  color: var(--text-muted);
-  pointer-events: none;
-  flex-shrink: 0;
-  z-index: 1;
-}
-
-.cf-search-input {
-  width: 100%;
-  padding: 10px 36px 10px 38px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+.cf-panel-header-title {
+  font-size: 15px;
+  font-weight: 600;
   color: var(--text-primary);
-  font-size: 14px;
-  transition: border-color 0.18s ease;
+  line-height: 1.35;
 }
 
-.cf-search-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.cf-search-clear {
-  position: absolute;
-  right: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
+.cf-panel-header-right {
   display: flex;
   align-items: center;
-  padding: 4px;
-  border-radius: 4px;
-  transition: color 0.15s;
-}
-
-.cf-search-clear:hover { color: var(--text-primary); }
-.cf-search-clear svg { width: 14px; height: 14px; }
-
-/* ── Кнопка "Фильтр" ─────────────────────────────────────────── */
-.cf-filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  background: var(--bg-card);
-  border: 0px solid var(--border);
-  border-radius: 12px;
-  color: #6a7687;
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: border-color 0.18s, color 0.18s, background 0.18s;
-}
-
-.cf-filter-btn svg { width: 15px; height: 15px; }
-
-.cf-filter-btn:hover,
-.cf-filter-btn--active {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.cf-filter-btn--active {
-  background: rgba(245,197,24,0.08);
-}
-
-.cf-filter-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent);
-  color: #000;
-  font-size: 11px;
-  font-weight: 700;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  margin-left: 2px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .cf-reset-btn {
@@ -623,7 +548,6 @@
     min-width: unset;
     padding-top: 0;
   }
-  .cf-filter-btn-label { display: none; }
   .cf-range-input { width: 80px; }
 
   .cf-constructor-block {

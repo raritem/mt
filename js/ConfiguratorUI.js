@@ -69,11 +69,17 @@ const ConfiguratorUI = (() => {
 
   // Внешний вызов: принудительно свернуть конфигуратор (без сброса состояния)
   function collapse() {
-    _cfIsDisabled = true;
     _cfIsPanelOpen = false;
-    if (_cfPanelEl) _cfPanelEl.style.display = 'none';
-    if (_cfToggleBtn) _cfToggleBtn.classList.remove('cf-filter-btn--active');
+    _cfIsDisabled = false;
+    const expandedEl = document.getElementById('cf-expanded');
+    if (expandedEl) expandedEl.style.display = 'none';
     if (_cfCollapsedEl) _cfCollapsedEl.style.display = '';
+    _cfUpdateRootState();
+  }
+
+  // Внешний вызов: затемнить конфигуратор пока он развёрнут (адаптивный фильтр активен)
+  function dim() {
+    _cfIsDisabled = true;
     _cfUpdateRootState();
   }
 
@@ -100,7 +106,7 @@ const ConfiguratorUI = (() => {
         <!-- Свёрнутое состояние: конструктор-приглашение -->
         <div class="cf-collapsed" id="cf-collapsed">
           <div class="cf-collapsed-inner">
-            <div class="cf-collapsed-title">Подбери аккаунт с нужной комбинацией техники</div>
+            <div class="cf-collapsed-title">Подбери аккаунт по комбинации техники</div>
             <div class="cf-constructor-preview">
               <div class="cf-constructor-block">
                 <span class="cf-constructor-plus-inner">+</span>
@@ -115,41 +121,34 @@ const ConfiguratorUI = (() => {
               </div>
             </div>
             <button class="cf-collapsed-btn" id="cf-collapsed-btn" type="button">
-              Настроить подбор
+              Выбрать танки
             </button>
           </div>
         </div>
 
-        <!-- Развёрнутое состояние: полная копия UI фильтра -->
+        <!-- Развёрнутое состояние: фильтр конфигуратора -->
         <div class="cf-expanded" id="cf-expanded" style="display:none">
 
-          <!-- Строка: поиск + кнопка фильтра -->
-          <div class="cf-searchrow">
-            <div class="cf-search-wrap">
-              <svg class="cf-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" class="cf-search-input" id="cf-search-input" placeholder="Поиск по технике…" autocomplete="off">
-              <button class="cf-search-clear" id="cf-search-clear" style="display:none" aria-label="Очистить поиск">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <!-- Заголовок панели с кнопками управления -->
+          <div class="cf-panel-header">
+            <div class="cf-panel-header-left">
+              <span class="cf-panel-header-title">Подбери аккаунт по комбинации техники</span>
+            </div>
+            <div class="cf-panel-header-right">
+              <button class="cf-reset-btn" id="cf-reset-btn" type="button" style="display:none" aria-label="Сбросить всё">
+                Сбросить
+              </button>
+              <button class="cf-close-btn" id="cf-close-btn" type="button" aria-label="Свернуть конфигуратор">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
-            <button class="cf-filter-btn" id="cf-filter-toggle" type="button" aria-label="Фильтр">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-              <span class="cf-filter-btn-label">Фильтр</span>
-              <span class="cf-filter-count" id="cf-filter-count" style="display:none">0</span>
-            </button>
-            <button class="cf-reset-btn" id="cf-reset-btn" type="button" style="display:none" aria-label="Сбросить всё">
-              Сбросить
-            </button>
-            <button class="cf-close-btn" id="cf-close-btn" type="button" aria-label="Свернуть конфигуратор">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
           </div>
 
           <!-- Капсулы активных фильтров -->
           <div class="cf-capsules" id="cf-capsules"></div>
 
-          <!-- Панель конфигуратора -->
-          <div class="cf-panel" id="cf-panel" style="display:none">
+          <!-- Панель конфигуратора (всегда открыта) -->
+          <div class="cf-panel" id="cf-panel">
             <div class="cf-panel-inner">
 
               <!-- Техника -->
@@ -216,9 +215,9 @@ const ConfiguratorUI = (() => {
     _cfCollapsedEl = document.getElementById('cf-collapsed');
     _cfCapsulesEl  = document.getElementById('cf-capsules');
     _cfPanelEl     = document.getElementById('cf-panel');
-    _cfToggleBtn   = document.getElementById('cf-filter-toggle');
+    _cfToggleBtn   = null; // Кнопки фильтра больше нет
 
-    // Кнопка "Настроить подбор" — разворачивает конфигуратор
+    // Кнопка "Выбрать танки" — разворачивает конфигуратор
     document.getElementById('cf-collapsed-btn').addEventListener('click', () => {
       if (_cfIsDisabled) return;
       _cfExpandConfigurator();
@@ -229,31 +228,8 @@ const ConfiguratorUI = (() => {
       _cfCollapseConfigurator();
     });
 
-    // Поиск
-    const searchInput = document.getElementById('cf-search-input');
-    const searchClear = document.getElementById('cf-search-clear');
-    searchInput.addEventListener('input', () => {
-      const q = searchInput.value;
-      searchClear.style.display = q ? '' : 'none';
-      ConfiguratorFilter.setSearch(q);
-    });
-    searchClear.addEventListener('click', () => {
-      searchInput.value = '';
-      searchClear.style.display = 'none';
-      ConfiguratorFilter.setSearch('');
-    });
-
-    // Тоггл панели
-    _cfToggleBtn.addEventListener('click', () => {
-      _cfIsPanelOpen = !_cfIsPanelOpen;
-      _cfPanelEl.style.display = _cfIsPanelOpen ? '' : 'none';
-      _cfToggleBtn.classList.toggle('cf-filter-btn--active', _cfIsPanelOpen);
-    });
-
     // Кнопка сброса
     document.getElementById('cf-reset-btn').addEventListener('click', () => {
-      searchInput.value = '';
-      searchClear.style.display = 'none';
       ConfiguratorFilter.reset();
     });
 
@@ -276,6 +252,8 @@ const ConfiguratorUI = (() => {
     const expandedEl = document.getElementById('cf-expanded');
     if (_cfCollapsedEl) _cfCollapsedEl.style.display = 'none';
     if (expandedEl) expandedEl.style.display = '';
+    if (_cfPanelEl) _cfPanelEl.style.display = ''; // панель всегда открыта
+    _cfIsPanelOpen = true;
     if (_cfOnActivate) _cfOnActivate();
   }
 
@@ -284,8 +262,6 @@ const ConfiguratorUI = (() => {
     if (_cfCollapsedEl) _cfCollapsedEl.style.display = '';
     if (expandedEl) expandedEl.style.display = 'none';
     _cfIsPanelOpen = false;
-    if (_cfPanelEl) _cfPanelEl.style.display = 'none';
-    if (_cfToggleBtn) _cfToggleBtn.classList.remove('cf-filter-btn--active');
     if (_cfOnDeactivate) _cfOnDeactivate();
   }
 
@@ -311,11 +287,6 @@ const ConfiguratorUI = (() => {
       el.innerHTML = `<span class="cf-capsule-label">${_cfEsc(cap.label)}</span><button class="cf-capsule-remove" aria-label="Удалить">✕</button>`;
       el.querySelector('.cf-capsule-remove').addEventListener('click', () => {
         ConfiguratorFilter.removeParam(cap.type, cap.value);
-        // Синхронизируем поиск если нужно
-        if (cap.type === 'search') {
-          const si = document.getElementById('cf-search-input');
-          if (si) { si.value = ''; document.getElementById('cf-search-clear').style.display = 'none'; }
-        }
       });
       _cfCapsulesEl.appendChild(el);
     });
@@ -323,14 +294,6 @@ const ConfiguratorUI = (() => {
     // Кнопка сброса
     const resetBtn = document.getElementById('cf-reset-btn');
     if (resetBtn) resetBtn.style.display = ConfiguratorFilter.hasActiveFilters() ? '' : 'none';
-
-    // Счётчик фильтров
-    const countEl = document.getElementById('cf-filter-count');
-    const nonSearchCaps = capsules.filter(c => c.type !== 'search');
-    if (countEl) {
-      countEl.style.display = nonSearchCaps.length > 0 ? '' : 'none';
-      countEl.textContent = nonSearchCaps.length;
-    }
   }
 
   // ── Рендер опций конфигуратора ────────────────────────────────
@@ -549,6 +512,7 @@ const ConfiguratorUI = (() => {
     init,
     onFilterChange,
     collapse,
+    dim,
     enable,
   };
 
