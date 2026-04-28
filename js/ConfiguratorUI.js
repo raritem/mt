@@ -67,15 +67,13 @@ const ConfiguratorUI = (() => {
     _cfOnFilterChange(filteredLots);
   }
 
+  // Внешний вызов: принудительно свернуть конфигуратор (без сброса состояния)
   function collapse() {
     _cfIsPanelOpen = false;
     _cfIsDisabled = false;
-    const cardEl = document.getElementById('cf-card');
-    const bodyEl = document.getElementById('cf-card-body');
-    const btnEl  = document.getElementById('cf-collapsed-btn');
-    if (cardEl) cardEl.classList.remove('cf-card--expanded');
-    if (bodyEl) bodyEl.classList.remove('cf-card-body--open');
-    if (btnEl)  btnEl.style.display = '';
+    const expandedEl = document.getElementById('cf-expanded');
+    if (expandedEl) expandedEl.style.display = 'none';
+    if (_cfCollapsedEl) _cfCollapsedEl.style.display = '';
     _cfUpdateRootState();
   }
 
@@ -105,53 +103,52 @@ const ConfiguratorUI = (() => {
   function _cfRender() {
     _cfContainer.innerHTML = `
       <div class="cf-root">
-        <!-- Единая карточка: свёрнутое и развёрнутое состояние внутри одного блока -->
-        <div class="cf-card" id="cf-card">
-
-          <!-- Верхняя часть: всегда видима, работает как кнопка в свёрнутом состоянии -->
-          <div class="cf-card-top" id="cf-card-top">
-            <div class="cf-card-top-inner">
-              <div class="cf-collapsed-title">Подбери аккаунт по комбинации техники</div>
-              <div class="cf-constructor-preview">
-                <div class="cf-constructor-block">
-                  <span class="cf-constructor-plus-inner">+</span>
-                </div>
-                <span class="cf-constructor-sep">+</span>
-                <div class="cf-constructor-block">
-                  <span class="cf-constructor-plus-inner">+</span>
-                </div>
-                <span class="cf-constructor-sep">+</span>
-                <div class="cf-constructor-block">
-                  <span class="cf-constructor-plus-inner">+</span>
-                </div>
+        <!-- Свёрнутое состояние: конструктор-приглашение -->
+        <div class="cf-collapsed" id="cf-collapsed">
+          <div class="cf-collapsed-inner">
+            <div class="cf-collapsed-title">Подбери аккаунт по комбинации техники</div>
+            <div class="cf-constructor-preview">
+              <div class="cf-constructor-block">
+                <span class="cf-constructor-plus-inner">+</span>
               </div>
-              <!-- Кнопка видна только в свёрнутом состоянии -->
-              <button class="cf-collapsed-btn" id="cf-collapsed-btn" type="button">
-                Выбрать танки
+              <span class="cf-constructor-sep">+</span>
+              <div class="cf-constructor-block">
+                <span class="cf-constructor-plus-inner">+</span>
+              </div>
+              <span class="cf-constructor-sep">+</span>
+              <div class="cf-constructor-block">
+                <span class="cf-constructor-plus-inner">+</span>
+              </div>
+            </div>
+            <button class="cf-collapsed-btn" id="cf-collapsed-btn" type="button">
+              Выбрать танки
+            </button>
+          </div>
+        </div>
+
+        <!-- Развёрнутое состояние: фильтр конфигуратора -->
+        <div class="cf-expanded" id="cf-expanded" style="display:none">
+
+          <!-- Заголовок панели с кнопками управления -->
+          <div class="cf-panel-header">
+            <div class="cf-panel-header-left">
+              <span class="cf-panel-header-title">Подбери аккаунт по комбинации техники</span>
+            </div>
+            <div class="cf-panel-header-right">
+              <button class="cf-reset-btn" id="cf-reset-btn" type="button" style="display:none" aria-label="Сбросить всё">
+                Сбросить
+              </button>
+              <button class="cf-close-btn" id="cf-close-btn" type="button" aria-label="Свернуть конфигуратор">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
           </div>
 
-          <!-- Нижняя часть: вырастает при открытии -->
-          <div class="cf-card-body" id="cf-card-body">
+          <!-- Капсулы активных фильтров -->
+          <div class="cf-capsules" id="cf-capsules"></div>
 
-            <!-- Кнопки управления -->
-            <div class="cf-panel-header">
-              <div class="cf-panel-header-right">
-                <button class="cf-reset-btn" id="cf-reset-btn" type="button" style="display:none" aria-label="Сбросить всё">
-                  Сбросить
-                </button>
-                <button class="cf-close-btn" id="cf-close-btn" type="button" aria-label="Свернуть конфигуратор">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Капсулы активных фильтров -->
-            <div class="cf-capsules" id="cf-capsules"></div>
-
-            <!-- Панель конфигуратора (всегда открыта когда body раскрыт) -->
-            <div class="cf-panel" id="cf-panel">
+          <!-- Панель конфигуратора (всегда открыта) -->
+          <div class="cf-panel" id="cf-panel">
             <div class="cf-panel-inner">
 
               <!-- Техника -->
@@ -211,26 +208,18 @@ const ConfiguratorUI = (() => {
 
           <!-- Счётчик результатов -->
           <div class="cf-results-count" id="cf-results-count" style="display:none"></div>
-          </div><!-- /cf-card-body -->
-        </div><!-- /cf-card -->
-      </div><!-- /cf-root -->
+        </div>
+      </div>
     `;
 
-    _cfCollapsedEl = document.getElementById('cf-card');
+    _cfCollapsedEl = document.getElementById('cf-collapsed');
     _cfCapsulesEl  = document.getElementById('cf-capsules');
     _cfPanelEl     = document.getElementById('cf-panel');
-    _cfToggleBtn   = null;
+    _cfToggleBtn   = null; // Кнопки фильтра больше нет
 
     // Кнопка "Выбрать танки" — разворачивает конфигуратор
     document.getElementById('cf-collapsed-btn').addEventListener('click', () => {
       if (_cfIsDisabled) return;
-      _cfExpandConfigurator();
-    });
-
-    // Клик по верхней части карточки (в свёрнутом состоянии) тоже разворачивает
-    document.getElementById('cf-card-top').addEventListener('click', () => {
-      const card = document.getElementById('cf-card');
-      if (_cfIsDisabled || (card && card.classList.contains('cf-card--expanded'))) return;
       _cfExpandConfigurator();
     });
 
@@ -260,24 +249,18 @@ const ConfiguratorUI = (() => {
 
   // ── Развернуть / свернуть конфигуратор ───────────────────────
   function _cfExpandConfigurator() {
-    const cardEl = document.getElementById('cf-card');
-    const bodyEl = document.getElementById('cf-card-body');
-    const btnEl  = document.getElementById('cf-collapsed-btn');
-    if (cardEl) cardEl.classList.add('cf-card--expanded');
-    if (bodyEl) bodyEl.classList.add('cf-card-body--open');
-    if (btnEl)  btnEl.style.display = 'none';
-    if (_cfPanelEl) _cfPanelEl.style.display = '';
+    const expandedEl = document.getElementById('cf-expanded');
+    if (_cfCollapsedEl) _cfCollapsedEl.style.display = 'none';
+    if (expandedEl) expandedEl.style.display = '';
+    if (_cfPanelEl) _cfPanelEl.style.display = ''; // панель всегда открыта
     _cfIsPanelOpen = true;
     if (_cfOnActivate) _cfOnActivate();
   }
 
   function _cfCollapseConfigurator() {
-    const cardEl = document.getElementById('cf-card');
-    const bodyEl = document.getElementById('cf-card-body');
-    const btnEl  = document.getElementById('cf-collapsed-btn');
-    if (cardEl) cardEl.classList.remove('cf-card--expanded');
-    if (bodyEl) bodyEl.classList.remove('cf-card-body--open');
-    if (btnEl)  btnEl.style.display = '';
+    const expandedEl = document.getElementById('cf-expanded');
+    if (_cfCollapsedEl) _cfCollapsedEl.style.display = '';
+    if (expandedEl) expandedEl.style.display = 'none';
     _cfIsPanelOpen = false;
     if (_cfOnDeactivate) _cfOnDeactivate();
   }
