@@ -45,12 +45,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 24px 28px;
+  gap: 24px;
+  padding: 36px 29px;
   background: var(--bg-card);
-  border-radius: 16px;
+  border-radius: 40px;
   width: 100%;
-  max-width: 560px;
+  max-width: 502px;
   text-align: center;
 }
 
@@ -68,11 +68,11 @@
 }
 
 .cf-constructor-block {
-  width: 52px;
-  height: 52px;
+  width: 70px;
+  height: 70px;
   background: #1d2229;
-  border: 2px dashed var(--border);
-  border-radius: 12px;
+  /*border: 2px dashed var(--border);*/
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,18 +96,22 @@
 .cf-collapsed-btn {
   padding: 9px 22px;
   background: rgba(245,197,24,0.1);
-  border: 1px solid rgba(245,197,24,0.3);
-  border-radius: 20px;
-  color: var(--accent);
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 37px;
+  color: rgb(255 255 255);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.18s, border-color 0.18s;
+  transition: filter 0.5s, box-shadow 0.5s;
+  background: linear-gradient(60deg, #52b7ff 0%, #9342ff 25%, #ff4675 50%, #c844ff 75%, #52ffef 100%);
+  background-size: 200% 100%;
+  animation: vstats-prem-shimmer 5s ease-in-out infinite;
+  box-shadow: 0px 0px 10px #e69affb5;
 }
 
 .cf-collapsed-btn:hover {
-  background: rgba(245,197,24,0.18);
-  border-color: var(--accent);
+  filter: brightness(1.2);
+  box-shadow: 0px 0px 18px #e69affb5;
 }
 
 /* ── Развёрнутое состояние ───────────────────────────────────── */
