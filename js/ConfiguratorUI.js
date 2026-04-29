@@ -205,7 +205,7 @@ const ConfiguratorUI = (() => {
           </div>
 
           <!-- Счётчик результатов -->
-          <div class="cf-results-count" id="cf-results-count" style="display:none"></div>
+          <div class="cf-results-count" id="cf-results-count"></div>
         </div>
       </div>
     `;
@@ -505,9 +505,10 @@ const ConfiguratorUI = (() => {
 
   // ── Счётчик результатов ───────────────────────────────────────
   function _cfUpdateCounters(count) {
-    // Счётчик результатов скрыт по дизайн-решению
     const el = document.getElementById('cf-results-count');
-    if (el) el.style.display = 'none';
+    if (!el) return;
+    el.style.display = '';
+    el.textContent = count > 30 ? 'Найдено аккаунтов: более 30' : `Найдено аккаунтов: ${count}`;
   }
 
   function _cfEsc(str) {

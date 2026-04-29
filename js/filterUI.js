@@ -139,7 +139,7 @@ const FilterUI = (() => {
         </div>
 
         <!-- Счётчик результатов -->
-        <div class="af-results-count" id="af-results-count" style="display:none"></div>
+        <div class="af-results-count" id="af-results-count"></div>
       </div>
     `;
 
@@ -443,9 +443,10 @@ const FilterUI = (() => {
 
   // ── Счётчик результатов ───────────────────────────────────────
   function _updateCounters(count) {
-    // Счётчик результатов скрыт по дизайн-решению
     const el = document.getElementById('af-results-count');
-    if (el) el.style.display = 'none';
+    if (!el) return;
+    el.style.display = '';
+    el.textContent = count > 30 ? 'Найдено аккаунтов: более 30' : `Найдено аккаунтов: ${count}`;
   }
 
   function _plural(n, one, few, many) {
