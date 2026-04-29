@@ -2520,8 +2520,8 @@ body.qv-open {
   min-width: 130px;
   max-width: 160px;
   flex: 0 0 auto;
-  background: var(--card-bg, rgba(255,255,255,0.04));
-  border: 1.5px solid transparent;
+  background: #111418;
+  border: 0px solid transparent;
   border-radius: 14px;
   cursor: pointer;
   transition: border-color 0.18s, background 0.18s, transform 0.14s;
@@ -2532,18 +2532,18 @@ body.qv-open {
 }
 
 .scenario-card:hover {
-  background: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.12);
+  background: #16191e;
+  /*border-color: rgba(255,255,255,0.12);*/
   transform: translateY(-2px);
 }
 
 .scenario-card--active {
-  border-color: var(--accent, #f5c518);
-  background: rgba(245, 197, 24, 0.08);
+  /*border-color: var(--accent, #f5c518);*/
+  background: #1d2229;
 }
 
 .scenario-card--active:hover {
-  background: rgba(245, 197, 24, 0.12);
+  background: #2c333f;
 }
 
 .scenario-card__emoji {
