@@ -454,9 +454,25 @@ const FilterUI = (() => {
   }
 
   // ── Публичный API ─────────────────────────────────────────────
+  // Внешний вызов: принудительно свернуть панель фильтра (без сброса состояния)
+  function collapsePanel() {
+    if (_isPanelOpen && _panelEl && _toggleBtn) {
+      _isPanelOpen = false;
+      _panelEl.style.display = 'none';
+      _toggleBtn.classList.remove('af-filter-btn--active');
+    }
+  }
+
+  // Внешний вызов: проверить, открыта ли панель
+  function isPanelOpen() {
+    return _isPanelOpen;
+  }
+
   return {
     init,
     onFilterChange,
+    collapsePanel,
+    isPanelOpen,
   };
 
 })();

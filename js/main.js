@@ -769,10 +769,22 @@ async function loadCatalogue() {
 
     // ── Флаг: конфигуратор развёрнут ─────────────────────────────
     let _configuratorIsExpanded = false;
+    // Флаг: панель фильтра была открыта до активации конфигуратора
+    // (чтобы не восстанавливать если пользователь сам закрыл её)
+    let _filterWasOpenBeforeConfigurator = false;
 
     // ── Активация конфигуратора ───────────────────────────────────
     function onConfiguratorActivate() {
       _configuratorIsExpanded = true;
+
+      // Сворачиваем панель адаптивного фильтра если она открыта,
+      // применённые фильтры/сценарии/поиск НЕ сбрасываются — только скрываются
+      _filterWasOpenBeforeConfigurator = false;
+      if (typeof FilterUI !== 'undefined' && FilterUI.isPanelOpen()) {
+        _filterWasOpenBeforeConfigurator = true;
+        FilterUI.collapsePanel();
+      }
+
       // Сбрасываем сценарий AdaptiveFilter если был активен
       if (typeof AdaptiveFilter !== 'undefined') {
         if (AdaptiveFilter.getState().scenario !== null) {
@@ -794,6 +806,9 @@ async function loadCatalogue() {
         renderLotsFromFiltered(AdaptiveFilter.getResult(), true);
         renderScenariosBlock();
       }
+      // Если панель фильтра была открыта до конфигуратора — восстанавливаем её
+      // (фильтры/поиск/сценарии никуда не делись, просто панель была скрыта)
+      // НЕ восстанавливаем: пользователь сам решит открывать ли панель снова
     }
 
     // ── Инициализируем ConfiguratorUI ────────────────────────────

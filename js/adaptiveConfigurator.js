@@ -365,7 +365,13 @@ const ConfiguratorFilter = (() => {
       }
 
       if (result === null) result = _configuratorAllLots.map(l => String(l.id));
-      return new Set(result);
+
+      // Применяем фильтры из блока "Дополнительно" (noBattles, цена, ресурсы)
+      // Эти параметры имеют ПРИОРИТЕТ: сначала фильтрация по ним, потом пересчёт техники
+      const resultSet = new Set(result);
+      const lotsForDimension = _configuratorAllLots.filter(l => resultSet.has(String(l.id)));
+      const filteredForDimension = _configuratorApplyLotFilters(lotsForDimension);
+      return new Set(filteredForDimension.map(l => String(l.id)));
     }
 
     // Базовые наборы для каждого измерения

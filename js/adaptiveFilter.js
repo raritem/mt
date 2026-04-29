@@ -363,7 +363,13 @@ const AdaptiveFilter = (() => {
       }
 
       if (result === null) result = _allLots.map(l => String(l.id));
-      return new Set(result);
+
+      // Применяем фильтры из блока "Дополнительно" (noBattles, цена, ресурсы)
+      // Эти параметры имеют ПРИОРИТЕТ: сначала фильтрация по ним, потом пересчёт техники
+      const resultSet = new Set(result);
+      const lotsForDimension = _allLots.filter(l => resultSet.has(String(l.id)));
+      const filteredForDimension = _applyLotFilters(lotsForDimension);
+      return new Set(filteredForDimension.map(l => String(l.id)));
     }
 
     // Базовые наборы для каждого измерения
