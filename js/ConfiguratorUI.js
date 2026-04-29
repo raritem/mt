@@ -418,9 +418,9 @@ const ConfiguratorUI = (() => {
 
       const tierBadge = info.tier ? `<span class="cf-tank-tier">${info.tier}</span>` : '';
       item.innerHTML = `
+        ${tierBadge}
         ${imgHtml}
         <span class="cf-tank-name">${_cfEsc(name)}</span>
-        ${tierBadge}
       `;
       item.addEventListener('click', () => { item.blur(); ConfiguratorFilter.toggleTank(name); });
       el.appendChild(item);
@@ -448,16 +448,29 @@ const ConfiguratorUI = (() => {
       return;
     }
 
+    // Для ресурсов (боны/золото/серебро) — только поле "от", поле "до" убрано:
+    // больше ресурсов всегда лучше, поэтому верхняя граница бессмысленна.
+    // Для цены оставляем оба поля.
+    const isResourceOnly = (resourceKey !== 'price');
+
     const minVal = currentMin !== null ? currentMin : '';
     const maxVal = currentMax !== null ? currentMax : '';
 
-    el.innerHTML = `
-      <input type="text" inputmode="numeric" pattern="[0-9]*" class="cf-range-input" data-key="${resourceKey}" data-bound="min"
-        placeholder="${Math.floor(range.min)}" value="${minVal}">
-      <span class="cf-range-dash">—</span>
-      <input type="text" inputmode="numeric" pattern="[0-9]*" class="cf-range-input" data-key="${resourceKey}" data-bound="max"
-        placeholder="${Math.ceil(range.max)}" value="${maxVal}">
-    `;
+    if (isResourceOnly) {
+      el.innerHTML = `
+        <span class="cf-range-label-from">от</span>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="cf-range-input" data-key="${resourceKey}" data-bound="min"
+          placeholder="${Math.floor(range.min)}" value="${minVal}">
+      `;
+    } else {
+      el.innerHTML = `
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="cf-range-input" data-key="${resourceKey}" data-bound="min"
+          placeholder="${Math.floor(range.min)}" value="${minVal}">
+        <span class="cf-range-dash">—</span>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="cf-range-input" data-key="${resourceKey}" data-bound="max"
+          placeholder="${Math.ceil(range.max)}" value="${maxVal}">
+      `;
+    }
 
     el.querySelectorAll('.cf-range-input').forEach(input => {
       const applyValue = () => {
@@ -465,7 +478,6 @@ const ConfiguratorUI = (() => {
         const bound = input.dataset.bound;
         let val = input.value === '' ? null : parseFloat(input.value.replace(/\s/g, '').replace(',', '.'));
 
-        // Clamp: если ввод меньше мин — ставим мин, если больше макс — ставим макс
         if (val !== null && !isNaN(val)) {
           if (bound === 'min' && val < range.min) { val = range.min; input.value = val; }
           if (bound === 'min' && val > range.max) { val = range.max; input.value = val; }
@@ -482,11 +494,8 @@ const ConfiguratorUI = (() => {
           const max = bound === 'max' ? val : state.priceMax;
           ConfiguratorFilter.setPrice(min, max);
         } else {
-          const minK = key + 'Min';
-          const maxK = key + 'Max';
-          const min = bound === 'min' ? val : state[minK];
-          const max = bound === 'max' ? val : state[maxK];
-          ConfiguratorFilter.setResources(key, min, max);
+          // Для ресурсов max всегда null (поле "до" убрано)
+          ConfiguratorFilter.setResources(key, val, null);
         }
       };
       input.addEventListener('change', applyValue);

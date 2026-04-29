@@ -527,16 +527,16 @@ const AdaptiveFilter = (() => {
       capsules.push({ type: 'price', value: 'price', label });
     }
 
-    if (_state.bondsMin !== null || _state.bondsMax !== null) {
-      capsules.push({ type: 'bonds', value: 'bonds', label: `🔵 ${_state.bondsMin || '0'}–${_state.bondsMax || '∞'} бон.` });
+    if (_state.bondsMin !== null) {
+      capsules.push({ type: 'bonds', value: 'bonds', label: `🔵 от ${_state.bondsMin} бон.` });
     }
 
-    if (_state.goldMin !== null || _state.goldMax !== null) {
-      capsules.push({ type: 'gold', value: 'gold', label: `🟡 ${_state.goldMin || '0'}–${_state.goldMax || '∞'} зол.` });
+    if (_state.goldMin !== null) {
+      capsules.push({ type: 'gold', value: 'gold', label: `🟡 от ${_state.goldMin} зол.` });
     }
 
-    if (_state.silverMin !== null || _state.silverMax !== null) {
-      capsules.push({ type: 'silver', value: 'silver', label: `⚪ ${_state.silverMin || '0'}–${_state.silverMax || '∞'} сер.` });
+    if (_state.silverMin !== null) {
+      capsules.push({ type: 'silver', value: 'silver', label: `⚪ от ${_state.silverMin} сер.` });
     }
 
     // Техника — после "Дополнительно"
@@ -556,9 +556,9 @@ const AdaptiveFilter = (() => {
       _state.scenario !== null ||
       _state.tanks.length > 0 ||
       _state.priceMin !== null || _state.priceMax !== null ||
-      _state.bondsMin !== null || _state.bondsMax !== null ||
-      _state.goldMin !== null  || _state.goldMax !== null  ||
-      _state.silverMin !== null || _state.silverMax !== null ||
+      _state.bondsMin !== null ||
+      _state.goldMin !== null  ||
+      _state.silverMin !== null ||
       _state.noBattles
     );
   }

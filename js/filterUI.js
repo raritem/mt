@@ -357,9 +357,9 @@ const FilterUI = (() => {
 
       const tierBadge = info.tier ? `<span class="af-tank-tier">${info.tier}</span>` : '';
       item.innerHTML = `
+        ${tierBadge}
         ${imgHtml}
         <span class="af-tank-name">${_esc(name)}</span>
-        ${tierBadge}
       `;
       item.addEventListener('click', () => { item.blur(); AdaptiveFilter.toggleTank(name); });
       el.appendChild(item);
@@ -387,16 +387,28 @@ const FilterUI = (() => {
       return;
     }
 
+    // Для ресурсов (боны/золото/серебро) — только поле "от", поле "до" убрано:
+    // больше ресурсов всегда лучше, поэтому верхняя граница бессмысленна.
+    const isResourceOnly = (resourceKey !== 'price');
+
     const minVal = currentMin !== null ? currentMin : '';
     const maxVal = currentMax !== null ? currentMax : '';
 
-    el.innerHTML = `
-      <input type="text" inputmode="numeric" pattern="[0-9]*" class="af-range-input" data-key="${resourceKey}" data-bound="min"
-        placeholder="${Math.floor(range.min)}" value="${minVal}">
-      <span class="af-range-dash">—</span>
-      <input type="text" inputmode="numeric" pattern="[0-9]*" class="af-range-input" data-key="${resourceKey}" data-bound="max"
-        placeholder="${Math.ceil(range.max)}" value="${maxVal}">
-    `;
+    if (isResourceOnly) {
+      el.innerHTML = `
+        <span class="af-range-label-from">от</span>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="af-range-input" data-key="${resourceKey}" data-bound="min"
+          placeholder="${Math.floor(range.min)}" value="${minVal}">
+      `;
+    } else {
+      el.innerHTML = `
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="af-range-input" data-key="${resourceKey}" data-bound="min"
+          placeholder="${Math.floor(range.min)}" value="${minVal}">
+        <span class="af-range-dash">—</span>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="af-range-input" data-key="${resourceKey}" data-bound="max"
+          placeholder="${Math.ceil(range.max)}" value="${maxVal}">
+      `;
+    }
 
     el.querySelectorAll('.af-range-input').forEach(input => {
       const applyValue = () => {
@@ -404,7 +416,6 @@ const FilterUI = (() => {
         const bound = input.dataset.bound;
         let val = input.value === '' ? null : parseFloat(input.value.replace(/\s/g, '').replace(',', '.'));
 
-        // Clamp: если ввод меньше мин — ставим мин, если больше макс — ставим макс
         if (val !== null && !isNaN(val)) {
           if (bound === 'min' && val < range.min) { val = range.min; input.value = val; }
           if (bound === 'min' && val > range.max) { val = range.max; input.value = val; }
@@ -421,11 +432,8 @@ const FilterUI = (() => {
           const max = bound === 'max' ? val : state.priceMax;
           AdaptiveFilter.setPrice(min, max);
         } else {
-          const minK = key + 'Min';
-          const maxK = key + 'Max';
-          const min = bound === 'min' ? val : state[minK];
-          const max = bound === 'max' ? val : state[maxK];
-          AdaptiveFilter.setResources(key, min, max);
+          // Для ресурсов max всегда null (поле "до" убрано)
+          AdaptiveFilter.setResources(key, val, null);
         }
       };
       input.addEventListener('change', applyValue);

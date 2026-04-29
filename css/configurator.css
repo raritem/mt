@@ -413,6 +413,7 @@
 }
 
 .cf-tank-item {
+  position: relative;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -467,14 +468,17 @@
 }
 
 .cf-tank-tier {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   color: #ffffff;
-  border: 0px solid var(--border);
-  border-radius: 6px;
-  padding: 2px 6px;
-  flex-shrink: 0;
-  background: #00000047;
+  border-radius: 5px;
+  padding: 2px 5px;
+  background: #00000070;
+  pointer-events: none;
 }
 
 .cf-tank-count {
@@ -537,6 +541,12 @@
 .cf-range-dash {
   color: var(--text-muted);
   font-size: 14px;
+}
+
+.cf-range-label-from {
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .cf-range-empty {

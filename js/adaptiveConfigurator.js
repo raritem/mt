@@ -529,16 +529,16 @@ const ConfiguratorFilter = (() => {
       capsules.push({ type: 'price', value: 'price', label });
     }
 
-    if (_configuratorState.bondsMin !== null || _configuratorState.bondsMax !== null) {
-      capsules.push({ type: 'bonds', value: 'bonds', label: `🔵 ${_configuratorState.bondsMin || '0'}–${_configuratorState.bondsMax || '∞'} бон.` });
+    if (_configuratorState.bondsMin !== null) {
+      capsules.push({ type: 'bonds', value: 'bonds', label: `🔵 от ${_configuratorState.bondsMin} бон.` });
     }
 
-    if (_configuratorState.goldMin !== null || _configuratorState.goldMax !== null) {
-      capsules.push({ type: 'gold', value: 'gold', label: `🟡 ${_configuratorState.goldMin || '0'}–${_configuratorState.goldMax || '∞'} зол.` });
+    if (_configuratorState.goldMin !== null) {
+      capsules.push({ type: 'gold', value: 'gold', label: `🟡 от ${_configuratorState.goldMin} зол.` });
     }
 
-    if (_configuratorState.silverMin !== null || _configuratorState.silverMax !== null) {
-      capsules.push({ type: 'silver', value: 'silver', label: `⚪ ${_configuratorState.silverMin || '0'}–${_configuratorState.silverMax || '∞'} сер.` });
+    if (_configuratorState.silverMin !== null) {
+      capsules.push({ type: 'silver', value: 'silver', label: `⚪ от ${_configuratorState.silverMin} сер.` });
     }
 
     // Техника — после "Дополнительно"
@@ -558,9 +558,9 @@ const ConfiguratorFilter = (() => {
       _configuratorState.scenario !== null ||
       _configuratorState.tanks.length > 0 ||
       _configuratorState.priceMin !== null || _configuratorState.priceMax !== null ||
-      _configuratorState.bondsMin !== null || _configuratorState.bondsMax !== null ||
-      _configuratorState.goldMin !== null  || _configuratorState.goldMax !== null  ||
-      _configuratorState.silverMin !== null || _configuratorState.silverMax !== null ||
+      _configuratorState.bondsMin !== null ||
+      _configuratorState.goldMin !== null  ||
+      _configuratorState.silverMin !== null ||
       _configuratorState.noBattles
     );
   }
