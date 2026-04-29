@@ -211,6 +211,14 @@ const ConfiguratorFilter = (() => {
       result = _configuratorAllLots.map(l => String(l.id));
     }
 
+    // 5. Применяем фильтры из блока "Дополнительно" (noBattles, цена, ресурсы)
+    // Делаем это здесь, чтобы getAvailableTanks и getAvailableOptions
+    // считали доступность техники уже с учётом этих параметров
+    const resultSet = new Set(result);
+    const lotsInResult = _configuratorAllLots.filter(l => resultSet.has(String(l.id)));
+    const filteredByExtra = _configuratorApplyLotFilters(lotsInResult);
+    result = filteredByExtra.map(l => String(l.id));
+
     return result;
   }
 
@@ -511,12 +519,10 @@ const ConfiguratorFilter = (() => {
       capsules.push({ type: 'search', value: _configuratorState.search, label: `🔍 ${short}` });
     }
 
-    for (const tank of _configuratorState.tanks) {
-      capsules.push({ type: 'tank', value: tank, label: tank });
+    // Параметры блока "Дополнительно" — всегда в приоритете, идут ПЕРЕД техникой
+    if (_configuratorState.noBattles) {
+      capsules.push({ type: 'noBattles', value: 'noBattles', label: '0 боёв' });
     }
-
-    // tier/nation/type — вспомогательные фильтры для панели техники,
-    // не порождают капсулы и не считаются «активными фильтрами»
 
     if (_configuratorState.priceMin !== null || _configuratorState.priceMax !== null) {
       const label = `₽ ${_configuratorState.priceMin || '0'}–${_configuratorState.priceMax || '∞'}`;
@@ -535,9 +541,13 @@ const ConfiguratorFilter = (() => {
       capsules.push({ type: 'silver', value: 'silver', label: `⚪ ${_configuratorState.silverMin || '0'}–${_configuratorState.silverMax || '∞'} сер.` });
     }
 
-    if (_configuratorState.noBattles) {
-      capsules.push({ type: 'noBattles', value: 'noBattles', label: '0 боёв' });
+    // Техника — после "Дополнительно"
+    for (const tank of _configuratorState.tanks) {
+      capsules.push({ type: 'tank', value: tank, label: tank });
     }
+
+    // tier/nation/type — вспомогательные фильтры для панели техники,
+    // не порождают капсулы и не считаются «активными фильтрами»
 
     return capsules;
   }

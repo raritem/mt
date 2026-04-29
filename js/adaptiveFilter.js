@@ -209,6 +209,14 @@ const AdaptiveFilter = (() => {
       result = _allLots.map(l => String(l.id));
     }
 
+    // 5. Применяем фильтры из блока "Дополнительно" (noBattles, цена, ресурсы)
+    // Делаем это здесь, чтобы getAvailableTanks и getAvailableOptions
+    // считали доступность техники уже с учётом этих параметров
+    const resultSet = new Set(result);
+    const lotsInResult = _allLots.filter(l => resultSet.has(String(l.id)));
+    const filteredByExtra = _applyLotFilters(lotsInResult);
+    result = filteredByExtra.map(l => String(l.id));
+
     return result;
   }
 
@@ -509,12 +517,10 @@ const AdaptiveFilter = (() => {
       capsules.push({ type: 'search', value: _state.search, label: `🔍 ${short}` });
     }
 
-    for (const tank of _state.tanks) {
-      capsules.push({ type: 'tank', value: tank, label: tank });
+    // Параметры блока "Дополнительно" — всегда в приоритете, идут ПЕРЕД техникой
+    if (_state.noBattles) {
+      capsules.push({ type: 'noBattles', value: 'noBattles', label: '0 боёв' });
     }
-
-    // tier/nation/type — вспомогательные фильтры для панели техники,
-    // не порождают капсулы и не считаются «активными фильтрами»
 
     if (_state.priceMin !== null || _state.priceMax !== null) {
       const label = `₽ ${_state.priceMin || '0'}–${_state.priceMax || '∞'}`;
@@ -533,9 +539,13 @@ const AdaptiveFilter = (() => {
       capsules.push({ type: 'silver', value: 'silver', label: `⚪ ${_state.silverMin || '0'}–${_state.silverMax || '∞'} сер.` });
     }
 
-    if (_state.noBattles) {
-      capsules.push({ type: 'noBattles', value: 'noBattles', label: '0 боёв' });
+    // Техника — после "Дополнительно"
+    for (const tank of _state.tanks) {
+      capsules.push({ type: 'tank', value: tank, label: tank });
     }
+
+    // tier/nation/type — вспомогательные фильтры для панели техники,
+    // не порождают капсулы и не считаются «активными фильтрами»
 
     return capsules;
   }
