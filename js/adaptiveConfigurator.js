@@ -34,18 +34,20 @@ const ConfiguratorFilter = (() => {
   let _configuratorNationIndex = {};   // nation -> [lotId, ...]
   let _configuratorTierIndex = {};     // tier -> [lotId, ...]
   let _configuratorTypeIndex = {};     // type -> [lotId, ...]
+  let _configuratorComboIndex = {};    // "nation|tier|type" -> [lotId, ...]
   let _configuratorLotsById = {};      // lotId -> lot
   let _configuratorTanksData = {};     // tankName -> { tier, type, nation, tags, ... }
 
   let _configuratorOnChangeCallback = null;
 
   // ── Инициализация ─────────────────────────────────────────────
-  function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, tanksData }) {
+  function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, comboIndex, tanksData }) {
     _configuratorAllLots = allLots || [];
     _configuratorTanksIndex = tanksIndex || {};
     _configuratorNationIndex = nationIndex || {};
     _configuratorTierIndex = tierIndex || {};
     _configuratorTypeIndex = typeIndex || {};
+    _configuratorComboIndex = comboIndex || {};
     _configuratorTanksData = tanksData || {};
 
     // Строим лоты по ID
@@ -387,22 +389,89 @@ const ConfiguratorFilter = (() => {
     const idsForNation = _configuratorIdsWithout('nation');
     const idsForType   = _configuratorIdsWithout('type');
 
+    // Вспомогательные функции для combo_index: нация/тир/тип считается доступным
+    // только если существует точная комбинация nation|tier|type в combo_index.
+    const hasCombo = Object.keys(_configuratorComboIndex).length > 0;
+
+    function _cfgComboIdsForNation(nation) {
+      if (!hasCombo) return null;
+      const activeTiers = _configuratorState.tier.length  > 0 ? _configuratorState.tier  : null;
+      const activeTypes = _configuratorState.type.length  > 0 ? _configuratorState.type  : null;
+      if (!activeTiers && !activeTypes) return null;
+      const ids = new Set();
+      for (const [key, lotIds] of Object.entries(_configuratorComboIndex)) {
+        const [kNation, kTier, kType] = key.split('|');
+        if (kNation !== nation) continue;
+        if (activeTiers && !activeTiers.includes(kTier)) continue;
+        if (activeTypes && !activeTypes.includes(kType)) continue;
+        for (const id of lotIds) ids.add(String(id));
+      }
+      return ids;
+    }
+
+    function _cfgComboIdsForTier(tier) {
+      if (!hasCombo) return null;
+      const activeNations = _configuratorState.nation.length > 0 ? _configuratorState.nation : null;
+      const activeTypes   = _configuratorState.type.length  > 0 ? _configuratorState.type  : null;
+      if (!activeNations && !activeTypes) return null;
+      const ids = new Set();
+      for (const [key, lotIds] of Object.entries(_configuratorComboIndex)) {
+        const [kNation, kTier, kType] = key.split('|');
+        if (kTier !== String(tier)) continue;
+        if (activeNations && !activeNations.includes(kNation)) continue;
+        if (activeTypes   && !activeTypes.includes(kType))   continue;
+        for (const id of lotIds) ids.add(String(id));
+      }
+      return ids;
+    }
+
+    function _cfgComboIdsForType(type) {
+      if (!hasCombo) return null;
+      const activeNations = _configuratorState.nation.length > 0 ? _configuratorState.nation : null;
+      const activeTiers   = _configuratorState.tier.length  > 0 ? _configuratorState.tier  : null;
+      if (!activeNations && !activeTiers) return null;
+      const ids = new Set();
+      for (const [key, lotIds] of Object.entries(_configuratorComboIndex)) {
+        const [kNation, kTier, kType] = key.split('|');
+        if (kType !== type) continue;
+        if (activeNations && !activeNations.includes(kNation)) continue;
+        if (activeTiers   && !activeTiers.includes(kTier))   continue;
+        for (const id of lotIds) ids.add(String(id));
+      }
+      return ids;
+    }
+
     // Все уровни — всегда показываем, count=0 → недоступен (серый, некликабельный)
     const tiers = {};
     for (const [tier, lotIds] of Object.entries(_configuratorTierIndex)) {
-      tiers[tier] = lotIds.filter(id => idsForTier.has(String(id))).length;
+      const comboIds = _cfgComboIdsForTier(tier);
+      if (comboIds !== null) {
+        tiers[tier] = lotIds.filter(id => idsForTier.has(String(id)) && comboIds.has(String(id))).length;
+      } else {
+        tiers[tier] = lotIds.filter(id => idsForTier.has(String(id))).length;
+      }
     }
 
     // Все нации
     const nations = {};
     for (const [nation, lotIds] of Object.entries(_configuratorNationIndex)) {
-      nations[nation] = lotIds.filter(id => idsForNation.has(String(id))).length;
+      const comboIds = _cfgComboIdsForNation(nation);
+      if (comboIds !== null) {
+        nations[nation] = lotIds.filter(id => idsForNation.has(String(id)) && comboIds.has(String(id))).length;
+      } else {
+        nations[nation] = lotIds.filter(id => idsForNation.has(String(id))).length;
+      }
     }
 
     // Все типы
     const types = {};
     for (const [tp, lotIds] of Object.entries(_configuratorTypeIndex)) {
-      types[tp] = lotIds.filter(id => idsForType.has(String(id))).length;
+      const comboIds = _cfgComboIdsForType(tp);
+      if (comboIds !== null) {
+        types[tp] = lotIds.filter(id => idsForType.has(String(id)) && comboIds.has(String(id))).length;
+      } else {
+        types[tp] = lotIds.filter(id => idsForType.has(String(id))).length;
+      }
     }
 
     // Диапазоны цен/ресурсов — по текущей полной фильтрации

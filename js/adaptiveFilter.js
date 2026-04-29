@@ -32,18 +32,20 @@ const AdaptiveFilter = (() => {
   let _nationIndex = {};   // nation -> [lotId, ...]
   let _tierIndex = {};     // tier -> [lotId, ...]
   let _typeIndex = {};     // type -> [lotId, ...]
+  let _comboIndex = {};    // "nation|tier|type" -> [lotId, ...]
   let _lotsById = {};      // lotId -> lot
   let _tanksData = {};     // tankName -> { tier, type, nation, tags, ... }
 
   let _onChangeCallback = null;
 
   // ── Инициализация ─────────────────────────────────────────────
-  function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, tanksData }) {
+  function init({ allLots, tanksIndex, nationIndex, tierIndex, typeIndex, comboIndex, tanksData }) {
     _allLots = allLots || [];
     _tanksIndex = tanksIndex || {};
     _nationIndex = nationIndex || {};
     _tierIndex = tierIndex || {};
     _typeIndex = typeIndex || {};
+    _comboIndex = comboIndex || {};
     _tanksData = tanksData || {};
 
     // Строим лоты по ID
@@ -385,22 +387,91 @@ const AdaptiveFilter = (() => {
     const idsForNation = _idsWithout('nation');
     const idsForType   = _idsWithout('type');
 
+    // Вспомогательная: набор ID лотов из combo_index, удовлетворяющих фиксированным измерениям
+    // Например, при подсчёте доступных наций — фиксируем выбранные tier и type через combo_index,
+    // чтобы нация считалась доступной только если существует точная комбинация nation|tier|type.
+    const hasCombo = Object.keys(_comboIndex).length > 0;
+
+    function _comboIdsForNation(nation) {
+      if (!hasCombo) return null; // fallback к старой логике
+      const activeTiers  = _state.tier.length  > 0 ? _state.tier  : null;
+      const activeTypes  = _state.type.length  > 0 ? _state.type  : null;
+      if (!activeTiers && !activeTypes) return null; // нет ограничений — combo не нужен
+      const ids = new Set();
+      for (const [key, lotIds] of Object.entries(_comboIndex)) {
+        const [kNation, kTier, kType] = key.split('|');
+        if (kNation !== nation) continue;
+        if (activeTiers && !activeTiers.includes(kTier)) continue;
+        if (activeTypes && !activeTypes.includes(kType)) continue;
+        for (const id of lotIds) ids.add(String(id));
+      }
+      return ids;
+    }
+
+    function _comboIdsForTier(tier) {
+      if (!hasCombo) return null;
+      const activeNations = _state.nation.length > 0 ? _state.nation : null;
+      const activeTypes   = _state.type.length  > 0 ? _state.type  : null;
+      if (!activeNations && !activeTypes) return null;
+      const ids = new Set();
+      for (const [key, lotIds] of Object.entries(_comboIndex)) {
+        const [kNation, kTier, kType] = key.split('|');
+        if (kTier !== String(tier)) continue;
+        if (activeNations && !activeNations.includes(kNation)) continue;
+        if (activeTypes   && !activeTypes.includes(kType))   continue;
+        for (const id of lotIds) ids.add(String(id));
+      }
+      return ids;
+    }
+
+    function _comboIdsForType(type) {
+      if (!hasCombo) return null;
+      const activeNations = _state.nation.length > 0 ? _state.nation : null;
+      const activeTiers   = _state.tier.length  > 0 ? _state.tier  : null;
+      if (!activeNations && !activeTiers) return null;
+      const ids = new Set();
+      for (const [key, lotIds] of Object.entries(_comboIndex)) {
+        const [kNation, kTier, kType] = key.split('|');
+        if (kType !== type) continue;
+        if (activeNations && !activeNations.includes(kNation)) continue;
+        if (activeTiers   && !activeTiers.includes(kTier))   continue;
+        for (const id of lotIds) ids.add(String(id));
+      }
+      return ids;
+    }
+
     // Все уровни — всегда показываем, count=0 → недоступен (серый)
     const tiers = {};
     for (const [tier, lotIds] of Object.entries(_tierIndex)) {
-      tiers[tier] = lotIds.filter(id => idsForTier.has(String(id))).length;
+      const comboIds = _comboIdsForTier(tier);
+      if (comboIds !== null) {
+        // Пересекаем: лот должен пройти все прочие фильтры И иметь точную combo-комбинацию
+        tiers[tier] = lotIds.filter(id => idsForTier.has(String(id)) && comboIds.has(String(id))).length;
+      } else {
+        tiers[tier] = lotIds.filter(id => idsForTier.has(String(id))).length;
+      }
     }
 
     // Все нации
     const nations = {};
     for (const [nation, lotIds] of Object.entries(_nationIndex)) {
-      nations[nation] = lotIds.filter(id => idsForNation.has(String(id))).length;
+      const comboIds = _comboIdsForNation(nation);
+      if (comboIds !== null) {
+        nations[nation] = lotIds.filter(id => idsForNation.has(String(id)) && comboIds.has(String(id))).length;
+      } else {
+        nations[nation] = lotIds.filter(id => idsForNation.has(String(id))).length;
+      }
     }
 
     // Все типы
     const types = {};
     for (const [tp, lotIds] of Object.entries(_typeIndex)) {
-      types[tp] = lotIds.filter(id => idsForType.has(String(id))).length;
+      const comboIds = _comboIdsForType(tp);
+      if (comboIds !== null) {
+        types[tp] = lotIds.filter(id => idsForType.has(String(id)) && comboIds.has(String(id))).length;
+      } else {
+        types[tp] = lotIds.filter(id => idsForType.has(String(id))).length;
+      }
     }
 
     // Диапазоны цен/ресурсов — по текущей полной фильтрации
