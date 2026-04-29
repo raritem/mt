@@ -1211,8 +1211,7 @@
         "popular",
         "strong",
         "armor_medium",
-        "mobility",
-        "sniper_medium"
+        "mobility"
       ]
     },
     "BZ-58-2": {
@@ -2125,7 +2124,7 @@
       "tags": []
     },
     "AMX Cda 105": {
-      "icon": "f68_amx_chasseur_de_char_46.png",
+      "icon": "f89_canon_dassaut_de_105.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Франция",
