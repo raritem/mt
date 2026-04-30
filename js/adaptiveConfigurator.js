@@ -83,8 +83,14 @@ const ConfiguratorFilter = (() => {
 
   function toggleTank(tankName) {
     const idx = _configuratorState.tanks.indexOf(tankName);
-    if (idx === -1) _configuratorState.tanks = [..._configuratorState.tanks, tankName];
-    else _configuratorState.tanks = _configuratorState.tanks.filter(t => t !== tankName);
+    if (idx === -1) {
+      // Добавляем танк: сбрасываем тип и нацию, сохраняем уровень
+      _configuratorState.tanks = [..._configuratorState.tanks, tankName];
+      _configuratorState.type   = [];
+      _configuratorState.nation = [];
+    } else {
+      _configuratorState.tanks = _configuratorState.tanks.filter(t => t !== tankName);
+    }
     _configuratorNotify();
   }
 
@@ -100,14 +106,64 @@ const ConfiguratorFilter = (() => {
   }
 
   function toggleTier(tier) {
-    // Радио-режим: выбор одного, повторный клик — снять
-    _configuratorState.tier = _configuratorState.tier.includes(String(tier)) ? [] : [String(tier)];
+    const tierStr = String(tier);
+    if (_configuratorState.tier.includes(tierStr)) {
+      // Снимаем уровень — тип и нация остаются (пусть faceted сам пересчитает)
+      _configuratorState.tier = [];
+    } else {
+      // Выбираем новый уровень
+      _configuratorState.tier = [tierStr];
+      // Сбрасываем тип и нацию, если они несовместимы с новым уровнем
+      // (то есть если combo tier|type или tier|type|nation не существует)
+      const hasCombo = Object.keys(_configuratorComboIndex).length > 0;
+      if (hasCombo) {
+        if (_configuratorState.type.length > 0) {
+          const typeStillValid = _configuratorState.type.some(tp =>
+            Object.keys(_configuratorComboIndex).some(key => {
+              const [, kT, kTy] = key.split('|');
+              return kT === tierStr && kTy === tp;
+            })
+          );
+          if (!typeStillValid) {
+            _configuratorState.type   = [];
+            _configuratorState.nation = [];
+          } else if (_configuratorState.nation.length > 0) {
+            const nationStillValid = _configuratorState.nation.some(n =>
+              _configuratorState.type.some(tp =>
+                Object.keys(_configuratorComboIndex).some(key => {
+                  const [kN, kT, kTy] = key.split('|');
+                  return kN === n && kT === tierStr && kTy === tp;
+                })
+              )
+            );
+            if (!nationStillValid) _configuratorState.nation = [];
+          }
+        }
+      }
+    }
     _configuratorNotify();
   }
 
   function toggleType(type) {
-    // Радио-режим: выбор одного, повторный клик — снять
-    _configuratorState.type = _configuratorState.type.includes(type) ? [] : [type];
+    if (_configuratorState.type.includes(type)) {
+      // Снимаем тип — нация остаётся
+      _configuratorState.type = [];
+    } else {
+      // Выбираем новый тип
+      _configuratorState.type = [type];
+      // Сбрасываем нацию, если она несовместима с tier|type
+      const hasCombo = Object.keys(_configuratorComboIndex).length > 0;
+      if (hasCombo && _configuratorState.tier.length > 0 && _configuratorState.nation.length > 0) {
+        const tierStr = _configuratorState.tier[0];
+        const nationStillValid = _configuratorState.nation.some(n =>
+          Object.keys(_configuratorComboIndex).some(key => {
+            const [kN, kT, kTy] = key.split('|');
+            return kN === n && kT === tierStr && kTy === type;
+          })
+        );
+        if (!nationStillValid) _configuratorState.nation = [];
+      }
+    }
     _configuratorNotify();
   }
 
@@ -319,158 +375,111 @@ const ConfiguratorFilter = (() => {
   }
 
   // ── Доступные опции конфигуратора (для динамического UI) ──────
-  // Классический faceted search: для каждого измерения (tier/nation/type)
-  // показываем только те значения, которые реально встречаются в лотах,
-  // прошедших через ВСЕ остальные активные фильтры (кроме самого этого измерения).
   //
-  // Таким образом:
-  // - Нельзя выбрать уровень, который не встречается среди аккаунтов с выбранными танками
-  // - После выбора типа — показываем только нации/уровни, которые есть среди аккаунтов
-  //   с этим типом И выбранными танками
-  // - Нет парадоксов: ни расширения, ни пустых результатов после клика
+  // Иерархия приоритетов: Уровень (высший) → Тип (средний) → Нация (низший)
+  //
+  // • Тиры  — блокируются только если нет лотов с этим тиром при текущих танках/сценарии.
+  //            Выбранные тип и нация НЕ влияют на доступность тиров.
+  //
+  // • Типы  — блокируются если нет combo tier|type. Нация НЕ влияет на доступность типов.
+  //            При выборе типа, если текущая нация несовместима — нация сбрасывается.
+  //
+  // • Нации — блокируются если нет combo tier|type|nation. Строжайший уровень.
+  //
   function getAvailableOptions() {
-    // Вспомогательная: получить Set ID лотов, прошедших через все фильтры КРОМЕ одного измерения
-    // withoutDimension: 'tier' | 'nation' | 'type'
-    function _configuratorIdsWithout(withoutDimension) {
-      let result = null;
+    const hasCombo = Object.keys(_configuratorComboIndex).length > 0;
 
-      // Сценарий
+    // ── Базовые ID: сценарий + поиск + танки + цена/ресурсы; без tier/type/nation ──
+    function _baseIds() {
+      let result = null;
       if (_configuratorState.scenario && typeof FilterEngine !== 'undefined') {
         const scenario = FilterEngine.SCENARIOS.find(s => s.id === _configuratorState.scenario);
         if (scenario && scenario.type !== 'advanced') {
           result = _configuratorIntersect(result, FilterEngine.applyScenario(_configuratorAllLots, scenario).map(l => String(l.id)));
         }
       }
-      // Поиск
       if (_configuratorState.search) {
         const q = _configuratorNormStr(_configuratorState.search);
-        const searchIds = _configuratorAllLots.filter(l => {
-          return _configuratorNormStr(l.title || '').includes(q) ||
-                 _configuratorNormStr(l.tanks10 || '').includes(q) ||
-                 (l.prems_8_9_array || []).some(t => _configuratorNormStr(t).includes(q));
-        }).map(l => String(l.id));
+        const searchIds = _configuratorAllLots.filter(l =>
+          _configuratorNormStr(l.title || '').includes(q) ||
+          _configuratorNormStr(l.tanks10 || '').includes(q) ||
+          (l.prems_8_9_array || []).some(t => _configuratorNormStr(t).includes(q))
+        ).map(l => String(l.id));
         result = _configuratorIntersect(result, searchIds);
       }
-      // Выбранные танки
       for (const tankName of _configuratorState.tanks) {
         result = _configuratorIntersect(result, (_configuratorTanksIndex[tankName] || []).map(String));
       }
-      // Tier (если не исключаем)
-      if (withoutDimension !== 'tier' && _configuratorState.tier.length > 0) {
-        let ids = [];
-        for (const t of _configuratorState.tier) ids = [...new Set([...ids, ...(_configuratorTierIndex[t] || []).map(String)])];
-        result = _configuratorIntersect(result, ids);
-      }
-      // Nation (если не исключаем)
-      if (withoutDimension !== 'nation' && _configuratorState.nation.length > 0) {
-        let ids = [];
-        for (const n of _configuratorState.nation) ids = [...new Set([...ids, ...(_configuratorNationIndex[n] || []).map(String)])];
-        result = _configuratorIntersect(result, ids);
-      }
-      // Type (если не исключаем)
-      if (withoutDimension !== 'type' && _configuratorState.type.length > 0) {
-        let ids = [];
-        for (const tp of _configuratorState.type) ids = [...new Set([...ids, ...(_configuratorTypeIndex[tp] || []).map(String)])];
-        result = _configuratorIntersect(result, ids);
-      }
-
       if (result === null) result = _configuratorAllLots.map(l => String(l.id));
-
-      // Применяем фильтры из блока "Дополнительно" (noBattles, цена, ресурсы)
-      // Эти параметры имеют ПРИОРИТЕТ: сначала фильтрация по ним, потом пересчёт техники
       const resultSet = new Set(result);
-      const lotsForDimension = _configuratorAllLots.filter(l => resultSet.has(String(l.id)));
-      const filteredForDimension = _configuratorApplyLotFilters(lotsForDimension);
-      return new Set(filteredForDimension.map(l => String(l.id)));
+      const lots = _configuratorAllLots.filter(l => resultSet.has(String(l.id)));
+      return new Set(_configuratorApplyLotFilters(lots).map(l => String(l.id)));
     }
 
-    // Базовые наборы для каждого измерения
-    const idsForTier   = _configuratorIdsWithout('tier');
-    const idsForNation = _configuratorIdsWithout('nation');
-    const idsForType   = _configuratorIdsWithout('type');
+    const baseIds = _baseIds();
 
-    // Вспомогательные функции для combo_index: нация/тир/тип считается доступным
-    // только если существует точная комбинация nation|tier|type в combo_index.
-    const hasCombo = Object.keys(_configuratorComboIndex).length > 0;
-
-    function _cfgComboIdsForNation(nation) {
-      if (!hasCombo) return null;
-      const activeTiers = _configuratorState.tier.length  > 0 ? _configuratorState.tier  : null;
-      const activeTypes = _configuratorState.type.length  > 0 ? _configuratorState.type  : null;
-      if (!activeTiers && !activeTypes) return null;
-      const ids = new Set();
-      for (const [key, lotIds] of Object.entries(_configuratorComboIndex)) {
-        const [kNation, kTier, kType] = key.split('|');
-        if (kNation !== nation) continue;
-        if (activeTiers && !activeTiers.includes(kTier)) continue;
-        if (activeTypes && !activeTypes.includes(kType)) continue;
-        for (const id of lotIds) ids.add(String(id));
-      }
-      return ids;
-    }
-
-    function _cfgComboIdsForTier(tier) {
-      if (!hasCombo) return null;
-      const activeNations = _configuratorState.nation.length > 0 ? _configuratorState.nation : null;
-      const activeTypes   = _configuratorState.type.length  > 0 ? _configuratorState.type  : null;
-      if (!activeNations && !activeTypes) return null;
-      const ids = new Set();
-      for (const [key, lotIds] of Object.entries(_configuratorComboIndex)) {
-        const [kNation, kTier, kType] = key.split('|');
-        if (kTier !== String(tier)) continue;
-        if (activeNations && !activeNations.includes(kNation)) continue;
-        if (activeTypes   && !activeTypes.includes(kType))   continue;
-        for (const id of lotIds) ids.add(String(id));
-      }
-      return ids;
-    }
-
-    function _cfgComboIdsForType(type) {
-      if (!hasCombo) return null;
-      const activeNations = _configuratorState.nation.length > 0 ? _configuratorState.nation : null;
-      const activeTiers   = _configuratorState.tier.length  > 0 ? _configuratorState.tier  : null;
-      if (!activeNations && !activeTiers) return null;
-      const ids = new Set();
-      for (const [key, lotIds] of Object.entries(_configuratorComboIndex)) {
-        const [kNation, kTier, kType] = key.split('|');
-        if (kType !== type) continue;
-        if (activeNations && !activeNations.includes(kNation)) continue;
-        if (activeTiers   && !activeTiers.includes(kTier))   continue;
-        for (const id of lotIds) ids.add(String(id));
-      }
-      return ids;
-    }
-
-    // Все уровни — всегда показываем, count=0 → недоступен (серый, некликабельный)
+    // ── ТИРЫ: доступны если baseIds ∩ tierIndex[tier] не пуст ──
+    // Тип и нация НЕ влияют — тир высший приоритет.
     const tiers = {};
     for (const [tier, lotIds] of Object.entries(_configuratorTierIndex)) {
-      const comboIds = _cfgComboIdsForTier(tier);
-      if (comboIds !== null) {
-        tiers[tier] = lotIds.filter(id => idsForTier.has(String(id)) && comboIds.has(String(id))).length;
-      } else {
-        tiers[tier] = lotIds.filter(id => idsForTier.has(String(id))).length;
-      }
+      tiers[tier] = lotIds.filter(id => baseIds.has(String(id))).length;
     }
 
-    // Все нации
-    const nations = {};
-    for (const [nation, lotIds] of Object.entries(_configuratorNationIndex)) {
-      const comboIds = _cfgComboIdsForNation(nation);
-      if (comboIds !== null) {
-        nations[nation] = lotIds.filter(id => idsForNation.has(String(id)) && comboIds.has(String(id))).length;
-      } else {
-        nations[nation] = lotIds.filter(id => idsForNation.has(String(id))).length;
+    // ── ID лотов прошедших через baseIds + выбранный тир ──
+    let idsWithTier = baseIds;
+    if (_configuratorState.tier.length > 0) {
+      const tierLotIds = new Set();
+      for (const t of _configuratorState.tier) {
+        for (const id of (_configuratorTierIndex[t] || [])) tierLotIds.add(String(id));
       }
+      idsWithTier = new Set([...baseIds].filter(id => tierLotIds.has(id)));
     }
 
-    // Все типы
+    // ── ТИПЫ: блокируются если нет combo tier|type (нация НЕ учитывается) ──
     const types = {};
+    const tierStr = _configuratorState.tier.length > 0 ? _configuratorState.tier[0] : null;
     for (const [tp, lotIds] of Object.entries(_configuratorTypeIndex)) {
-      const comboIds = _cfgComboIdsForType(tp);
-      if (comboIds !== null) {
-        types[tp] = lotIds.filter(id => idsForType.has(String(id)) && comboIds.has(String(id))).length;
+      if (hasCombo && tierStr) {
+        // Есть ли хоть одна combo-запись для этого tier+type?
+        const comboIds = new Set();
+        for (const [key, ids] of Object.entries(_configuratorComboIndex)) {
+          const [, kT, kTy] = key.split('|');
+          if (kT === tierStr && kTy === tp) {
+            for (const id of ids) comboIds.add(String(id));
+          }
+        }
+        types[tp] = lotIds.filter(id => idsWithTier.has(String(id)) && comboIds.has(String(id))).length;
       } else {
-        types[tp] = lotIds.filter(id => idsForType.has(String(id))).length;
+        types[tp] = lotIds.filter(id => idsWithTier.has(String(id))).length;
+      }
+    }
+
+    // ── ID лотов прошедших через baseIds + тир + выбранный тип ──
+    let idsWithTierType = idsWithTier;
+    if (_configuratorState.type.length > 0) {
+      const typeLotIds = new Set();
+      for (const tp of _configuratorState.type) {
+        for (const id of (_configuratorTypeIndex[tp] || [])) typeLotIds.add(String(id));
+      }
+      idsWithTierType = new Set([...idsWithTier].filter(id => typeLotIds.has(id)));
+    }
+
+    // ── НАЦИИ: блокируются если нет combo tier|type|nation ──
+    const nations = {};
+    const typeStr = _configuratorState.type.length > 0 ? _configuratorState.type[0] : null;
+    for (const [nation, lotIds] of Object.entries(_configuratorNationIndex)) {
+      if (hasCombo && (tierStr || typeStr)) {
+        const comboIds = new Set();
+        for (const [key, ids] of Object.entries(_configuratorComboIndex)) {
+          const [kN, kT, kTy] = key.split('|');
+          if (kN !== nation) continue;
+          if (tierStr && kT !== tierStr) continue;
+          if (typeStr && kTy !== typeStr) continue;
+          for (const id of ids) comboIds.add(String(id));
+        }
+        nations[nation] = lotIds.filter(id => idsWithTierType.has(String(id)) && comboIds.has(String(id))).length;
+      } else {
+        nations[nation] = lotIds.filter(id => idsWithTierType.has(String(id))).length;
       }
     }
 
