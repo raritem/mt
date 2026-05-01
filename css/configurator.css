@@ -84,7 +84,7 @@
   justify-content: center;
   flex-shrink: 0;
   box-shadow: 0px 0px 36px #e0b6ff47, inset 0px 0px 30px #a69affeb, inset 0px 0px 8px #ffffff;
-  transition: transform 0.35s ease;
+  transition: transform 0.5s ease;
 }
 
 /* Левая карточка */
@@ -109,7 +109,7 @@
 
 /* Hover: плавное увеличение карточек (только ПК, класс добавляется через JS) */
 .cf-constructor-preview.cf-preview--hovered .cf-constructor-block {
-  transform: scale(1.06);
+  transform: scale(1.03);
 }
 
 .cf-constructor-plus-inner {
