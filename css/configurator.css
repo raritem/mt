@@ -70,7 +70,7 @@
 .cf-constructor-preview {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 21px;
 }
 
 .cf-constructor-block {
@@ -84,6 +84,32 @@
   justify-content: center;
   flex-shrink: 0;
   box-shadow: 0px 0px 36px #e0b6ff47, inset 0px 0px 30px #a69affeb, inset 0px 0px 8px #ffffff;
+  transition: transform 0.35s ease;
+}
+
+/* Левая карточка */
+.cf-constructor-preview .cf-constructor-block:first-child {
+  rotate: -3deg;
+  margin: 0px 0px -12px 0px;
+}
+.cf-constructor-preview .cf-constructor-block:first-child .cf-constructor-plus-inner {
+  rotate: -3deg;
+  margin: 0px 0px -12px 0px;
+}
+
+/* Правая карточка */
+.cf-constructor-preview .cf-constructor-block:last-child {
+  rotate: 3deg;
+  margin: 0px 0px -12px 0px;
+}
+.cf-constructor-preview .cf-constructor-block:last-child .cf-constructor-plus-inner {
+  rotate: 3deg;
+  margin: 0px 0px -12px 0px;
+}
+
+/* Hover: плавное увеличение карточек (только ПК, класс добавляется через JS) */
+.cf-constructor-preview.cf-preview--hovered .cf-constructor-block {
+  transform: scale(1.06);
 }
 
 .cf-constructor-plus-inner {
@@ -101,7 +127,7 @@
 }
 
 .cf-collapsed-btn {
-  padding: 20px 66px;
+  padding: 18px 64px;
   background: rgba(245,197,24,0.1);
   border: 1px solid rgb(255 255 255 / 35%);
   border-radius: 40px;

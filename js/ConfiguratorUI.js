@@ -121,7 +121,7 @@ const ConfiguratorUI = (() => {
               </div>
             </div>
             <button class="cf-collapsed-btn" id="cf-collapsed-btn" type="button">
-              Выбрать танки
+              Конфигуратор
             </button>
           </div>
         </div>
@@ -215,10 +215,21 @@ const ConfiguratorUI = (() => {
     _cfPanelEl     = document.getElementById('cf-panel');
     _cfToggleBtn   = null; // Кнопки фильтра больше нет
 
-    // Кнопка "Выбрать танки" — разворачивает конфигуратор
-    document.getElementById('cf-collapsed-btn').addEventListener('click', () => {
+    // Кнопка "Конфигуратор" — разворачивает конфигуратор
+    const _cfCollapsedBtn = document.getElementById('cf-collapsed-btn');
+    _cfCollapsedBtn.addEventListener('click', () => {
       if (_cfIsDisabled) return;
       _cfExpandConfigurator();
+    });
+
+    // Hover на кнопке — плавное увеличение карточек (только ПК)
+    const _cfPreview = document.querySelector('.cf-constructor-preview');
+    const _isDesktop = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    _cfCollapsedBtn.addEventListener('mouseenter', () => {
+      if (_isDesktop() && _cfPreview) _cfPreview.classList.add('cf-preview--hovered');
+    });
+    _cfCollapsedBtn.addEventListener('mouseleave', () => {
+      if (_cfPreview) _cfPreview.classList.remove('cf-preview--hovered');
     });
 
     // Кнопка закрытия развёрнутого конфигуратора

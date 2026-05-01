@@ -20,8 +20,8 @@ const FilterEngine = (() => {
   const SCENARIOS = [
     {
       id: 'popular',
-      emoji: '🎁',
-      title: 'Не знаю что выбрать',
+      emoji: '🔥',
+      title: 'Не знаю, что выбрать',
       subtitle: 'Аккаунты с техникой, которую чаще всего выбирают игроки',
       requirements: {
         min_tags: { popular: 1 },
@@ -49,8 +49,8 @@ const FilterEngine = (() => {
     {
       id: 'many_prems',
       emoji: '💎',
-      title: 'Много PREM танков',
-      subtitle: "От 14 PREM'ов для разнообразия геймплея и стабильного фарма",
+      title: 'Много прем танков',
+      subtitle: "От 14 прем'ов для разнообразия геймплея и стабильного фарма",
       requirements: {
         min_fields: { premcount: 14 },
       },
@@ -72,7 +72,7 @@ const FilterEngine = (() => {
     },
     {
       id: 'return',
-      emoji: '🔄',
+      emoji: '🍌',
       title: 'Вернуться в игру',
       subtitle: 'Мощные новинки и старые машины, которые раскрылись в новом формате боёв ±1 уровень',
       requirements: {
@@ -85,6 +85,7 @@ const FilterEngine = (() => {
       type: 'score',
       tankFilter: { tags: ['new', 'meta_buffed'] },
     },
+    /* ОТКЛЮЧЕНО (для переиспользования позже):
     {
       id: 'unusual',
       emoji: '🧪',
@@ -153,6 +154,7 @@ const FilterEngine = (() => {
       weights: {},
       type: 'advanced',
     },
+    */
   ];
 
   // ── Вспомогательная: нормализовать no_battles ─────────────────
