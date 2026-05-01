@@ -2538,8 +2538,9 @@ body.qv-open {
 }
 
 .scenario-card--active {
-  /*border-color: var(--accent, #f5c518);*/
-  background: #1d2229;
+  /*border-color: var(--accent, #f5c518);
+  background: #1d2229;*/
+  box-shadow: 0px 0px 36px #b6d3ff30, inset 0px 0px 30px #a69aff6e, inset 0px 0px 8px #ffffffa6;
 }
 
 .scenario-card--active:hover {
@@ -2573,17 +2574,17 @@ body.qv-open {
 
 @media (max-width: 600px) {
   .scenarios-block {
-    gap: 7px;
-    padding-bottom: 28px;
+    gap: 12px;
+    padding-bottom: 10px;
   }
   .scenario-card {
-    min-width: 100px;
+    min-width: 170px;
     max-width: 130px;
-    padding: 11px 12px 10px;
+    padding: 27px 15px 16px 15px;
   }
-  .scenario-card__emoji { font-size: 22px; }
-  .scenario-card__title { font-size: 11px; }
-  .scenario-card__sub   { font-size: 9.5px; }
+  .scenario-card__emoji { font-size: 30px; margin: -42px 0px 0px 0px; }
+  .scenario-card__title { font-size: 12px; }
+  .scenario-card__sub   { font-size: 11px; padding: 2px 1px 0px 1px; }
 }
 
 /* ── Lots toolbar (поиск + вид) ──────────────────────────────── */
