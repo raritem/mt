@@ -169,7 +169,7 @@ input, textarea { font-family: var(--font-body); }
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 40px 24px 80px;
+  padding: 39px 24px 80px;
   position: relative;
   z-index: 1;
 }
@@ -2505,9 +2505,9 @@ body.qv-open {
 .scenarios-block {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 16px;
   justify-content: center;
-  padding: 0 0 40px;
+  padding: 0 0 21px;
   margin-bottom: 4px;
 }
 
@@ -2516,15 +2516,15 @@ body.qv-open {
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  padding: 14px 18px 12px;
-  min-width: 130px;
+  padding: 33px 20px 22px 20px;
+  min-width: 217px;
   max-width: 160px;
   flex: 0 0 auto;
-  background: #111418;
+  background: #161b21;
   border: 0px solid transparent;
-  border-radius: 14px;
+  border-radius: 41px;
   cursor: pointer;
-  transition: border-color 0.18s, background 0.18s, transform 0.14s;
+  transition: background 0.5s, transform 0.5s, box-shadow 0.5s;
   text-align: center;
   color: var(--text);
   position: relative;
@@ -2533,8 +2533,8 @@ body.qv-open {
 
 .scenario-card:hover {
   background: #16191e;
-  /*border-color: rgba(255,255,255,0.12);*/
   transform: translateY(-2px);
+  box-shadow: 0px 0px 36px #b6d3ff30, inset 0px 0px 30px #a69aff6e, inset 0px 0px 8px #ffffffa6;
 }
 
 .scenario-card--active {
@@ -2547,25 +2547,28 @@ body.qv-open {
 }
 
 .scenario-card__emoji {
-  font-size: 26px;
+  font-size: 40px;
   line-height: 1;
   display: block;
+  position: absolute;
+  margin: -53px 0px 0px 0px;
 }
 
 .scenario-card__title {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.3;
   display: block;
-  color: var(--text);
+  color: #e1e1e1;
 }
 
 .scenario-card__sub {
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.35;
-  color: var(--text-muted);
+  color: #6b7280cf;
   display: block;
-  max-width: 140px;
+  max-width: 200px;
+  padding: 10px 1px 0px 1px;
 }
 
 @media (max-width: 600px) {
