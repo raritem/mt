@@ -93,8 +93,8 @@
   margin: 0px 0px -12px 0px;
 }
 .cf-constructor-preview .cf-constructor-block:first-child .cf-constructor-plus-inner {
-  rotate: -3deg;
-  margin: 0px 0px -12px 0px;
+  rotate: -1deg;
+  /*margin: 0px 0px -12px 0px;*/
 }
 
 /* Правая карточка */
@@ -103,8 +103,8 @@
   margin: 0px 0px -12px 0px;
 }
 .cf-constructor-preview .cf-constructor-block:last-child .cf-constructor-plus-inner {
-  rotate: 3deg;
-  margin: 0px 0px -12px 0px;
+  rotate: 1deg;
+  /*margin: 0px 0px -12px 0px;*/
 }
 
 /* Hover: плавное увеличение карточек (только ПК, класс добавляется через JS) */
