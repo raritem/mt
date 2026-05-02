@@ -106,7 +106,7 @@ const ConfiguratorUI = (() => {
         <!-- Свёрнутое состояние: конструктор-приглашение -->
         <div class="cf-collapsed" id="cf-collapsed">
           <div class="cf-collapsed-inner">
-            <div class="cf-collapsed-title">Подбери аккаунт по комбинации техники</div>
+            <div class="cf-collapsed-title">Найди аккаунты с нужной связкой техники</div>
             <div class="cf-constructor-preview">
               <div class="cf-constructor-block">
                 <span class="cf-constructor-plus-inner">+</span>
@@ -130,7 +130,7 @@ const ConfiguratorUI = (() => {
         <div class="cf-expanded" id="cf-expanded" style="display:none">
 
           <!-- Заголовок над панелью -->
-          <div class="cf-above-title">Подбери аккаунт по комбинации техники</div>
+          <div class="cf-above-title">Конфигуратор</div>
 
           <!-- Строка: капсулы слева, кнопки справа -->
           <div class="cf-capsules-row">
