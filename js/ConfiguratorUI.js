@@ -121,7 +121,7 @@ const ConfiguratorUI = (() => {
               </div>
             </div>
             <button class="cf-collapsed-btn" id="cf-collapsed-btn" type="button">
-              Конфигуратор
+              Выбрать танки
             </button>
           </div>
         </div>
