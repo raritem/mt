@@ -74,8 +74,8 @@
 }
 
 .cf-constructor-block {
-  width: 123px;
-  height: 164px;
+  width: 149px;
+  height: 192px;
   background: #1d222961;
   /*border: 2px dashed var(--border);*/
   border-radius: 22px;
@@ -93,7 +93,7 @@
   margin: 0px 0px -12px 0px;
 }
 .cf-constructor-preview .cf-constructor-block:first-child .cf-constructor-plus-inner {
-  rotate: -1deg;
+  rotate: -0.5deg;
   /*margin: 0px 0px -12px 0px;*/
 }
 
@@ -103,7 +103,7 @@
   margin: 0px 0px -12px 0px;
 }
 .cf-constructor-preview .cf-constructor-block:last-child .cf-constructor-plus-inner {
-  rotate: 1deg;
+  rotate: 0.5deg;
   /*margin: 0px 0px -12px 0px;*/
 }
 
