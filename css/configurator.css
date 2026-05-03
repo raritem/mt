@@ -633,5 +633,6 @@
   .cf-constructor-block {
     width: 91px;
     height: 125px;
+    border-radius: 21px;
   }
 }
