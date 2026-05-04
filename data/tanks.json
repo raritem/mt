@@ -1,7 +1,7 @@
 {
   "tanks": {
     "112": {
-      "icon": "ch23_112.png",
+      "icon": "china-ch23_112.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Китай",
@@ -20,7 +20,7 @@
       ]
     },
     "121": {
-      "icon": "ch19_121.png",
+      "icon": "china-ch19_121.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Китай",
@@ -46,7 +46,7 @@
       ]
     },
     "Badger": {
-      "icon": "gb92_fv217.png",
+      "icon": "uk-gb92_fv217.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Британия",
@@ -58,7 +58,7 @@
       "tags": []
     },
     "Concept 5": {
-      "icon": "gb120_concept_no_5.png",
+      "icon": "uk-gb120_concept_no_5.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Британия",
@@ -70,7 +70,7 @@
       "tags": []
     },
     "Condor": {
-      "icon": "gb134_fv242b_condor.png",
+      "icon": "uk-gb134_fv242b_condor.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Британия",
@@ -82,7 +82,7 @@
       "tags": []
     },
     "FV4005": {
-      "icon": "gb83_fv4005.png",
+      "icon": "uk-gb83_fv4005.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Британия",
@@ -94,7 +94,7 @@
       "tags": []
     },
     "FV215b 183": {
-      "icon": "gb48_fv215b_183.png",
+      "icon": "uk-gb48_fv215b_183.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Британия",
@@ -106,7 +106,7 @@
       "tags": []
     },
     "S. Conqueror": {
-      "icon": "gb91_super_conqueror.png",
+      "icon": "uk-gb91_super_conqueror.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Британия",
@@ -118,7 +118,7 @@
       "tags": []
     },
     "Manticore": {
-      "icon": "gb100_manticore.png",
+      "icon": "uk-gb100_manticore.png",
       "tier": "10",
       "type": "ЛТ",
       "nation": "Британия",
@@ -130,7 +130,7 @@
       "tags": []
     },
     "ConquerorGC": {
-      "icon": "gb31_conqueror_gun.png",
+      "icon": "uk-gb31_conqueror_gun.png",
       "tier": "10",
       "type": "САУ",
       "nation": "Британия",
@@ -142,7 +142,7 @@
       "tags": []
     },
     "Centurion AX": {
-      "icon": "gb86_centurion_action_x.png",
+      "icon": "uk-gb86_centurion_action_x.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Британия",
@@ -154,7 +154,7 @@
       "tags": []
     },
     "E 100": {
-      "icon": "g56_e_100.png",
+      "icon": "germany-g56_e_100.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Германия",
@@ -166,7 +166,7 @@
       "tags": []
     },
     "Grille 15": {
-      "icon": "g121_grille_15_l63.png",
+      "icon": "germany-g121_grille_15_l63.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Германия",
@@ -178,7 +178,7 @@
       "tags": []
     },
     "Jg.Pz. E 100": {
-      "icon": "g72_jagdpz_e100.png",
+      "icon": "germany-g72_jagdpz_e100.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Германия",
@@ -190,7 +190,7 @@
       "tags": []
     },
     "Leopard 1": {
-      "icon": "g89_leopard1.png",
+      "icon": "germany-g89_leopard1.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Германия",
@@ -202,7 +202,7 @@
       "tags": []
     },
     "Pz.Kpfw. VII": {
-      "icon": "g134_pzkpfw_vii.png",
+      "icon": "germany-g134_pzkpfw_vii.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Германия",
@@ -214,7 +214,7 @@
       "tags": []
     },
     "Rhm. Pzw.": {
-      "icon": "g125_spz_57_rh.png",
+      "icon": "germany-g125_spz_57_rh.png",
       "tier": "10",
       "type": "ЛТ",
       "nation": "Германия",
@@ -226,7 +226,7 @@
       "tags": []
     },
     "E 50 M": {
-      "icon": "g73_e50_ausf_m.png",
+      "icon": "germany-g73_e50_ausf_m.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Германия",
@@ -238,7 +238,7 @@
       "tags": []
     },
     "Maus": {
-      "icon": "g42_maus.png",
+      "icon": "germany-g42_maus.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Германия",
@@ -250,7 +250,7 @@
       "tags": []
     },
     "G.W. E 100": {
-      "icon": "g61_g_e.png",
+      "icon": "germany-g61_g_e.png",
       "tier": "10",
       "type": "САУ",
       "nation": "Германия",
@@ -262,7 +262,7 @@
       "tags": []
     },
     "Minotauro": {
-      "icon": "it23_cc_3.png",
+      "icon": "italy-it23_cc_3.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Италия",
@@ -274,7 +274,7 @@
       "tags": []
     },
     "Rinoceronte": {
-      "icon": "it15_rinoceronte.png",
+      "icon": "italy-it15_rinoceronte.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Италия",
@@ -286,7 +286,7 @@
       "tags": []
     },
     "Progetto 65": {
-      "icon": "it08_progetto_m40_mod_65.png",
+      "icon": "italy-it08_progetto_m40_mod_65.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Италия",
@@ -298,7 +298,7 @@
       "tags": []
     },
     "BZ-75": {
-      "icon": "ch48_bz_75.png",
+      "icon": "china-ch48_bz_75.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Китай",
@@ -310,7 +310,7 @@
       "tags": []
     },
     "GPT-75": {
-      "icon": "ch73_gpt_75.png",
+      "icon": "china-ch73_gpt_75.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Китай",
@@ -322,7 +322,7 @@
       "tags": []
     },
     "WZ-111 5A": {
-      "icon": "ch41_wz_111_5a.png",
+      "icon": "china-ch41_wz_111_5a.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Китай",
@@ -334,7 +334,7 @@
       "tags": []
     },
     "WZ-113G FT": {
-      "icon": "ch38_wz113g_ft.png",
+      "icon": "china-ch38_wz113g_ft.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Китай",
@@ -346,7 +346,7 @@
       "tags": []
     },
     "WZ-132-1": {
-      "icon": "ch28_wz_132a.png",
+      "icon": "china-ch28_wz_132a.png",
       "tier": "10",
       "type": "ЛТ",
       "nation": "Китай",
@@ -358,7 +358,7 @@
       "tags": []
     },
     "60TP": {
-      "icon": "pl15_60tp_lewandowskiego.png",
+      "icon": "poland-pl15_60tp_lewandowskiego.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Польша",
@@ -370,7 +370,7 @@
       "tags": []
     },
     "CS-63": {
-      "icon": "pl21_cs_63.png",
+      "icon": "poland-pl21_cs_63.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Польша",
@@ -382,7 +382,7 @@
       "tags": []
     },
     "Żubr": {
-      "icon": "pl30_sdp_wz58t.png",
+      "icon": "poland-pl30_sdp_wz58t.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Польша",
@@ -394,7 +394,7 @@
       "tags": []
     },
     "Merkava LP": {
-      "icon": "un02_merkava_lp.png",
+      "icon": "intunion-un02_merkava_lp.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Сборная нация",
@@ -406,7 +406,7 @@
       "tags": []
     },
     "T-54D": {
-      "icon": "un14_t54d.png",
+      "icon": "intunion-un14_t54d.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Сборная нация",
@@ -418,7 +418,7 @@
       "tags": []
     },
     "ИС-4": {
-      "icon": "r90_is_4m.png",
+      "icon": "ussr-r90_is_4m.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "СССР",
@@ -430,7 +430,7 @@
       "tags": []
     },
     "ИС-7": {
-      "icon": "r45_is_7.png",
+      "icon": "ussr-r45_is_7.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "СССР",
@@ -442,7 +442,7 @@
       "tags": []
     },
     "Об. 140": {
-      "icon": "r97_object_140.png",
+      "icon": "ussr-r97_object_140.png",
       "tier": "10",
       "type": "СТ",
       "nation": "СССР",
@@ -454,7 +454,7 @@
       "tags": []
     },
     "Об. 261": {
-      "icon": "r52_object_261.png",
+      "icon": "ussr-r52_object_261.png",
       "tier": "10",
       "type": "САУ",
       "nation": "СССР",
@@ -466,7 +466,7 @@
       "tags": []
     },
     "Об. 268": {
-      "icon": "r88_object268.png",
+      "icon": "ussr-r88_object268.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "СССР",
@@ -478,7 +478,7 @@
       "tags": []
     },
     "Об. 268/4": {
-      "icon": "r149_object_268_4.png",
+      "icon": "ussr-r149_object_268_4.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "СССР",
@@ -490,7 +490,7 @@
       "tags": []
     },
     "Об. 277": {
-      "icon": "r155_object_277.png",
+      "icon": "ussr-r155_object_277.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "СССР",
@@ -502,7 +502,7 @@
       "tags": []
     },
     "Об. 430У": {
-      "icon": "r148_object_430_u.png",
+      "icon": "ussr-r148_object_430_u.png",
       "tier": "10",
       "type": "СТ",
       "nation": "СССР",
@@ -514,7 +514,7 @@
       "tags": []
     },
     "Об. 705А": {
-      "icon": "r145_object_705_a.png",
+      "icon": "ussr-r145_object_705_a.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "СССР",
@@ -526,7 +526,7 @@
       "tags": []
     },
     "СТ-II": {
-      "icon": "r169_st_ii.png",
+      "icon": "ussr-r169_st_ii.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "СССР",
@@ -538,7 +538,7 @@
       "tags": []
     },
     "Т-62А": {
-      "icon": "r87_t62a.png",
+      "icon": "ussr-r87_t62a.png",
       "tier": "10",
       "type": "СТ",
       "nation": "СССР",
@@ -550,7 +550,7 @@
       "tags": []
     },
     "Т-100 ЛТ": {
-      "icon": "r158_lt_432.png",
+      "icon": "ussr-r158_lt_432.png",
       "tier": "10",
       "type": "ЛТ",
       "nation": "СССР",
@@ -562,7 +562,7 @@
       "tags": []
     },
     "К-91": {
-      "icon": "r144_k_91.png",
+      "icon": "ussr-r144_k_91.png",
       "tier": "10",
       "type": "СТ",
       "nation": "СССР",
@@ -574,7 +574,7 @@
       "tags": []
     },
     "Firebird": {
-      "icon": "a175_otac_mt_58_02.png",
+      "icon": "usa-a175_otac_mt_58_02.png",
       "tier": "10",
       "type": "СТ",
       "nation": "США",
@@ -586,7 +586,7 @@
       "tags": []
     },
     "M-V-Y": {
-      "icon": "a143_m_v_y.png",
+      "icon": "usa-a143_m_v_y.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "США",
@@ -598,7 +598,7 @@
       "tags": []
     },
     "M48 Patton": {
-      "icon": "a84_m48a1.png",
+      "icon": "usa-a84_m48a1.png",
       "tier": "10",
       "type": "СТ",
       "nation": "США",
@@ -610,7 +610,7 @@
       "tags": []
     },
     "T110E4": {
-      "icon": "a83_t110e4.png",
+      "icon": "usa-a83_t110e4.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "США",
@@ -622,7 +622,7 @@
       "tags": []
     },
     "T110E5": {
-      "icon": "a69_t110e5.png",
+      "icon": "usa-a69_t110e5.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "США",
@@ -634,7 +634,7 @@
       "tags": []
     },
     "T57 Heavy": {
-      "icon": "a67_t57_58.png",
+      "icon": "usa-a67_t57_58.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "США",
@@ -646,7 +646,7 @@
       "tags": []
     },
     "Sheridan": {
-      "icon": "a116_xm551.png",
+      "icon": "usa-a116_xm551.png",
       "tier": "10",
       "type": "ЛТ",
       "nation": "США",
@@ -658,7 +658,7 @@
       "tags": []
     },
     "T110E3": {
-      "icon": "a85_t110e3.png",
+      "icon": "usa-a85_t110e3.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "США",
@@ -670,7 +670,7 @@
       "tags": []
     },
     "T92 HMC": {
-      "icon": "a38_t92.png",
+      "icon": "usa-a38_t92.png",
       "tier": "10",
       "type": "САУ",
       "nation": "США",
@@ -682,7 +682,7 @@
       "tags": []
     },
     "AMX 30 B": {
-      "icon": "f72_amx_30.png",
+      "icon": "france-f72_amx_30.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Франция",
@@ -694,7 +694,7 @@
       "tags": []
     },
     "AMX 50 B": {
-      "icon": "f10_amx_50b.png",
+      "icon": "france-f10_amx_50b.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Франция",
@@ -706,7 +706,7 @@
       "tags": []
     },
     "AMX M4 54": {
-      "icon": "f82_amx_m4_mle1949_ter.png",
+      "icon": "france-f82_amx_m4_mle1949_ter.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Франция",
@@ -718,7 +718,7 @@
       "tags": []
     },
     "B-C 25 t": {
-      "icon": "f18_bat_chatillon25t.png",
+      "icon": "france-f18_bat_chatillon25t.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Франция",
@@ -730,7 +730,7 @@
       "tags": []
     },
     "EBR 105": {
-      "icon": "f108_panhard_ebr_105.png",
+      "icon": "france-f108_panhard_ebr_105.png",
       "tier": "10",
       "type": "ЛТ",
       "nation": "Франция",
@@ -742,7 +742,7 @@
       "tags": []
     },
     "Foch B": {
-      "icon": "f64_amx_50fosh_b.png",
+      "icon": "france-f64_amx_50fosh_b.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Франция",
@@ -754,7 +754,7 @@
       "tags": []
     },
     "AMX 13 105": {
-      "icon": "f88_amx_13_105.png",
+      "icon": "france-f88_amx_13_105.png",
       "tier": "10",
       "type": "ЛТ",
       "nation": "Франция",
@@ -766,7 +766,7 @@
       "tags": []
     },
     "B-C 155 58": {
-      "icon": "f38_bat_chatillon155_58.png",
+      "icon": "france-f38_bat_chatillon155_58.png",
       "tier": "10",
       "type": "САУ",
       "nation": "Франция",
@@ -778,7 +778,7 @@
       "tags": []
     },
     "Vz. 55": {
-      "icon": "cz17_vz_55.png",
+      "icon": "czech-cz17_vz_55.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Чехословакия",
@@ -790,7 +790,7 @@
       "tags": []
     },
     "TVP T 50/51": {
-      "icon": "cz04_t50_51.png",
+      "icon": "czech-cz04_t50_51.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Чехословакия",
@@ -802,7 +802,7 @@
       "tags": []
     },
     "Kranvagn": {
-      "icon": "s16_kranvagn.png",
+      "icon": "sweden-s16_kranvagn.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Швеция",
@@ -814,7 +814,7 @@
       "tags": []
     },
     "UDES 15/16": {
-      "icon": "s28_udes_15_16.png",
+      "icon": "sweden-s28_udes_15_16.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Швеция",
@@ -826,7 +826,7 @@
       "tags": []
     },
     "Strv 103B": {
-      "icon": "s11_strv_103b.png",
+      "icon": "sweden-s11_strv_103b.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Швеция",
@@ -838,7 +838,7 @@
       "tags": []
     },
     "Ho-Ri 3": {
-      "icon": "j35_ho_ri_3.png",
+      "icon": "japan-j35_ho_ri_3.png",
       "tier": "10",
       "type": "ПТ",
       "nation": "Япония",
@@ -850,7 +850,7 @@
       "tags": []
     },
     "STB-1": {
-      "icon": "j16_st_b1.png",
+      "icon": "japan-j16_st_b1.png",
       "tier": "10",
       "type": "СТ",
       "nation": "Япония",
@@ -862,7 +862,7 @@
       "tags": []
     },
     "Type 5 H": {
-      "icon": "j20_type_2605.png",
+      "icon": "japan-j20_type_2605.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Япония",
@@ -874,7 +874,7 @@
       "tags": []
     },
     "Type 71": {
-      "icon": "j40_type_71.png",
+      "icon": "japan-j40_type_71.png",
       "tier": "10",
       "type": "ТТ",
       "nation": "Япония",
@@ -886,7 +886,7 @@
       "tags": []
     },
     "BZ-176": {
-      "icon": "ch47_bz_176.png",
+      "icon": "china-ch47_bz_176.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Китай",
@@ -908,7 +908,7 @@
       ]
     },
     "Bourrasque": {
-      "icon": "f116_bat_chatillon_bourrasque.png",
+      "icon": "france-f116_bat_chatillon_bourrasque.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Франция",
@@ -927,7 +927,7 @@
       ]
     },
     "Škoda T 56": {
-      "icon": "cz14_skoda_t-56.png",
+      "icon": "czech-cz14_skoda_t-56.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Чехословакия",
@@ -947,7 +947,7 @@
       ]
     },
     "EBR 75 FL 10": {
-      "icon": "f106_panhard_ebr_75_mle1954.png",
+      "icon": "france-f106_panhard_ebr_75_mle1954.png",
       "tier": "8",
       "type": "ЛТ",
       "nation": "Франция",
@@ -965,7 +965,7 @@
       ]
     },
     "Turtle I": {
-      "icon": "gb99_turtle_mk1.png",
+      "icon": "uk-gb99_turtle_mk1.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Британия",
@@ -985,7 +985,7 @@
       ]
     },
     "Марс": {
-      "icon": "it13_progetto_m35_mod_46_le.png",
+      "icon": "italy-it13_progetto_m35_mod_46_le.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Италия",
@@ -1004,7 +1004,7 @@
       ]
     },
     "Дуплет": {
-      "icon": "r228_duplet.png",
+      "icon": "ussr-r228_duplet.png",
       "tier": "9",
       "type": "СТ",
       "nation": "СССР",
@@ -1024,7 +1024,7 @@
       ]
     },
     "К-91-122": {
-      "icon": "r173_k_91_2_122.png",
+      "icon": "ussr-r173_k_91_2_122.png",
       "tier": "9",
       "type": "СТ",
       "nation": "СССР",
@@ -1043,7 +1043,7 @@
       ]
     },
     "Prototipo 6": {
-      "icon": "it32_prototipo_6.png",
+      "icon": "italy-it32_prototipo_6.png",
       "tier": "9",
       "type": "СТ",
       "nation": "Италия",
@@ -1060,7 +1060,7 @@
       ]
     },
     "Находка-4": {
-      "icon": "g171_e77_02.png",
+      "icon": "germany-g171_e77_02.png",
       "tier": "9",
       "type": "ТТ",
       "nation": "Германия",
@@ -1081,7 +1081,7 @@
       ]
     },
     "E-77": {
-      "icon": "g171_e77.png",
+      "icon": "germany-g171_e77.png",
       "tier": "9",
       "type": "ТТ",
       "nation": "Германия",
@@ -1101,7 +1101,7 @@
       ]
     },
     "Рудный барон": {
-      "icon": "gb110_fv4201_chieftain_prototype_b.png",
+      "icon": "uk-gb110_fv4201_chieftain_prototype_b.png",
       "tier": "9",
       "type": "ТТ",
       "nation": "Британия",
@@ -1122,7 +1122,7 @@
       ]
     },
     "Strv K": {
-      "icon": "s31_strv_k.png",
+      "icon": "sweden-s31_strv_k.png",
       "tier": "9",
       "type": "ТТ",
       "nation": "Швеция",
@@ -1143,7 +1143,7 @@
       ]
     },
     "Chieftain P.": {
-      "icon": "gb110_fv4201_chieftain_prototype.png",
+      "icon": "uk-gb110_fv4201_chieftain_prototype.png",
       "tier": "9",
       "type": "ТТ",
       "nation": "Британия",
@@ -1163,7 +1163,7 @@
       ]
     },
     "T54 Heavy": {
-      "icon": "a156_t54_2022.png",
+      "icon": "usa-a156_t54_2022.png",
       "tier": "9",
       "type": "ТТ",
       "nation": "США",
@@ -1183,7 +1183,7 @@
       ]
     },
     "Char Mle. 75": {
-      "icon": "f118_char_mle_75.png",
+      "icon": "france-f118_char_mle_75.png",
       "tier": "9",
       "type": "ЛТ",
       "nation": "Франция",
@@ -1198,7 +1198,7 @@
       ]
     },
     "Т-54Б": {
-      "icon": "r223_t_54b_1958.png",
+      "icon": "ussr-r223_t_54b_1958.png",
       "tier": "9",
       "type": "СТ",
       "nation": "СССР",
@@ -1215,7 +1215,7 @@
       ]
     },
     "BZ-58-2": {
-      "icon": "ch59_bz58_2.png",
+      "icon": "china-ch59_bz58_2.png",
       "tier": "9",
       "type": "ТТ",
       "nation": "Китай",
@@ -1234,7 +1234,7 @@
       ]
     },
     "TL-7": {
-      "icon": "a146_tl_7_120.png",
+      "icon": "usa-a146_tl_7_120.png",
       "tier": "9",
       "type": "ПТ",
       "nation": "США",
@@ -1249,7 +1249,7 @@
       ]
     },
     "Latt Strf 120": {
-      "icon": "s33_latt_stridsfordon_120.png",
+      "icon": "sweden-s33_latt_stridsfordon_120.png",
       "tier": "9",
       "type": "ПТ",
       "nation": "Швеция",
@@ -1266,7 +1266,7 @@
       ]
     },
     "Об. 283": {
-      "icon": "r191_object_283.png",
+      "icon": "ussr-r191_object_283.png",
       "tier": "9",
       "type": "СТ",
       "nation": "СССР",
@@ -1278,7 +1278,7 @@
       "tags": []
     },
     "Леший": {
-      "icon": "r159_su_130pm_dr.png",
+      "icon": "ussr-r159_su_130pm_dr.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "СССР",
@@ -1297,7 +1297,7 @@
       ]
     },
     "Skorpion G": {
-      "icon": "g114_rheinmetall_skorpian.png",
+      "icon": "germany-g114_rheinmetall_skorpian.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Германия",
@@ -1315,7 +1315,7 @@
       ]
     },
     "Skorpion": {
-      "icon": "g114_skorpian.png",
+      "icon": "germany-g114_skorpian.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Германия",
@@ -1333,7 +1333,7 @@
       ]
     },
     "СУ-130ПМ": {
-      "icon": "r159_su_130pm.png",
+      "icon": "ussr-r159_su_130pm.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "СССР",
@@ -1351,7 +1351,7 @@
       ]
     },
     "Progetto 46": {
-      "icon": "it13_progetto_m35_mod_46.png",
+      "icon": "italy-it13_progetto_m35_mod_46.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Италия",
@@ -1369,7 +1369,7 @@
       ]
     },
     "703 II (122)": {
-      "icon": "r165_object_703_ii.png",
+      "icon": "ussr-r165_object_703_ii.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -1390,7 +1390,7 @@
       ]
     },
     "TST": {
-      "icon": "cz21_tst.png",
+      "icon": "czech-cz21_tst.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Чехословакия",
@@ -1409,7 +1409,7 @@
       ]
     },
     "Alpine Tiger": {
-      "icon": "ch03_wz_111_a.png",
+      "icon": "china-ch03_wz_111_a.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Китай",
@@ -1429,7 +1429,7 @@
       ]
     },
     "ИС-6": {
-      "icon": "r61_object252.png",
+      "icon": "ussr-r61_object252.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -1449,7 +1449,7 @@
       ]
     },
     "WZ-111": {
-      "icon": "ch03_wz_111.png",
+      "icon": "china-ch03_wz_111.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Китай",
@@ -1467,7 +1467,7 @@
       ]
     },
     "Ka-Ri": {
-      "icon": "j31_type_5_kari.png",
+      "icon": "japan-j31_type_5_kari.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Япония",
@@ -1484,7 +1484,7 @@
       ]
     },
     "Bisonte C45": {
-      "icon": "it18_progetto_c45_mod_71.png",
+      "icon": "italy-it18_progetto_c45_mod_71.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Италия",
@@ -1501,7 +1501,7 @@
       ]
     },
     "Gonsalo": {
-      "icon": "gb115_gonsalo.png",
+      "icon": "uk-gb115_gonsalo.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Британия",
@@ -1520,7 +1520,7 @@
       ]
     },
     "617Q": {
-      "icon": "ch63_stt_617q.png",
+      "icon": "china-ch63_stt_617q.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Китай",
@@ -1540,7 +1540,7 @@
       ]
     },
     "M47 Improv.": {
-      "icon": "a152_m_project_2.png",
+      "icon": "usa-a152_m_project_2.png",
       "tier": "8",
       "type": "СТ",
       "nation": "США",
@@ -1557,7 +1557,7 @@
       ]
     },
     "GSOR 1010": {
-      "icon": "gb121_gsor_1010_fb.png",
+      "icon": "uk-gb121_gsor_1010_fb.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Британия",
@@ -1574,7 +1574,7 @@
       ]
     },
     "Doppel": {
-      "icon": "g196_e_75_ausf_b_doppel.png",
+      "icon": "germany-g196_e_75_ausf_b_doppel.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Германия",
@@ -1594,7 +1594,7 @@
       ]
     },
     "Sekera": {
-      "icon": "cz39_sd_122_49_sekera.png",
+      "icon": "czech-cz39_sd_122_49_sekera.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Чехословакия",
@@ -1614,7 +1614,7 @@
       ]
     },
     "AMBT": {
-      "icon": "a149_ambt.png",
+      "icon": "usa-a149_ambt.png",
       "tier": "8",
       "type": "СТ",
       "nation": "США",
@@ -1630,7 +1630,7 @@
       ]
     },
     "Защитник": {
-      "icon": "r134_object_252k.png",
+      "icon": "ussr-r134_object_252k.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -1650,7 +1650,7 @@
       ]
     },
     "Сапсан": {
-      "icon": "r115_is-3_auto_s.png",
+      "icon": "ussr-r115_is-3_auto_s.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -1671,7 +1671,7 @@
       ]
     },
     "Burza": {
-      "icon": "pl27_sdp_wz_66t.png",
+      "icon": "poland-pl27_sdp_wz_66t.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Польша",
@@ -1693,7 +1693,7 @@
       ]
     },
     "WZ-111 6": {
-      "icon": "ch58_111_vz51.png",
+      "icon": "china-ch58_111_vz51.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Китай",
@@ -1711,7 +1711,7 @@
       ]
     },
     "Renegade": {
-      "icon": "a124_t54e2.png",
+      "icon": "usa-a124_t54e2.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "США",
@@ -1730,7 +1730,7 @@
       ]
     },
     "Type 63": {
-      "icon": "j36_type_63_ht.png",
+      "icon": "japan-j36_type_63_ht.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Япония",
@@ -1746,7 +1746,7 @@
       ]
     },
     "TS-54": {
-      "icon": "a145_ts_54.png",
+      "icon": "usa-a145_ts_54.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "США",
@@ -1764,7 +1764,7 @@
       ]
     },
     "Об. 252У": {
-      "icon": "r134_object_252u.png",
+      "icon": "ussr-r134_object_252u.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -1784,7 +1784,7 @@
       ]
     },
     "703 II (100)": {
-      "icon": "r165_object_703_ii_100.png",
+      "icon": "ussr-r165_object_703_ii_100.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -1803,7 +1803,7 @@
       ]
     },
     "E 75 TS": {
-      "icon": "g143_e75_ts.png",
+      "icon": "germany-g143_e75_ts.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Германия",
@@ -1821,7 +1821,7 @@
       ]
     },
     "Об. 265Т": {
-      "icon": "r212_object_265t.png",
+      "icon": "ussr-r212_object_265t.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -1840,7 +1840,7 @@
       ]
     },
     "M-IV-Y": {
-      "icon": "a141_m_iv_y.png",
+      "icon": "usa-a141_m_iv_y.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "США",
@@ -1858,7 +1858,7 @@
       ]
     },
     "50TP pr.": {
-      "icon": "pl08_50tp_prototyp.png",
+      "icon": "poland-pl08_50tp_prototyp.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Польша",
@@ -1877,7 +1877,7 @@
       ]
     },
     "Объект 168Н": {
-      "icon": "r203_object_168n.png",
+      "icon": "ussr-r203_object_168n.png",
       "tier": "8",
       "type": "СТ",
       "nation": "СССР",
@@ -1894,7 +1894,7 @@
       ]
     },
     "Taurus CA": {
-      "icon": "gb118_taurus_ca.png",
+      "icon": "uk-gb118_taurus_ca.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Британия",
@@ -1914,7 +1914,7 @@
       ]
     },
     "Somua SM": {
-      "icon": "f84_somua_sm.png",
+      "icon": "france-f84_somua_sm.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Франция",
@@ -1933,7 +1933,7 @@
       ]
     },
     "ИСУ-152К": {
-      "icon": "r177_isu_152k_bl10.png",
+      "icon": "ussr-r177_isu_152k_bl10.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "СССР",
@@ -1949,7 +1949,7 @@
       ]
     },
     "Vipera": {
-      "icon": "it30_cc_mod_64_prem.png",
+      "icon": "italy-it30_cc_mod_64_prem.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Италия",
@@ -1966,7 +1966,7 @@
       ]
     },
     "GSOR 1008": {
-      "icon": "gb109_gsor_1008.png",
+      "icon": "uk-gb109_gsor_1008.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Британия",
@@ -1983,7 +1983,7 @@
       ]
     },
     "Dravec": {
-      "icon": "cz37_vz_59_dravec.png",
+      "icon": "czech-cz37_vz_59_dravec.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Чехословакия",
@@ -1998,7 +1998,7 @@
       ]
     },
     "CS-52 LIS": {
-      "icon": "pl19_cs_52_lis.png",
+      "icon": "poland-pl19_cs_52_lis.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Польша",
@@ -2016,7 +2016,7 @@
       ]
     },
     "Lansen C": {
-      "icon": "s26_lansen_c.png",
+      "icon": "sweden-s26_lansen_c.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Швеция",
@@ -2033,7 +2033,7 @@
       ]
     },
     "ShPTK-TVP": {
-      "icon": "cz20_shptk_tvp_100_mm.png",
+      "icon": "czech-cz20_shptk_tvp_100_mm.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Чехословакия",
@@ -2050,7 +2050,7 @@
       ]
     },
     "Pr.68 (P)": {
-      "icon": "g164_kpz_pr_68_p.png",
+      "icon": "germany-g164_kpz_pr_68_p.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Германия",
@@ -2067,7 +2067,7 @@
       ]
     },
     "Kpz 07 RH": {
-      "icon": "g154_kpz_07_rh.png",
+      "icon": "germany-g154_kpz_07_rh.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Германия",
@@ -2082,7 +2082,7 @@
       ]
     },
     "Lorr. 40 t": {
-      "icon": "f19_lorraine40t.png",
+      "icon": "france-f19_lorraine40t.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Франция",
@@ -2100,7 +2100,7 @@
       ]
     },
     "ASTRON Rex": {
-      "icon": "a140_astron_rex_105mm.png",
+      "icon": "usa-a140_astron_rex_105mm.png",
       "tier": "8",
       "type": "СТ",
       "nation": "США",
@@ -2124,7 +2124,7 @@
       "tags": []
     },
     "AMX Cda 105": {
-      "icon": "f89_canon_dassaut_de_105.png",
+      "icon": "france-f89_canon_dassaut_de_105.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Франция",
@@ -2141,7 +2141,7 @@
       ]
     },
     "KanJPz 105": {
-      "icon": "g112_kanonenjagdpanzer_105.png",
+      "icon": "germany-g112_kanonenjagdpanzer_105.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Германия",
@@ -2157,7 +2157,7 @@
       ]
     },
     "T77": {
-      "icon": "a132_t77.png",
+      "icon": "usa-a132_t77.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "США",
@@ -2173,7 +2173,7 @@
       ]
     },
     "EMIL 1951": {
-      "icon": "s18_emil_1951_e1.png",
+      "icon": "sweden-s18_emil_1951_e1.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Швеция",
@@ -2190,7 +2190,7 @@
       ]
     },
     "Т-34": {
-      "icon": "a13_t34_hvy.png",
+      "icon": "usa-a13_t34_hvy.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "США",
@@ -2207,7 +2207,7 @@
       ]
     },
     "T34 B": {
-      "icon": "a13_t34_hvy_bf.png",
+      "icon": "usa-a13_t34_hvy_bf.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "США",
@@ -2224,7 +2224,7 @@
       ]
     },
     "Jagdtiger Pr.": {
-      "icon": "g44_jagdtigerh.png",
+      "icon": "germany-g44_jagdtigerh.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Германия",
@@ -2242,7 +2242,7 @@
       ]
     },
     "WZ-113-II": {
-      "icon": "ch46_113_140.png",
+      "icon": "china-ch46_113_140.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Китай",
@@ -2260,7 +2260,7 @@
       ]
     },
     "VK 75.01 K": {
-      "icon": "g141_vk7501k.png",
+      "icon": "germany-g141_vk7501k.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Германия",
@@ -2279,7 +2279,7 @@
       ]
     },
     "Caernarvon AX": {
-      "icon": "gb93_caernarvon_ax.png",
+      "icon": "uk-gb93_caernarvon_ax.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Британия",
@@ -2293,7 +2293,7 @@
       ]
     },
     "КВ-4 КТТС": {
-      "icon": "r121_kv4_ktt.png",
+      "icon": "ussr-r121_kv4_ktt.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "СССР",
@@ -2311,7 +2311,7 @@
       ]
     },
     "56TP": {
-      "icon": "pl24_56tp.png",
+      "icon": "poland-pl24_56tp.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Польша",
@@ -2328,7 +2328,7 @@
       ]
     },
     "Chrysler K": {
-      "icon": "a115_chrysler_k.png",
+      "icon": "usa-a115_chrysler_k.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "США",
@@ -2346,7 +2346,7 @@
       ]
     },
     "Panther 8.8": {
-      "icon": "g106_pzkpfwpanther_ausff.png",
+      "icon": "germany-g106_pzkpfwpanther_ausff.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Германия",
@@ -2362,7 +2362,7 @@
       ]
     },
     "К-2": {
-      "icon": "r192_k_2.png",
+      "icon": "ussr-r192_k_2.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -2380,7 +2380,7 @@
       ]
     },
     "ИС-5": {
-      "icon": "r113_object_730.png",
+      "icon": "ussr-r113_object_730.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -2397,7 +2397,7 @@
       ]
     },
     "Об. 259А": {
-      "icon": "r188_object_259a.png",
+      "icon": "ussr-r188_object_259a.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -2414,7 +2414,7 @@
       ]
     },
     "Кировец-1": {
-      "icon": "r123_kirovets_1.png",
+      "icon": "ussr-r123_kirovets_1.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -2432,7 +2432,7 @@
       ]
     },
     "Т-44 обл.": {
-      "icon": "r98_t44_85.png",
+      "icon": "ussr-r98_t44_85.png",
       "tier": "8",
       "type": "ЛТ",
       "nation": "СССР",
@@ -2446,7 +2446,7 @@
       ]
     },
     "T26E5": {
-      "icon": "a117_t26e5.png",
+      "icon": "usa-a117_t26e5.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "США",
@@ -2461,7 +2461,7 @@
       ]
     },
     "Карачун": {
-      "icon": "j27_o_i_120_bp.png",
+      "icon": "japan-j27_o_i_120_bp.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Япония",
@@ -2477,7 +2477,7 @@
       ]
     },
     "T42": {
-      "icon": "a136_t42.png",
+      "icon": "usa-a136_t42.png",
       "tier": "8",
       "type": "СТ",
       "nation": "США",
@@ -2492,7 +2492,7 @@
       ]
     },
     "M4A1 Rev.": {
-      "icon": "f73_m4a1_revalorise.png",
+      "icon": "france-f73_m4a1_revalorise.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Франция",
@@ -2507,7 +2507,7 @@
       ]
     },
     "СТГ": {
-      "icon": "r146_stg.png",
+      "icon": "ussr-r146_stg.png",
       "tier": "8",
       "type": "СТ",
       "nation": "СССР",
@@ -2523,7 +2523,7 @@
       ]
     },
     "T25 Pilot 1": {
-      "icon": "a111_t25_pilot.png",
+      "icon": "usa-a111_t25_pilot.png",
       "tier": "8",
       "type": "СТ",
       "nation": "США",
@@ -2537,7 +2537,7 @@
       ]
     },
     "M46 KR": {
-      "icon": "a63_m46_patton_kr.png",
+      "icon": "usa-a63_m46_patton_kr.png",
       "tier": "8",
       "type": "СТ",
       "nation": "США",
@@ -2551,7 +2551,7 @@
       ]
     },
     "Tornvagn": {
-      "icon": "s32_bofors_tornvagn.png",
+      "icon": "sweden-s32_bofors_tornvagn.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Швеция",
@@ -2566,7 +2566,7 @@
       ]
     },
     "A.P. AMX 30": {
-      "icon": "f117_alt_proto_amx_30.png",
+      "icon": "france-f117_alt_proto_amx_30.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Франция",
@@ -2580,7 +2580,7 @@
       ]
     },
     "КВ-5": {
-      "icon": "r54_kv_5.png",
+      "icon": "ussr-r54_kv_5.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -2597,7 +2597,7 @@
       ]
     },
     "КВ-4 Кресл.": {
-      "icon": "r128_kv4_kreslavskiy.png",
+      "icon": "ussr-r128_kv4_kreslavskiy.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "СССР",
@@ -2611,7 +2611,7 @@
       ]
     },
     "VK 168.01 P": {
-      "icon": "g138_vk168_02.png",
+      "icon": "germany-g138_vk168_02.png",
       "tier": "8",
       "type": "ТТ",
       "nation": "Германия",
@@ -2627,7 +2627,7 @@
       ]
     },
     "Т-54 обр. 1": {
-      "icon": "r112_t54_45.png",
+      "icon": "ussr-r112_t54_45.png",
       "tier": "8",
       "type": "СТ",
       "nation": "СССР",
@@ -2641,7 +2641,7 @@
       ]
     },
     "Pz. 58": {
-      "icon": "g119_panzer58.png",
+      "icon": "germany-g119_panzer58.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Германия",
@@ -2656,7 +2656,7 @@
       ]
     },
     "TL-1 LPC": {
-      "icon": "a127_tl_1_lpc.png",
+      "icon": "usa-a127_tl_1_lpc.png",
       "tier": "8",
       "type": "СТ",
       "nation": "США",
@@ -2670,7 +2670,7 @@
       ]
     },
     "Škoda T 27": {
-      "icon": "cz13_t_27.png",
+      "icon": "czech-cz13_t_27.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Чехословакия",
@@ -2684,7 +2684,7 @@
       ]
     },
     "Chieftain/T95": {
-      "icon": "gb87_chieftain_t95_turret.png",
+      "icon": "uk-gb87_chieftain_t95_turret.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Британия",
@@ -2696,7 +2696,7 @@
       "tags": []
     },
     "Об. 274а": {
-      "icon": "r180_object_274_a.png",
+      "icon": "ussr-r180_object_274_a.png",
       "tier": "8",
       "type": "СТ",
       "nation": "СССР",
@@ -2708,7 +2708,7 @@
       "tags": []
     },
     "Jg.Tig.8.8 cm": {
-      "icon": "g65_jagdtiger_sdkfz_185.png",
+      "icon": "germany-g65_jagdtiger_sdkfz_185.png",
       "tier": "8",
       "type": "ПТ",
       "nation": "Германия",
@@ -2720,7 +2720,7 @@
       "tags": []
     },
     "Strv 81": {
-      "icon": "s23_strv_81.png",
+      "icon": "sweden-s23_strv_81.png",
       "tier": "8",
       "type": "СТ",
       "nation": "Швеция",
@@ -2732,7 +2732,7 @@
       "tags": []
     },
     "T95E2": {
-      "icon": "a81_t95_e2.png",
+      "icon": "usa-a81_t95_e2.png",
       "tier": "8",
       "type": "СТ",
       "nation": "США",
@@ -2744,7 +2744,7 @@
       "tags": []
     },
     "M 41 90 mm": {
-      "icon": "g120_m41_90.png",
+      "icon": "germany-g120_m41_90.png",
       "tier": "8",
       "type": "ЛТ",
       "nation": "Германия",
@@ -2756,7 +2756,7 @@
       "tags": []
     },
     "Senlac": {
-      "icon": "gb101_fv1066_senlac.png",
+      "icon": "uk-gb101_fv1066_senlac.png",
       "tier": "8",
       "type": "ЛТ",
       "nation": "Британия",
@@ -2768,7 +2768,7 @@
       "tags": []
     },
     "ИС-2М": {
-      "icon": "r156_is_2m.png",
+      "icon": "ussr-r156_is_2m.png",
       "tier": "7",
       "type": "ТТ",
       "nation": "СССР",
@@ -2780,7 +2780,7 @@
       "tags": []
     },
     "ИС-2Э": {
-      "icon": "r175_is_2_screen.png",
+      "icon": "ussr-r175_is_2_screen.png",
       "tier": "7",
       "type": "ТТ",
       "nation": "СССР",
@@ -2792,7 +2792,7 @@
       "tags": []
     },
     "ИСУ-122С": {
-      "icon": "r116_isu122c_berlin.png",
+      "icon": "ussr-r116_isu122c_berlin.png",
       "tier": "7",
       "type": "ПТ",
       "nation": "СССР",
@@ -2808,7 +2808,7 @@
       ]
     },
     "КВ-122": {
-      "icon": "r133_kv_122.png",
+      "icon": "ussr-r133_kv_122.png",
       "tier": "7",
       "type": "ТТ",
       "nation": "СССР",
@@ -2820,7 +2820,7 @@
       "tags": []
     },
     "СУ-122-44": {
-      "icon": "r89_su122_44.png",
+      "icon": "ussr-r89_su122_44.png",
       "tier": "7",
       "type": "ПТ",
       "nation": "СССР",
@@ -2837,7 +2837,7 @@
       ]
     },
     "У-18": {
-      "icon": "r164_u_18_t.png",
+      "icon": "ussr-r164_u_18_t.png",
       "tier": "7",
       "type": "ПТ",
       "nation": "СССР",
@@ -2849,7 +2849,7 @@
       "tags": []
     },
     "AT 15A": {
-      "icon": "gb71_at_15a.png",
+      "icon": "uk-gb71_at_15a.png",
       "tier": "7",
       "type": "ПТ",
       "nation": "Британия",
@@ -2861,7 +2861,7 @@
       "tags": []
     },
     "Eagle 7": {
-      "icon": "a121_m26_cologne.png",
+      "icon": "usa-a121_m26_cologne.png",
       "tier": "7",
       "type": "СТ",
       "nation": "США",
@@ -2873,7 +2873,7 @@
       "tags": []
     },
     "FV201 (A45)": {
-      "icon": "gb52_a45.png",
+      "icon": "uk-gb52_a45.png",
       "tier": "7",
       "type": "ТТ",
       "nation": "Британия",
@@ -2885,7 +2885,7 @@
       "tags": []
     },
     "M56 Scorpion": {
-      "icon": "a101_m56.png",
+      "icon": "usa-a101_m56.png",
       "tier": "7",
       "type": "ПТ",
       "nation": "США",
@@ -2897,7 +2897,7 @@
       "tags": []
     },
     "Steyr WT": {
-      "icon": "g109_steyr_wt.png",
+      "icon": "germany-g109_steyr_wt.png",
       "tier": "7",
       "type": "ПТ",
       "nation": "Германия",
@@ -2909,7 +2909,7 @@
       "tags": []
     },
     "Super Hellcat": {
-      "icon": "a130_super_hellcat.png",
+      "icon": "usa-a130_super_hellcat.png",
       "tier": "7",
       "type": "ПТ",
       "nation": "США",
@@ -2921,7 +2921,7 @@
       "tags": []
     },
     "T26E3 Eagle 7": {
-      "icon": "a121_m26_cologne.png",
+      "icon": "usa-a121_m26_cologne.png",
       "tier": "7",
       "type": "СТ",
       "nation": "США",
@@ -2933,7 +2933,7 @@
       "tags": []
     },
     "VK 45.03": {
-      "icon": "g118_vk4503.png",
+      "icon": "germany-g118_vk4503.png",
       "tier": "7",
       "type": "ТТ",
       "nation": "Германия",
@@ -2945,7 +2945,7 @@
       "tags": []
     },
     "Т-34-85М": {
-      "icon": "r108_t34_85m.png",
+      "icon": "ussr-r108_t34_85m.png",
       "tier": "6",
       "type": "СТ",
       "nation": "СССР",
@@ -2957,7 +2957,7 @@
       "tags": []
     },
     "Т-50-2": {
-      "icon": "r160_t_50_2.png",
+      "icon": "ussr-r160_t_50_2.png",
       "tier": "6",
       "type": "ЛТ",
       "nation": "СССР",
@@ -2969,7 +2969,7 @@
       "tags": []
     },
     "Т-V Пантера": {
-      "icon": "r218_panther_n_518.png",
+      "icon": "ussr-r218_panther_n_518.png",
       "tier": "6",
       "type": "СТ",
       "nation": "СССР",
@@ -2981,7 +2981,7 @@
       "tags": []
     },
     "Dicker Max": {
-      "icon": "g41_dickermax.png",
+      "icon": "germany-g41_dickermax.png",
       "tier": "6",
       "type": "ПТ",
       "nation": "Германия",
@@ -2993,7 +2993,7 @@
       "tags": []
     },
     "GMC M36B1": {
-      "icon": "a174_m36b1_gmc.png",
+      "icon": "usa-a174_m36b1_gmc.png",
       "tier": "6",
       "type": "ПТ",
       "nation": "США",
@@ -3005,7 +3005,7 @@
       "tags": []
     },
     "M10 RBFM": {
-      "icon": "f112_m10_rbfm.png",
+      "icon": "france-f112_m10_rbfm.png",
       "tier": "6",
       "type": "ПТ",
       "nation": "Франция",
@@ -3017,7 +3017,7 @@
       "tags": []
     },
     "M44": {
-      "icon": "a87_m44.png",
+      "icon": "usa-a87_m44.png",
       "tier": "6",
       "type": "САУ",
       "nation": "США",
@@ -3029,7 +3029,7 @@
       "tags": []
     },
     "Panther/M10": {
-      "icon": "g78_panther_m10.png",
+      "icon": "germany-g78_panther_m10.png",
       "tier": "6",
       "type": "СТ",
       "nation": "Германия",
@@ -3041,7 +3041,7 @@
       "tags": []
     },
     "Skoda T 40": {
-      "icon": "cz01_skoda_t40.png",
+      "icon": "czech-cz01_skoda_t40.png",
       "tier": "6",
       "type": "СТ",
       "nation": "Чехословакия",
@@ -3053,7 +3053,7 @@
       "tags": []
     },
     "Super Chaffee": {
-      "icon": "a134_m24e2_superchaffee.png",
+      "icon": "usa-a134_m24e2_superchaffee.png",
       "tier": "6",
       "type": "ЛТ",
       "nation": "США",
@@ -3065,7 +3065,7 @@
       "tags": []
     },
     "Tiger 131": {
-      "icon": "g136_tiger_131.png",
+      "icon": "germany-g136_tiger_131.png",
       "tier": "6",
       "type": "ТТ",
       "nation": "Германия",
@@ -3077,7 +3077,7 @@
       "tags": []
     },
     "VK 28.01 105": {
-      "icon": "g158_vk2801_105_spxxi.png",
+      "icon": "germany-g158_vk2801_105_spxxi.png",
       "tier": "6",
       "type": "ЛТ",
       "nation": "Германия",
@@ -3089,7 +3089,7 @@
       "tags": []
     },
     "VK 36.01 K 41": {
-      "icon": "g15_vk3601h_c.png",
+      "icon": "germany-g15_vk3601h_c.png",
       "tier": "6",
       "type": "ТТ",
       "nation": "Германия",
@@ -3101,7 +3101,7 @@
       "tags": []
     },
     "КВ-1С с МЗ": {
-      "icon": "r197_kv_1s_mz.png",
+      "icon": "ussr-r197_kv_1s_mz.png",
       "tier": "5",
       "type": "ТТ",
       "nation": "СССР",
@@ -3113,7 +3113,7 @@
       "tags": []
     },
     "КВ-1Э": {
-      "icon": "r186_kv_1_screened.png",
+      "icon": "ussr-r186_kv_1_screened.png",
       "tier": "5",
       "type": "ТТ",
       "nation": "СССР",
@@ -3125,7 +3125,7 @@
       "tags": []
     },
     "Т-115": {
-      "icon": "r209_t_115.png",
+      "icon": "ussr-r209_t_115.png",
       "tier": "5",
       "type": "СТ",
       "nation": "СССР",
@@ -3137,7 +3137,7 @@
       "tags": []
     },
     "Т-34Э": {
-      "icon": "r154_t_34e_1943.png",
+      "icon": "ussr-r154_t_34e_1943.png",
       "tier": "5",
       "type": "СТ",
       "nation": "СССР",
@@ -3149,7 +3149,7 @@
       "tags": []
     },
     "M24 No.594": {
-      "icon": "a160_m24_594.png",
+      "icon": "usa-a160_m24_594.png",
       "tier": "5",
       "type": "ЛТ",
       "nation": "США",
@@ -3161,7 +3161,7 @@
       "tags": []
     },
     "M41 HMC": {
-      "icon": "a18_m41.png",
+      "icon": "usa-a18_m41.png",
       "tier": "5",
       "type": "САУ",
       "nation": "США",
@@ -3173,7 +3173,7 @@
       "tags": []
     },
     "Valiant": {
-      "icon": "gb37_valliant.png",
+      "icon": "uk-gb37_valliant.png",
       "tier": "5",
       "type": "СТ",
       "nation": "Британия",
