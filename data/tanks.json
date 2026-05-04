@@ -2,7 +2,7 @@
   "tanks": {
     "112": {
       "icon": "ch23_112.png",
-      "tier": "81",
+      "tier": "8",
       "type": "ТТ",
       "nation": "Китай",
       "isPrem": true,
