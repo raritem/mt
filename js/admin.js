@@ -35,6 +35,8 @@ const state = {
   meta: { id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '' },
   activeTab: 'active', // 'active' | 'hidden' | 'inactive'
   editingLot: null,
+  selectMode: false,
+  selectedLots: new Set(),
 };
 
 // ════════════════════════════════════════════════════════════════
@@ -276,6 +278,32 @@ function migrateLotsArray(arr) {
   return obj;
 }
 
+function moveTabIndicator(activeTab, instant) {
+  const tabs = document.getElementById('admin-tabs');
+  if (!tabs) return;
+  let indicator = tabs.querySelector('.admin-tab-indicator');
+  if (!indicator) {
+    indicator = document.createElement('span');
+    indicator.className = 'admin-tab-indicator';
+    tabs.appendChild(indicator);
+  }
+  const tabsRect = tabs.getBoundingClientRect();
+  const btnRect  = activeTab.getBoundingClientRect();
+  const left  = btnRect.left  - tabsRect.left;
+  const width = btnRect.width;
+  if (instant) {
+    indicator.style.transition = 'none';
+    indicator.style.left  = left  + 'px';
+    indicator.style.width = width + 'px';
+    // force reflow then re-enable transition
+    indicator.getBoundingClientRect();
+    indicator.style.transition = '';
+  } else {
+    indicator.style.left  = left  + 'px';
+    indicator.style.width = width + 'px';
+  }
+}
+
 // ════════════════════════════════════════════════════════════════
 //  ГЛАВНАЯ ПАНЕЛЬ
 // ════════════════════════════════════════════════════════════════
@@ -296,6 +324,9 @@ function renderCataloguePanel() {
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Танки CSV
             <input type="file" id="tanks-csv-file-input" accept=".csv,text/csv" style="display:none">
           </label>
+          <button class="btn btn-ghost" id="select-mode-btn">
+            <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><line x1="11" y1="7" x2="21" y2="7"/><line x1="11" y1="13" x2="21" y2="13"/><line x1="11" y1="19" x2="21" y2="19"/></svg></span> Выбрать
+          </button>
           <button class="btn btn-primary" id="add-lot-btn">
             <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> Добавить лот
           </button>
@@ -314,12 +345,76 @@ function renderCataloguePanel() {
         </button>
       </div>
 
+      <div class="bulk-actions-bar" id="bulk-actions-bar" style="display:none">
+        <span class="bulk-actions-count" id="bulk-actions-count">0 выбрано</span>
+        <button class="btn btn-ghost btn-sm" id="bulk-select-all">Выбрать все</button>
+        <button class="btn btn-ghost btn-sm" id="bulk-toggle-hide">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Скрыть
+        </button>
+        <button class="btn btn-sm" style="color:var(--danger);border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08)" id="bulk-delete">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Удалить
+        </button>
+        <button class="btn btn-ghost btn-sm" id="bulk-cancel" style="margin-left:auto">Отмена</button>
+      </div>
+
       <div class="import-status-bar" id="import-status-bar" style="display:none"></div>
       <div class="admin-lots-list" id="admin-lots-list"></div>
     </div>
   `;
 
   $('add-lot-btn').addEventListener('click', () => openLotModal(null));
+
+  $('select-mode-btn').addEventListener('click', () => {
+    state.selectMode = true;
+    state.selectedLots = new Set();
+    $('select-mode-btn').style.display = 'none';
+    $('bulk-actions-bar').style.display = 'flex';
+    renderLots();
+  });
+
+  $('bulk-cancel').addEventListener('click', () => {
+    state.selectMode = false;
+    state.selectedLots = new Set();
+    $('select-mode-btn').style.display = '';
+    $('bulk-actions-bar').style.display = 'none';
+    renderLots();
+  });
+
+  $('bulk-select-all').addEventListener('click', () => {
+    const entries = getLotsForTab(state.activeTab);
+    if (state.selectedLots.size === entries.length) {
+      state.selectedLots = new Set();
+    } else {
+      state.selectedLots = new Set(entries.map(([id]) => id));
+    }
+    updateBulkCount();
+    renderLots();
+  });
+
+  $('bulk-toggle-hide').addEventListener('click', async () => {
+    const ids = [...state.selectedLots];
+    if (!ids.length) return;
+    for (const id of ids) {
+      const lot = state.lots[id];
+      if (!lot) continue;
+      if (!lot.ui) lot.ui = {};
+      lot.ui.isHidden = !lot.ui.isHidden;
+    }
+    try { await saveCatalogueJSON(); } catch (_) {}
+    state.selectedLots = new Set();
+    updateBulkCount();
+    renderLots();
+  });
+
+  $('bulk-delete').addEventListener('click', () => {
+    const ids = [...state.selectedLots];
+    if (!ids.length) return;
+    openConfirm(`Удалить ${ids.length} лот(ов)?`, async () => {
+      for (const id of ids) await deleteLot(id);
+      state.selectedLots = new Set();
+      updateBulkCount();
+    });
+  });
 
   const csvInput = $('csv-file-input');
   csvInput.addEventListener('change', () => {
@@ -343,7 +438,14 @@ function renderCataloguePanel() {
     state.activeTab = btn.dataset.tab;
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('is-active'));
     btn.classList.add('is-active');
+    moveTabIndicator(btn);
     renderLots();
+  });
+
+  // Init indicator position
+  requestAnimationFrame(() => {
+    const activeTab = document.querySelector('.admin-tab.is-active');
+    if (activeTab) moveTabIndicator(activeTab, true);
   });
 
   renderLots();
@@ -473,6 +575,11 @@ function updateTabCounts() {
   }
 }
 
+function updateBulkCount() {
+  const el = $('bulk-actions-count');
+  if (el) el.textContent = state.selectedLots.size + ' выбрано';
+}
+
 function renderLots() {
   updateTabCounts();
   const list = $('admin-lots-list');
@@ -511,8 +618,10 @@ function renderLots() {
     const lastSeen = lot.lastSeenInCsv ? `CSV: ${lot.lastSeenInCsv}` : '';
 
     const card = document.createElement('div');
-    card.className = 'admin-lot-card' + (lot.status === 'inactive' ? ' admin-lot-card--inactive' : '');
+    card.className = 'admin-lot-card' + (lot.status === 'inactive' ? ' admin-lot-card--inactive' : '') + (state.selectMode && state.selectedLots.has(id) ? ' admin-lot-card--selected' : '');
+    card.dataset.lotId = id;
     card.innerHTML = `
+      ${state.selectMode ? `<label class="lot-checkbox-wrap" title="Выбрать"><input type="checkbox" class="lot-checkbox" data-lot="${esc(id)}" ${state.selectedLots.has(id) ? 'checked' : ''}><span class="lot-checkbox-ui"></span></label>` : ''}
       ${thumb}
       <div class="admin-lot-info">
         <div class="admin-lot-title">${escWithBr(title)} ${badge}</div>
@@ -527,6 +636,12 @@ function renderLots() {
         <button class="btn btn-ghost btn-no-border" data-action="images" data-lot="${esc(id)}" title="Фото">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
         </button>
+        <button class="btn btn-ghost btn-no-border ${ui.isHidden ? 'lot-hidden-active' : ''}" data-action="toggleHide" data-lot="${esc(id)}" title="${ui.isHidden ? 'Показать лот' : 'Скрыть лот'}">
+          <span style="display:inline-flex;align-items:center;vertical-align:middle">${ui.isHidden
+            ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+            : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+          }</span>
+        </button>
         <button class="btn btn-ghost btn-no-border" data-action="edit" data-lot="${esc(id)}" title="Изменить">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
         </button>
@@ -538,13 +653,43 @@ function renderLots() {
     list.appendChild(card);
   }
 
+  list.addEventListener('change', (e) => {
+    const cb = e.target.closest('.lot-checkbox');
+    if (!cb) return;
+    const id = cb.dataset.lot;
+    if (cb.checked) state.selectedLots.add(id);
+    else            state.selectedLots.delete(id);
+    updateBulkCount();
+    // update card selected class without full re-render
+    const card = cb.closest('.admin-lot-card');
+    if (card) card.classList.toggle('admin-lot-card--selected', cb.checked);
+  });
+
   list.addEventListener('click', (e) => {
+    // In select mode, clicking card body (not buttons) toggles checkbox
+    if (state.selectMode) {
+      const card = e.target.closest('.admin-lot-card');
+      const cb = e.target.closest('.lot-checkbox-wrap, .lot-checkbox');
+      const btn = e.target.closest('[data-action]');
+      if (card && !btn && !cb) {
+        const id = card.dataset.lotId;
+        const checkbox = card.querySelector('.lot-checkbox');
+        if (checkbox) {
+          checkbox.checked = !checkbox.checked;
+          if (checkbox.checked) state.selectedLots.add(id);
+          else                  state.selectedLots.delete(id);
+          updateBulkCount();
+          card.classList.toggle('admin-lot-card--selected', checkbox.checked);
+        }
+      }
+    }
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const id = btn.dataset.lot, action = btn.dataset.action;
-    if (action === 'edit')   openLotModal(id);
-    if (action === 'delete') confirmDeleteLot(id);
-    if (action === 'images') openImageManager(id);
+    if (action === 'edit')       openLotModal(id);
+    if (action === 'delete')     confirmDeleteLot(id);
+    if (action === 'images')     openImageManager(id);
+    if (action === 'toggleHide') toggleLotHide(id);
   });
 }
 
@@ -710,6 +855,20 @@ async function deleteLot(lotId) {
   if (files.length > 0) await GH.deleteFiles(files, 'Delete lot ' + lotId);
   delete state.lots[lotId];
   await saveCatalogueJSON();
+  renderLots();
+}
+
+async function toggleLotHide(lotId) {
+  const lot = state.lots[lotId];
+  if (!lot) return;
+  if (!lot.ui) lot.ui = {};
+  lot.ui.isHidden = !lot.ui.isHidden;
+  try {
+    await saveCatalogueJSON();
+  } catch (e) {
+    // revert on error
+    lot.ui.isHidden = !lot.ui.isHidden;
+  }
   renderLots();
 }
 
