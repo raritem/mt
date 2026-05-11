@@ -114023,48 +114023,6 @@
       },
       "no_battles": false
     },
-    ",,,3,T77": {
-      "status": "inactive",
-      "lastSeenInCsv": "2026-04-22",
-      "inactiveSince": "2026-04-22",
-      "onFunpay": false,
-      "data": {
-        "price": "Т-54 обр. 1,2,Об. 268,,#REF!,3,СУ-122-44",
-        "prems_8_9": [
-          "Т-V Пантера",
-          "8",
-          "10"
-        ],
-        "tanks_10": [],
-        "funpay_link": "",
-        "prems_6_7": [],
-        "bonus_tanks": [],
-        "year": "",
-        "bonds": "",
-        "gold": "",
-        "silver": "",
-        "spg": "",
-        "boosters": "",
-        "crew": "",
-        "camo": "",
-        "3dstyles": "",
-        "all_tanks": [
-          "Т-V Пантера",
-          "8",
-          "10"
-        ],
-        "prems_8_9_count": 0,
-        "tanks_10_count": 0,
-        "prems_6_7_count": 1,
-        "bonus_tanks_count": 2,
-        "premcount": 3
-      },
-      "ui": {
-        "images": [],
-        "thumb": "",
-        "isHidden": false
-      }
-    },
     "evq7x2g7": {
       "status": "inactive",
       "lastSeenInCsv": "2026-04-22",
