@@ -398,7 +398,6 @@ function renderCataloguePanel() {
   $('bulk-toggle-hide').addEventListener('click', async () => {
     const ids = [...state.selectedLots];
     if (!ids.length) return;
-    // If on hidden tab — show them; otherwise hide them
     const shouldHide = state.activeTab !== 'hidden';
     for (const id of ids) {
       const lot = state.lots[id];
@@ -406,20 +405,28 @@ function renderCataloguePanel() {
       if (!lot.ui) lot.ui = {};
       lot.ui.isHidden = shouldHide;
     }
-    try { await saveCatalogueJSON(); } catch (_) {}
     state.selectedLots = new Set();
     updateBulkCount();
-    renderLots();
+    renderLots(); // instant UI update
+    try { await saveCatalogueJSON(); } catch (_) {} // one network call
   });
 
   $('bulk-sold').addEventListener('click', () => {
     const ids = [...state.selectedLots];
     if (!ids.length) return;
     openConfirm(`Пометить ${ids.length} лот(ов) как проданные?`, async () => {
-      for (const id of ids) await markLotSold(id);
+      // Optimistic: mutate all state at once, re-render immediately
+      const now = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      for (const id of ids) {
+        const lot = state.lots[id];
+        if (!lot) continue;
+        lot.status = 'inactive';
+        lot.inactiveSince = now;
+      }
       state.selectedLots = new Set();
       updateBulkCount();
-      renderLots();
+      renderLots(); // instant UI update
+      try { await saveCatalogueJSON(); } catch (_) {} // one network call
     });
   });
 
@@ -427,9 +434,29 @@ function renderCataloguePanel() {
     const ids = [...state.selectedLots];
     if (!ids.length) return;
     openConfirm(`Удалить ${ids.length} лот(ов) навсегда?`, async () => {
-      for (const id of ids) await deleteLot(id);
+      // Collect all file paths to delete across all selected lots
+      const allFiles = [];
+      for (const id of ids) {
+        const lot = state.lots[id];
+        if (!lot) continue;
+        const ui = lot.ui || {};
+        if (ui.images) allFiles.push(...ui.images);
+        if (ui.thumb)  allFiles.push(ui.thumb);
+        delete state.lots[id];
+      }
       state.selectedLots = new Set();
       updateBulkCount();
+      renderLots(); // instant UI update
+
+      // Fire network ops concurrently: file deletes in parallel + one catalogue save
+      const tasks = [saveCatalogueJSON()];
+      if (allFiles.length) {
+        // Delete all files in parallel (not sequential)
+        tasks.push(
+          Promise.all(allFiles.map(p => GH.deleteFile(p, 'Bulk delete').catch(() => {})))
+        );
+      }
+      try { await Promise.all(tasks); } catch (_) {}
     });
   });
 
@@ -918,8 +945,8 @@ async function markLotSold(lotId) {
   if (!lot) return;
   lot.status = 'inactive';
   lot.inactiveSince = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  await saveCatalogueJSON();
-  renderLots();
+  renderLots(); // instant
+  try { await saveCatalogueJSON(); } catch (_) {}
 }
 
 async function deleteLot(lotId) {
@@ -928,12 +955,16 @@ async function deleteLot(lotId) {
   const ui = lot.ui || {};
   const files = [...(ui.images || [])];
   if (ui.thumb) files.push(ui.thumb);
-  if (files.length > 0) {
-    try { await GH.deleteFiles(files, 'Delete lot ' + lotId); } catch (_) {}
-  }
+
   delete state.lots[lotId];
-  await saveCatalogueJSON();
-  renderLots();
+  renderLots(); // instant
+
+  // Fire catalogue save and file deletes concurrently
+  const tasks = [saveCatalogueJSON()];
+  if (files.length) {
+    tasks.push(Promise.all(files.map(p => GH.deleteFile(p, 'Delete lot ' + lotId).catch(() => {}))));
+  }
+  try { await Promise.all(tasks); } catch (_) {}
 }
 
 async function toggleLotHide(lotId) {
@@ -941,12 +972,13 @@ async function toggleLotHide(lotId) {
   if (!lot) return;
   if (!lot.ui) lot.ui = {};
   lot.ui.isHidden = !lot.ui.isHidden;
+  renderLots(); // instant
   try {
     await saveCatalogueJSON();
   } catch (e) {
-    lot.ui.isHidden = !lot.ui.isHidden; // revert
+    lot.ui.isHidden = !lot.ui.isHidden; // revert on error
+    renderLots();
   }
-  renderLots();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1228,17 +1260,25 @@ async function uploadFiles(files) {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  СОХРАНЕНИЕ
+//  СОХРАНЕНИЕ — с коалесцингом параллельных вызовов
 // ════════════════════════════════════════════════════════════════
+let _savePromise = null;
+
 async function saveCatalogueJSON() {
+  // If a save is already in flight, wait for it to finish then save again
+  // (so rapid calls always flush the latest state, but never run in parallel)
+  if (_savePromise) {
+    await _savePromise.catch(() => {});
+  }
   const m = state.meta || {};
-  await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
+  _savePromise = GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
     id:          m.id          || CATALOGUE_ID,
     name:        m.name        || 'Галерея',
     description: m.description || '',
     seller:      m.seller      || '',
     lots:        state.lots,
-  }, 'Update lots');
+  }, 'Update lots').finally(() => { _savePromise = null; });
+  return _savePromise;
 }
 
 // ════════════════════════════════════════════════════════════════
