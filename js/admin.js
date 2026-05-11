@@ -348,8 +348,11 @@ function renderCataloguePanel() {
       <div class="bulk-actions-bar" id="bulk-actions-bar" style="display:none">
         <span class="bulk-actions-count" id="bulk-actions-count">0 выбрано</span>
         <button class="btn btn-ghost btn-sm" id="bulk-select-all">Выбрать все</button>
-        <button class="btn btn-ghost btn-sm" id="bulk-toggle-hide">
+        <button class="btn btn-ghost btn-sm" id="bulk-toggle-hide" style="display:none">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Скрыть
+        </button>
+        <button class="btn btn-ghost btn-sm" id="bulk-sold" style="display:none;color:var(--text-muted)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Продано
         </button>
         <button class="btn btn-sm" style="color:var(--danger);border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08)" id="bulk-delete">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg> Удалить
@@ -369,6 +372,7 @@ function renderCataloguePanel() {
     state.selectedLots = new Set();
     $('select-mode-btn').style.display = 'none';
     $('bulk-actions-bar').style.display = 'flex';
+    updateBulkBarButtons();
     renderLots();
   });
 
@@ -394,11 +398,13 @@ function renderCataloguePanel() {
   $('bulk-toggle-hide').addEventListener('click', async () => {
     const ids = [...state.selectedLots];
     if (!ids.length) return;
+    // If on hidden tab — show them; otherwise hide them
+    const shouldHide = state.activeTab !== 'hidden';
     for (const id of ids) {
       const lot = state.lots[id];
       if (!lot) continue;
       if (!lot.ui) lot.ui = {};
-      lot.ui.isHidden = !lot.ui.isHidden;
+      lot.ui.isHidden = shouldHide;
     }
     try { await saveCatalogueJSON(); } catch (_) {}
     state.selectedLots = new Set();
@@ -406,10 +412,21 @@ function renderCataloguePanel() {
     renderLots();
   });
 
+  $('bulk-sold').addEventListener('click', () => {
+    const ids = [...state.selectedLots];
+    if (!ids.length) return;
+    openConfirm(`Пометить ${ids.length} лот(ов) как проданные?`, async () => {
+      for (const id of ids) await markLotSold(id);
+      state.selectedLots = new Set();
+      updateBulkCount();
+      renderLots();
+    });
+  });
+
   $('bulk-delete').addEventListener('click', () => {
     const ids = [...state.selectedLots];
     if (!ids.length) return;
-    openConfirm(`Удалить ${ids.length} лот(ов)?`, async () => {
+    openConfirm(`Удалить ${ids.length} лот(ов) навсегда?`, async () => {
       for (const id of ids) await deleteLot(id);
       state.selectedLots = new Set();
       updateBulkCount();
@@ -436,9 +453,12 @@ function renderCataloguePanel() {
     const btn = e.target.closest('[data-tab]');
     if (!btn) return;
     state.activeTab = btn.dataset.tab;
+    state.selectedLots = new Set();
+    updateBulkCount();
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('is-active'));
     btn.classList.add('is-active');
     moveTabIndicator(btn);
+    if (state.selectMode) updateBulkBarButtons();
     renderLots();
   });
 
@@ -449,6 +469,49 @@ function renderCataloguePanel() {
   });
 
   renderLots();
+
+  // ── Delegated events on the lots list (bound once) ─────────────
+  const lotsList = $('admin-lots-list');
+
+  lotsList.addEventListener('change', (e) => {
+    const cb = e.target.closest('.lot-checkbox');
+    if (!cb) return;
+    const id = cb.dataset.lot;
+    if (cb.checked) state.selectedLots.add(id);
+    else            state.selectedLots.delete(id);
+    updateBulkCount();
+    const card = cb.closest('.admin-lot-card');
+    if (card) card.classList.toggle('admin-lot-card--selected', cb.checked);
+  });
+
+  lotsList.addEventListener('click', (e) => {
+    // In select mode, clicking card body (not a button/checkbox) toggles selection
+    if (state.selectMode) {
+      const card = e.target.closest('.admin-lot-card');
+      const isBtn = !!e.target.closest('[data-action]');
+      const isCb  = !!e.target.closest('.lot-checkbox-wrap, .lot-checkbox');
+      if (card && !isBtn && !isCb) {
+        const id = card.dataset.lotId;
+        const checkbox = card.querySelector('.lot-checkbox');
+        if (checkbox) {
+          checkbox.checked = !checkbox.checked;
+          if (checkbox.checked) state.selectedLots.add(id);
+          else                  state.selectedLots.delete(id);
+          updateBulkCount();
+          card.classList.toggle('admin-lot-card--selected', checkbox.checked);
+        }
+        return;
+      }
+    }
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.lot, action = btn.dataset.action;
+    if (action === 'edit')       openLotModal(id);
+    if (action === 'delete')     confirmDeleteLot(id);
+    if (action === 'markSold')   confirmMarkSold(id);
+    if (action === 'images')     openImageManager(id);
+    if (action === 'toggleHide') toggleLotHide(id);
+  });
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -575,6 +638,22 @@ function updateTabCounts() {
   }
 }
 
+function updateBulkBarButtons() {
+  const isInactive = state.activeTab === 'inactive';
+  const isHidden   = state.activeTab === 'hidden';
+  const hideBtn = $('bulk-toggle-hide');
+  const soldBtn = $('bulk-sold');
+  const delBtn  = $('bulk-delete');
+  if (hideBtn) hideBtn.style.display = isInactive ? 'none' : '';
+  if (soldBtn) soldBtn.style.display = isInactive ? 'none' : '';
+  // On hidden tab, rename hide button to "Показать"
+  if (hideBtn && isHidden) {
+    hideBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Показать`;
+  } else if (hideBtn) {
+    hideBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Скрыть`;
+  }
+}
+
 function updateBulkCount() {
   const el = $('bulk-actions-count');
   if (el) el.textContent = state.selectedLots.size + ' выбрано';
@@ -592,6 +671,8 @@ function renderLots() {
     return;
   }
 
+  const isInactive = state.activeTab === 'inactive';
+
   list.innerHTML = '';
   for (const [id, lot] of entries) {
     const ui   = lot.ui  || {};
@@ -603,7 +684,7 @@ function renderLots() {
 
     let badge = '';
     if (lot.status === 'inactive') {
-      badge = `<span class="admin-lot-badge admin-lot-badge-inactive">Неактивен${lot.inactiveSince ? ' с ' + lot.inactiveSince : ''}</span>`;
+      badge = `<span class="admin-lot-badge admin-lot-badge-inactive">Продан${lot.inactiveSince ? ' ' + lot.inactiveSince : ''}</span>`;
     } else if (ui.isHidden) {
       badge = `<span class="admin-lot-badge admin-lot-badge-hidden">Скрыт</span>`;
     } else {
@@ -616,6 +697,25 @@ function renderLots() {
     const funpay = data.funpay_link || '';
     const price  = data.price || '';
     const lastSeen = lot.lastSeenInCsv ? `CSV: ${lot.lastSeenInCsv}` : '';
+
+    // Eye button: show open eye on active lots, crossed eye on hidden lots
+    // Not shown on inactive tab
+    const eyeBtn = isInactive ? '' : `
+        <button class="btn btn-ghost btn-no-border${ui.isHidden ? ' lot-hidden-active' : ''}" data-action="toggleHide" data-lot="${esc(id)}" title="${ui.isHidden ? 'Показать лот' : 'Скрыть лот'}">
+          <span style="display:inline-flex;align-items:center;vertical-align:middle">${ui.isHidden
+            ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
+            : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+          }</span>
+        </button>`;
+
+    // "Продано" moves to inactive; "Удалить" in inactive tab does real delete
+    const deleteBtn = isInactive
+      ? `<button class="btn btn-ghost btn-no-border" style="color:var(--danger)" data-action="delete" data-lot="${esc(id)}" title="Удалить навсегда">
+          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
+        </button>`
+      : `<button class="btn btn-ghost btn-no-border" style="color:var(--text-muted)" data-action="markSold" data-lot="${esc(id)}" title="Продано — переместить в корзину">
+          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+        </button>`;
 
     const card = document.createElement('div');
     card.className = 'admin-lot-card' + (lot.status === 'inactive' ? ' admin-lot-card--inactive' : '') + (state.selectMode && state.selectedLots.has(id) ? ' admin-lot-card--selected' : '');
@@ -636,61 +736,15 @@ function renderLots() {
         <button class="btn btn-ghost btn-no-border" data-action="images" data-lot="${esc(id)}" title="Фото">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
         </button>
-        <button class="btn btn-ghost btn-no-border ${ui.isHidden ? 'lot-hidden-active' : ''}" data-action="toggleHide" data-lot="${esc(id)}" title="${ui.isHidden ? 'Показать лот' : 'Скрыть лот'}">
-          <span style="display:inline-flex;align-items:center;vertical-align:middle">${ui.isHidden
-            ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`
-            : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
-          }</span>
-        </button>
+        ${eyeBtn}
         <button class="btn btn-ghost btn-no-border" data-action="edit" data-lot="${esc(id)}" title="Изменить">
           <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
         </button>
-        <button class="btn btn-ghost btn-no-border" style="color:var(--danger)" data-action="delete" data-lot="${esc(id)}" title="Удалить">
-          <span style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
-        </button>
+        ${deleteBtn}
       </div>
     `;
     list.appendChild(card);
   }
-
-  list.addEventListener('change', (e) => {
-    const cb = e.target.closest('.lot-checkbox');
-    if (!cb) return;
-    const id = cb.dataset.lot;
-    if (cb.checked) state.selectedLots.add(id);
-    else            state.selectedLots.delete(id);
-    updateBulkCount();
-    // update card selected class without full re-render
-    const card = cb.closest('.admin-lot-card');
-    if (card) card.classList.toggle('admin-lot-card--selected', cb.checked);
-  });
-
-  list.addEventListener('click', (e) => {
-    // In select mode, clicking card body (not buttons) toggles checkbox
-    if (state.selectMode) {
-      const card = e.target.closest('.admin-lot-card');
-      const cb = e.target.closest('.lot-checkbox-wrap, .lot-checkbox');
-      const btn = e.target.closest('[data-action]');
-      if (card && !btn && !cb) {
-        const id = card.dataset.lotId;
-        const checkbox = card.querySelector('.lot-checkbox');
-        if (checkbox) {
-          checkbox.checked = !checkbox.checked;
-          if (checkbox.checked) state.selectedLots.add(id);
-          else                  state.selectedLots.delete(id);
-          updateBulkCount();
-          card.classList.toggle('admin-lot-card--selected', checkbox.checked);
-        }
-      }
-    }
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const id = btn.dataset.lot, action = btn.dataset.action;
-    if (action === 'edit')       openLotModal(id);
-    if (action === 'delete')     confirmDeleteLot(id);
-    if (action === 'images')     openImageManager(id);
-    if (action === 'toggleHide') toggleLotHide(id);
-  });
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -827,23 +881,45 @@ async function onLotSave() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  CONFIRM / DELETE
+//  CONFIRM / DELETE / SOLD
 // ════════════════════════════════════════════════════════════════
 function openConfirm(text, onOk) {
   dom.confirmText.textContent = text;
-  dom.confirmOk.onclick = async () => {
+  // Replace onclick to avoid stale closures
+  const newBtn = dom.confirmOk.cloneNode(true);
+  dom.confirmOk.parentNode.replaceChild(newBtn, dom.confirmOk);
+  dom.confirmOk = newBtn;
+  dom.confirmOk.addEventListener('click', async () => {
     dom.confirmOk.disabled = true;
-    try { await onOk(); } finally { dom.confirmOk.disabled = false; }
-    closeModal('confirm');
-  };
+    try { await onOk(); } finally {
+      dom.confirmOk.disabled = false;
+      closeModal('confirm');
+    }
+  }, { once: true });
   openModal('confirm');
 }
 
-function confirmDeleteLot(lotId) {
+function getLotTitle(lotId) {
   const lot = state.lots[lotId];
-  const rawTitle = (lot && lot.data && lot.data.prems_8_9);
-  const title = Array.isArray(rawTitle) ? (rawTitle.join(', ') || lotId) : (rawTitle || lotId);
-  openConfirm('Удалить лот «' + esc(title) + '»?', () => deleteLot(lotId));
+  const raw = lot && lot.data && lot.data.prems_8_9;
+  return Array.isArray(raw) ? (raw.join(', ') || lotId) : (raw || lotId);
+}
+
+function confirmDeleteLot(lotId) {
+  openConfirm('Удалить лот «' + esc(getLotTitle(lotId)) + '» навсегда?', () => deleteLot(lotId));
+}
+
+function confirmMarkSold(lotId) {
+  openConfirm('Пометить «' + esc(getLotTitle(lotId)) + '» как проданный?', () => markLotSold(lotId));
+}
+
+async function markLotSold(lotId) {
+  const lot = state.lots[lotId];
+  if (!lot) return;
+  lot.status = 'inactive';
+  lot.inactiveSince = new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  await saveCatalogueJSON();
+  renderLots();
 }
 
 async function deleteLot(lotId) {
@@ -852,7 +928,9 @@ async function deleteLot(lotId) {
   const ui = lot.ui || {};
   const files = [...(ui.images || [])];
   if (ui.thumb) files.push(ui.thumb);
-  if (files.length > 0) await GH.deleteFiles(files, 'Delete lot ' + lotId);
+  if (files.length > 0) {
+    try { await GH.deleteFiles(files, 'Delete lot ' + lotId); } catch (_) {}
+  }
   delete state.lots[lotId];
   await saveCatalogueJSON();
   renderLots();
@@ -866,8 +944,7 @@ async function toggleLotHide(lotId) {
   try {
     await saveCatalogueJSON();
   } catch (e) {
-    // revert on error
-    lot.ui.isHidden = !lot.ui.isHidden;
+    lot.ui.isHidden = !lot.ui.isHidden; // revert
   }
   renderLots();
 }
