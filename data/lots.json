@@ -114023,44 +114023,6 @@
       },
       "no_battles": false
     },
-    "🛡️ ПЕРЕДАЮ ВСЕ РЕГ ДАННЫЕ Город": {
-      "status": "inactive",
-      "lastSeenInCsv": "2026-04-22",
-      "inactiveSince": "2026-04-22",
-      "onFunpay": false,
-      "data": {
-        "price": "платежи  —  единственное доказательство для поддержки",
-        "prems_8_9": [
-          "чтобы через год-два вернуть прокачанный акк себе"
-        ],
-        "tanks_10": [],
-        "funpay_link": "",
-        "prems_6_7": [],
-        "bonus_tanks": [],
-        "year": "",
-        "bonds": "",
-        "gold": "",
-        "silver": "",
-        "spg": "",
-        "boosters": "",
-        "crew": "",
-        "camo": "",
-        "3dstyles": "",
-        "all_tanks": [
-          "чтобы через год-два вернуть прокачанный акк себе"
-        ],
-        "prems_8_9_count": 0,
-        "tanks_10_count": 0,
-        "prems_6_7_count": 0,
-        "bonus_tanks_count": 1,
-        "premcount": 1
-      },
-      "ui": {
-        "images": [],
-        "thumb": "",
-        "isHidden": false
-      }
-    },
     "🚀 АВТОВЫДАЧА 24/7 — ВСЁ В НАЛИЧИИ": {
       "status": "inactive",
       "lastSeenInCsv": "2026-04-22",
