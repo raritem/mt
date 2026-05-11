@@ -4,33 +4,6 @@
   "description": "",
   "seller": "xmode",
   "lots": {
-    "1773739012044": {
-      "status": "inactive",
-      "lastSeenInCsv": null,
-      "inactiveSince": "2026-04-17",
-      "onFunpay": false,
-      "data": {
-        "prems_8_9": "СУ-130ПM, TST",
-        "tanks_10": "T57 Heavy, Об. 268, Т-62А",
-        "funpay_link": "https://funpay.com/users/2854472/",
-        "bonds": "19845",
-        "gold": "9578"
-      },
-      "ui": {
-        "images": [
-          "images/xmode/1773739012044/009.webp",
-          "images/xmode/1773739012044/008.webp",
-          "images/xmode/1773739012044/007.webp",
-          "images/xmode/1773739012044/006.webp",
-          "images/xmode/1773739012044/005.webp",
-          "images/xmode/1773739012044/004.webp",
-          "images/xmode/1773739012044/003.webp",
-          "images/xmode/1773739012044/002.webp"
-        ],
-        "thumb": "images/xmode/1773739012044/thumb.webp",
-        "isHidden": true
-      }
-    },
     "1773761393864": {
       "status": "inactive",
       "lastSeenInCsv": null,
