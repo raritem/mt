@@ -53,7 +53,7 @@
       "ui": {
         "images": [],
         "thumb": "",
-        "isHidden": false
+        "isHidden": true
       },
       "scoreBase": {
         "tagCounts": {}
