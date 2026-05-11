@@ -4,36 +4,6 @@
   "description": "",
   "seller": "xmode",
   "lots": {
-    "1773309773805": {
-      "status": "inactive",
-      "lastSeenInCsv": null,
-      "inactiveSince": "2026-04-17",
-      "onFunpay": true,
-      "data": {
-        "prems_8_9": "Sekera",
-        "tanks_10": "AMX 50 B, AMX 30 B",
-        "price": "3789",
-        "funpay_link": "https://funpay.com/lots/offer?id=32464196",
-        "bonds": "19548",
-        "gold": "9546",
-        "tanks_10_count": "4"
-      },
-      "ui": {
-        "images": [
-          "images/xmode/1773309773805/009.webp",
-          "images/xmode/1773309773805/008.webp",
-          "images/xmode/1773309773805/004.webp",
-          "images/xmode/1773309773805/007.webp",
-          "images/xmode/1773309773805/006.webp",
-          "images/xmode/1773309773805/005.webp",
-          "images/xmode/1773309773805/001.webp",
-          "images/xmode/1773309773805/002.webp",
-          "images/xmode/1773309773805/003.webp"
-        ],
-        "thumb": "images/xmode/1773309773805/thumb.webp",
-        "isHidden": false
-      }
-    },
     "1773738565427": {
       "status": "inactive",
       "lastSeenInCsv": null,
