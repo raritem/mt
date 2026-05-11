@@ -114023,47 +114023,6 @@
       },
       "no_battles": false
     },
-    "⏩ И ещё 10 уникальных машин 8–5 ур: Кировец-1": {
-      "status": "inactive",
-      "lastSeenInCsv": "2026-04-22",
-      "inactiveSince": "2026-04-22",
-      "onFunpay": false,
-      "data": {
-        "price": "У-18",
-        "prems_8_9": [
-          "VK 28.01 105"
-        ],
-        "tanks_10": [
-          "VK 36.01 K 41"
-        ],
-        "funpay_link": "Т-V Пантера",
-        "prems_6_7": [],
-        "bonus_tanks": [],
-        "year": "",
-        "bonds": "",
-        "gold": "",
-        "silver": "",
-        "spg": "",
-        "boosters": "",
-        "crew": "",
-        "camo": "",
-        "3dstyles": "",
-        "all_tanks": [
-          "VK 28.01 105",
-          "VK 36.01 K 41"
-        ],
-        "prems_8_9_count": 0,
-        "tanks_10_count": 0,
-        "prems_6_7_count": 2,
-        "bonus_tanks_count": 0,
-        "premcount": 2
-      },
-      "ui": {
-        "images": [],
-        "thumb": "",
-        "isHidden": false
-      }
-    },
     "⚠️  12.050 БОН  ⚠️ — хватит на ещё один любой 𝙋𝙍𝙀𝙈 9 или 8 ур из бонового магазина": {
       "status": "inactive",
       "lastSeenInCsv": "2026-04-22",
