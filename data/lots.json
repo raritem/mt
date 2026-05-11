@@ -4,40 +4,6 @@
   "description": "",
   "seller": "xmode",
   "lots": {
-    "1773309726201": {
-      "status": "inactive",
-      "lastSeenInCsv": null,
-      "inactiveSince": "2026-04-17",
-      "onFunpay": true,
-      "data": {
-        "prems_8_9": "Дуплeт, Зaщитник",
-        "tanks_10": "Type 5 H, AMX 50 B...",
-        "price": "3945",
-        "funpay_link": "https://funpay.com/lots/offer?id=33494200",
-        "bonds": "19923",
-        "gold": "9443",
-        "tanks_10_count": "3"
-      },
-      "ui": {
-        "images": [
-          "images/xmode/1773309726201/009.webp",
-          "images/xmode/1773309726201/011.webp",
-          "images/xmode/1773309726201/007.webp",
-          "images/xmode/1773309726201/013.webp",
-          "images/xmode/1773309726201/012.webp",
-          "images/xmode/1773309726201/008.webp",
-          "images/xmode/1773309726201/006.webp",
-          "images/xmode/1773309726201/010.webp",
-          "images/xmode/1773309726201/004.webp",
-          "images/xmode/1773309726201/005.webp",
-          "images/xmode/1773309726201/001.webp",
-          "images/xmode/1773309726201/002.webp",
-          "images/xmode/1773309726201/003.webp"
-        ],
-        "thumb": "images/xmode/1773309726201/thumb.webp",
-        "isHidden": false
-      }
-    },
     "1773309773805": {
       "status": "inactive",
       "lastSeenInCsv": null,
