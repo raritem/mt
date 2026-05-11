@@ -4,42 +4,6 @@
   "description": "",
   "seller": "xmode",
   "lots": {
-    "1773738565427": {
-      "status": "inactive",
-      "lastSeenInCsv": null,
-      "inactiveSince": "2026-04-17",
-      "onFunpay": false,
-      "data": {
-        "prems_8_9": "TYPE 63",
-        "tanks_10": "AMX 50 B, AMX 30 B",
-        "price": "3700",
-        "funpay_link": "https://funpay.com/users/2854472/",
-        "bonds": "19654",
-        "gold": "9789",
-        "tanks_10_count": "4",
-        "premcount": "",
-        "silver": ""
-      },
-      "ui": {
-        "images": [
-          "images/xmode/1773738565427/013.webp",
-          "images/xmode/1773738565427/012.webp",
-          "images/xmode/1773738565427/011.webp",
-          "images/xmode/1773738565427/010.webp",
-          "images/xmode/1773738565427/009.webp",
-          "images/xmode/1773738565427/008.webp",
-          "images/xmode/1773738565427/007.webp",
-          "images/xmode/1773738565427/006.webp",
-          "images/xmode/1773738565427/005.webp",
-          "images/xmode/1773738565427/004.webp",
-          "images/xmode/1773738565427/003.webp",
-          "images/xmode/1773738565427/002.webp",
-          "images/xmode/1773738565427/004.webp"
-        ],
-        "thumb": "images/xmode/1773738565427/thumb.webp",
-        "isHidden": false
-      }
-    },
     "1773739012044": {
       "status": "inactive",
       "lastSeenInCsv": null,
