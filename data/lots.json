@@ -114023,47 +114023,6 @@
       },
       "no_battles": false
     },
-    "⏩ И ещё 9 уникальных машин 8–5 ур: Т-54 обр. 1": {
-      "status": "inactive",
-      "lastSeenInCsv": "2026-04-22",
-      "inactiveSince": "2026-04-22",
-      "onFunpay": false,
-      "data": {
-        "price": "СУ-122-44",
-        "prems_8_9": [
-          "GMC M36B1"
-        ],
-        "tanks_10": [
-          "Т-V Пантера"
-        ],
-        "funpay_link": "КВ-1С с МЗ",
-        "prems_6_7": [],
-        "bonus_tanks": [],
-        "year": "",
-        "bonds": "",
-        "gold": "",
-        "silver": "",
-        "spg": "",
-        "boosters": "",
-        "crew": "",
-        "camo": "",
-        "3dstyles": "",
-        "all_tanks": [
-          "GMC M36B1",
-          "Т-V Пантера"
-        ],
-        "prems_8_9_count": 0,
-        "tanks_10_count": 0,
-        "prems_6_7_count": 2,
-        "bonus_tanks_count": 0,
-        "premcount": 2
-      },
-      "ui": {
-        "images": [],
-        "thumb": "",
-        "isHidden": false
-      }
-    },
     "⚠️  12.673 БОН  ⚠️ — хватит на ещё один любой 𝙋𝙍𝙀𝙈 9 или 8 ур из бонового магазина": {
       "status": "inactive",
       "lastSeenInCsv": "2026-04-22",
