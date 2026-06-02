@@ -1077,7 +1077,7 @@ input, textarea { font-family: var(--font-body); }
   width: auto;
   position: relative;
   top: 1px;
-  filter: brightness(0) invert(0);
+  filter: brightness(0) invert(10);
   padding: 0px 0px 0px 3px;
 }
 
