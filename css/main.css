@@ -789,7 +789,7 @@ input, textarea { font-family: var(--font-body); }
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 12px 26px 12px 26px;
+  padding: 0px 22px;
   background: rgba(0, 91, 255, 1);
   border: 0px solid rgba(245,197,24,0.25);
   border-radius: 25px;
@@ -798,6 +798,7 @@ input, textarea { font-family: var(--font-body); }
   font-weight: 500;
   text-decoration: none;
   transition: background var(--transition), border-color var(--transition);
+  height: 44px;
 }
 .lot-header-funpay-btn:hover {
   background: var(--accent-hover);
@@ -806,8 +807,8 @@ input, textarea { font-family: var(--font-body); }
 
 /* Кнопка избранного на странице лота — такой же кружок как на карточке, но всегда виден */
 .lot-header-fav-btn {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 26px;
   background: #5b96ff2e;
   border: none;
@@ -1118,7 +1119,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   top: 0;
   left: 0;
   right: 0;
-  background: #19222b;
+  background: #0a0c0f;
   z-index: 0;
   pointer-events: none;
 }
@@ -1148,8 +1149,9 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   padding: 8px max(24px, calc((100vw - 1280px) / 2 + 24px));
   background: transparent;
   backdrop-filter: none;
-  border-bottom: 1px solid transparent;
+  /*border-bottom: 1px solid transparent;*/
   transition: background 0.2s ease, backdrop-filter 0.2s ease, border-color 0.2s ease;
+  margin-bottom: 30px;
 }
 
 .lot-header-top--scrolled {
@@ -1176,7 +1178,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   color: var(--text);
   /*letter-spacing: -0.02em;
   background: linear-gradient(90deg, #30343c, transparent 70%);*/
-  padding: 4px 407px 4px 0px;
+  padding: 4px 0px 4px 0px;
   border-radius: 14px;
 }
 
