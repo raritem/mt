@@ -149,8 +149,8 @@
     gap: 8px 10px;
   }
   .tank-item {
-    min-width: 48px;
-    max-width: 84px;
+    min-width: 65px;
+    max-width: 65px;
     padding: 0px;
   }
   .tank-icon-wrap {
