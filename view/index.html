@@ -79,5 +79,81 @@
   <script src="../js/gallery.js?v=55df51b"></script>
   <script src="../js/tanks-block.js?v=55df51b"></script>
   <script>loadLot();</script>
+  <script>
+    // 1. Прозрачный хедер → затемнение при скролле
+    (function() {
+      const header = document.querySelector('.site-header');
+      if (!header) return;
+      function onScroll() {
+        header.classList.toggle('site-header--scrolled', window.scrollY > 10);
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    })();
+
+    // 2. Фон-шапка под lot-header (на всю ширину)
+    (function() {
+      function attachBg() {
+        const lotHeader = document.getElementById('lot-header');
+        if (!lotHeader || document.querySelector('.lot-header-bg')) return;
+        const container = lotHeader.closest('.container');
+        if (!container) return;
+        const bg = document.createElement('div');
+        bg.className = 'lot-header-bg';
+        // Высота = от верха container до нижней границы lot-header
+        function updateBgHeight() {
+          const ch = container.getBoundingClientRect().top + window.scrollY;
+          const lh = lotHeader.getBoundingClientRect().bottom + window.scrollY;
+          bg.style.height = (lh - ch) + 'px';
+        }
+        container.parentElement.insertBefore(bg, container.parentElement.firstChild);
+        // Позиционируем relative к странице — покрываем lot-header + lot-header-top
+        function positionBg() {
+          const topBar = document.querySelector('.lot-header-top');
+          const bottomEl = topBar || lotHeader;
+          const bottom = bottomEl.getBoundingClientRect().bottom + window.scrollY;
+          bg.style.height = bottom + 'px';
+        }
+        // Наблюдаем за изменением размера lot-header и lot-header-top
+        const ro = new ResizeObserver(positionBg);
+        ro.observe(lotHeader);
+        // lot-header-top появляется чуть позже (после выноса из lot-header)
+        const roObs = new MutationObserver(() => {
+          const topBar = document.querySelector('.lot-header-top');
+          if (topBar) { roObs.disconnect(); ro.observe(topBar); positionBg(); }
+        });
+        roObs.observe(document.body, { childList: true, subtree: true });
+        positionBg();
+      }
+      // lot-header заполняется асинхронно — ждём
+      const mo = new MutationObserver(function(_, obs) {
+        const el = document.getElementById('lot-header');
+        if (el && el.children.length > 0) { obs.disconnect(); attachBg(); }
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      attachBg();
+    })();
+
+    // 3. lot-header-top: фон/blur когда прилип к хедеру
+    (function() {
+      function initScrolled() {
+        const top = document.querySelector('.lot-header-top');
+        if (!top || top._scrollInited) return;
+        top._scrollInited = true;
+        const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 64;
+        function onScroll() {
+          top.classList.toggle('lot-header-top--scrolled', window.scrollY > top.offsetTop - headerH - 4);
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+      }
+      const mo = new MutationObserver(function(_, obs) {
+        const el = document.querySelector('.lot-header-top');
+        if (el) { obs.disconnect(); initScrolled(); }
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      initScrolled();
+    })();
+  </script>
 </body>
 </html>
