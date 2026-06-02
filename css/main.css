@@ -588,8 +588,8 @@ input, textarea { font-family: var(--font-body); }
 
 .lot-card-title {
   position: relative;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text);
   line-height: 1.4;
   white-space: nowrap;
@@ -1745,7 +1745,7 @@ textarea::placeholder { color: var(--text-muted); }
     margin-right: -4px;
     margin-left: -5px;
   }
-  .lot-card-resources .resource-value { font-size: 12px; }
+  .lot-card-resources .resource-value { font-size: 11px; }
 
   .lot-row-tags .resource-item  { padding: 1px 4px 1px 4px; gap: 3px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
@@ -1757,7 +1757,7 @@ textarea::placeholder { color: var(--text-muted); }
     margin-right: -4px;
     margin-left: -5px;
   }
-  .lot-row-tags .resource-value { font-size: 13px; }
+  .lot-row-tags .resource-value { font-size: 11px; }
 }
 
 /* iPhone 12 Pro (390px) */
@@ -1774,7 +1774,7 @@ textarea::placeholder { color: var(--text-muted); }
     margin-right: -4px;
     margin-left: -5px;
   }
-  .lot-card-resources .resource-value { font-size: 12px; }
+  .lot-card-resources .resource-value { font-size: 11px; }
 
   .lot-row-tags .resource-item  { padding: 1px 4px 1px 4px; gap: 2px; }
   .lot-row-tags .resource-icon-img { width: 20px; height: 20px; }
@@ -1786,7 +1786,7 @@ textarea::placeholder { color: var(--text-muted); }
     margin-right: -4px;
     margin-left: -5px;
   }
-  .lot-row-tags .resource-value { font-size: 13px; }
+  .lot-row-tags .resource-value { font-size: 11px; }
 }
 
 
