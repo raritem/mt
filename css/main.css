@@ -783,13 +783,13 @@ input, textarea { font-family: var(--font-body); }
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 10px 14px 10px 16px;
-  background: var(--accent);
+  padding: 12px 26px 12px 26px;
+  background: rgba(0, 91, 255, 1);
   border: 0px solid rgba(245,197,24,0.25);
-  border-radius: 10px;
-  color: #000000;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 25px;
+  color: #f0f0f0;
+  font-size: 15px;
+  font-weight: 500;
   text-decoration: none;
   transition: background var(--transition), border-color var(--transition);
 }
@@ -800,10 +800,10 @@ input, textarea { font-family: var(--font-body); }
 
 /* Кнопка избранного на странице лота — такой же кружок как на карточке, но всегда виден */
 .lot-header-fav-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #20262d;
+  width: 48px;
+  height: 48px;
+  border-radius: 26px;
+  background: #5b96ff2e;
   border: none;
   display: flex;
   align-items: center;
@@ -828,7 +828,7 @@ input, textarea { font-family: var(--font-body); }
   margin: 0px -1px 0px 0px;
 }
 .lot-header-fav-btn:hover {
-  background: #64646485;
+  background: #5b96ff2e;
 }
 .lot-header-fav-btn:hover svg {
   fill: none;
@@ -1073,7 +1073,7 @@ input, textarea { font-family: var(--font-body); }
 .funpay-logo-footer {
   display: inline-block;
   vertical-align: middle;
-  height: 23px;
+  height: 20px;
   width: auto;
   position: relative;
   top: 1px;
@@ -1131,14 +1131,14 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 }
 
 .lot-title {
-  font-family: var(--font-display);
-  font-size: clamp(20px, 3vw, 28px);
-  font-weight: 700;
+  /*font-family: var(--font-display);*/
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 600;
   color: var(--text);
-  letter-spacing: -0.02em;
+  /*letter-spacing: -0.02em;*/
   background: linear-gradient(90deg, #30343c, transparent 70%);
-  padding: 2px 46px 2px 8px;
-  border-radius: 8px;
+  padding: 4px 46px 4px 14px;
+  border-radius: 14px;
 }
 
 /* Lot detail page: title + price on same row */
@@ -1218,7 +1218,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 .btn-ghost {
   background: transparent;
   color: var(--text-muted);
-  border: 1px solid var(--border);
+  border: 0px solid var(--border);
 }
 .btn-ghost:hover {
   background: rgba(255,255,255,0.04);
