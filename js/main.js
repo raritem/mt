@@ -940,6 +940,11 @@ async function loadLot() {
           </svg>
         </button>`;
       headerEl.innerHTML = `
+        <div class="lot-title-row">
+          <h1 class="lot-title">${escWithBr(title)}</h1>
+          ${lot.price ? `<div class="lot-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>` : ''}
+        </div>
+        ${lot.tanks10 ? `<p class="lot-tanks10-detail">${esc(lot.tanks10)}</p>` : ''}
         <div class="lot-header-top">
           <a href="${ROOT}gallery/" class="btn btn-ghost back-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -950,15 +955,16 @@ async function loadLot() {
             ${fp}
           </div>
         </div>
-        <div class="lot-title-row">
-          <h1 class="lot-title">${escWithBr(title)}</h1>
-          ${lot.price ? `<div class="lot-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>` : ''}
-        </div>
-        ${lot.tanks10 ? `<p class="lot-tanks10-detail">${esc(lot.tanks10)}</p>` : ''}
-        <p style="color:var(--text-muted);font-size:13px;margin-top:4px">📸 ${(lot.images||[]).length} скриншотов</p>
       `;
 
-      const lotFavBtn = headerEl.querySelector('#lot-fav-btn');
+      // Выносим lot-header-top из #lot-header наружу, чтобы sticky работал
+      // (sticky ограничен высотой родителя; родителем должен быть .container)
+      const topBar = headerEl.querySelector('.lot-header-top');
+      if (topBar && headerEl.parentElement) {
+        headerEl.parentElement.insertBefore(topBar, headerEl.nextSibling);
+      }
+
+      const lotFavBtn = document.getElementById('lot-fav-btn');
       if (lotFavBtn) {
         lotFavBtn.addEventListener('click', () => {
           const active = favToggle(String(lotId));
