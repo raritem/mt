@@ -80,9 +80,15 @@ input, textarea { font-family: var(--font-body); }
   top: 0;
   z-index: 50;
   height: var(--header-h);
+  background: rgba(10,12,15,0);
+  backdrop-filter: blur(0px);
+  border-bottom: 0px solid var(--border);
+  transition: background 0.35s ease, backdrop-filter 0.35s ease;
+}
+
+.site-header--scrolled {
   background: rgba(10,12,15,0.85);
   backdrop-filter: blur(12px);
-  border-bottom: 0px solid var(--border);
 }
 
 .header-inner {
@@ -992,7 +998,7 @@ input, textarea { font-family: var(--font-body); }
 }
 
 .lot-tanks10-detail {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -1107,10 +1113,22 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 }
 
 /* ── Заголовок лота ──────────────────────────────────────────── */
+.lot-header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #19222b;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .lot-header {
-  padding: 24px 0 28px;
+  padding: 24px 0 3px;
   /*border-bottom: 1px solid var(--border);*/
   margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
 }
 
 .lot-header-top {
@@ -1119,8 +1137,29 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 16px;
+  /* sticky всегда включён; фон появляется через --scrolled */
+  position: sticky;
+  top: var(--header-h, 64px);
+  z-index: 40;
+  /* растягиваем на всю ширину экрана */
+  box-sizing: border-box;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding: 8px max(24px, calc((100vw - 1280px) / 2 + 24px));
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: 1px solid transparent;
+  transition: background 0.2s ease, backdrop-filter 0.2s ease, border-color 0.2s ease;
 }
+
+.lot-header-top--scrolled {
+  background: rgba(14,17,20,0.92);
+  backdrop-filter: blur(10px);
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+
+/* оставлен для обратной совместимости */
+.lot-header-top--sticky {}
 
 .back-btn {
   display: inline-flex;
@@ -1132,12 +1171,12 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 
 .lot-title {
   /*font-family: var(--font-display);*/
-  font-size: clamp(20px, 3vw, 26px);
+  font-size: clamp(20px, 3vw, 28px);
   font-weight: 600;
   color: var(--text);
-  /*letter-spacing: -0.02em;*/
-  background: linear-gradient(90deg, #30343c, transparent 70%);
-  padding: 4px 46px 4px 14px;
+  /*letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #30343c, transparent 70%);*/
+  padding: 4px 407px 4px 0px;
   border-radius: 14px;
 }
 
@@ -1148,12 +1187,13 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 4px;
+  justify-content: space-between;
 }
 
 .lot-price-badge {
   flex-shrink: 0;
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 26px;
+  font-weight: 600;
   color: var(--text);
   white-space: nowrap;
   letter-spacing: 0.01em;
