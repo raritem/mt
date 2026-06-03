@@ -82,6 +82,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
 .tank-icon {
@@ -92,6 +93,7 @@
   object-fit: contain;
   display: block;
   filter: brightness(1.2) contrast(1.07);
+  pointer-events: none;
 }
 
 .tank-icon--missing {
@@ -113,6 +115,7 @@
   color: var(--text-secondary, #aaa);
   word-break: keep-all;
   hyphens: auto;
+  pointer-events: none;
 }
 
 .tank-item--active .tank-name {
