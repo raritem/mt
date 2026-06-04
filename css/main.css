@@ -76,19 +76,19 @@ input, textarea { font-family: var(--font-body); }
 
 /* ── Header ──────────────────────────────────────────────────── */
 .site-header {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  width: 100%;
   z-index: 50;
   height: var(--header-h);
   background: rgba(10,12,15,0);
+  backdrop-filter: blur(0px);
   border-bottom: 0px solid var(--border);
-  transition: background 0.15s ease, backdrop-filter 0.15s ease;
+  transition: background 0.35s ease, backdrop-filter 0.35s ease;
 }
 
 .site-header--scrolled {
-  background: rgba(14,17,20,0.98);
+  background: rgba(10,12,15,0.85);
+  backdrop-filter: blur(12px);
 }
 
 .header-inner {
@@ -1001,6 +1001,7 @@ input, textarea { font-family: var(--font-body); }
 .lot-tanks10-detail {
   font-size: 15px;
   color: var(--text-muted);
+  margin-top: 4px;
 }
 
 .lot-row-tags {
@@ -1098,7 +1099,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   padding: 24px;
   font-size: 13px;
   color: var(--text-muted);
-  border-top: 0px solid var(--border);
+  border-top: 1px solid var(--border);
   position: relative;
   z-index: 1;
   margin-top: auto;
@@ -1112,52 +1113,51 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   justify-content: center;
 }
 
-/* ── lot-header (pheader) ────────────────────────────────────── */
-.lot-header {
-  position: relative;
+/* ── Заголовок лота ──────────────────────────────────────────── */
+.lot-header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   background: #0a0c0f;
+  z-index: 0;
+  pointer-events: none;
 }
 
-.lot-header__inner {
+.lot-header {
+  padding: 24px 0 3px;
+  /*border-bottom: 1px solid var(--border);*/
+  margin-bottom: 32px;
   position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  min-height: 332px;
-  padding-top: 88px;
-  padding-bottom: 88px;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding-left: 24px;
-  padding-right: 24px;
+  z-index: 1;
 }
 
-/* ── lot-action-bar (pnav) ───────────────────────────────────── */
-.lot-action-bar {
-  position: sticky;
-  top: var(--header-h, 64px);
-  z-index: 40;
-  margin: -68px 0 24px;
-  background: transparent;
-  backdrop-filter: none;
-  transition: none;
-}
-
-.lot-action-bar--stuck {
-  background: rgba(14,17,20,0.98);
-  /*backdrop-filter: blur(12px);*/
-}
-
-.lot-action-bar__inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0px 24px 24px 24px;
+.lot-header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
+  /* sticky всегда включён; фон появляется через --scrolled */
+  position: sticky;
+  top: var(--header-h, 64px);
+  z-index: 40;
+  /* растягиваем на всю ширину экрана */
+  box-sizing: border-box;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  padding: 8px max(24px, calc((100vw - 1280px) / 2 + 24px));
+  background: transparent;
+  backdrop-filter: none;
+  /*border-bottom: 1px solid transparent;*/
+  transition: background 0.2s ease, backdrop-filter 0.2s ease, border-color 0.2s ease;
+  margin-bottom: 30px;
+}
+
+.lot-header-top--scrolled {
+  background: rgba(14,17,20,0.92);
+  backdrop-filter: blur(10px);
+  border-bottom-color: rgba(255,255,255,0.06);
 }
 
 /* оставлен для обратной совместимости */
@@ -1263,7 +1263,9 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   border: 0px solid var(--border);
 }
 .btn-ghost:hover {
-  color: #979797;
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  border-color: rgba(255,255,255,0.12);
 }
 
 .btn-no-border,
