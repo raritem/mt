@@ -61,8 +61,8 @@
   border-radius: 8px;
   border: 2px solid transparent;
   transition: border-color 0.15s, background 0.15s;
-  min-width: 116px;
-  max-width: 116px;
+  min-width: 94px;
+  max-width: 94px;
   text-align: center;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .tank-icon {
-  max-width: 211px;
+  max-width: 120px;
   max-height: 230px;
   width: auto;
   height: auto;
@@ -146,22 +146,22 @@
     padding: 0 10px;
   }
   .tanks-section-body {
-    padding: 10px 10px;
+    padding: 22px 10px 10px 10px;
   }
   .tanks-row {
     gap: 8px 10px;
   }
   .tank-item {
     min-width: 60px;
-    max-width: 60px;
+    max-width: 86px;
     padding: 0px;
   }
   .tank-icon-wrap {
     width: 40px;
-    height: 25px;
+    height: 34px;
   }
   .tank-icon {
-    max-width: 40px;
-    max-height: 25px;
+    max-width: 80px;
+    max-height: 60px;
   }
 }

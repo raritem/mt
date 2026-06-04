@@ -884,6 +884,20 @@ async function loadCatalogue() {
   }
 }
 
+function initActionBarSticky() {
+  const bar = document.getElementById('lot-action-bar');
+  const header = document.querySelector('.site-header');
+  if (!bar || !header) return;
+  const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 64;
+  function onScroll() {
+    const barTop = Math.round(window.scrollY + bar.getBoundingClientRect().top);
+    const triggerPoint = Math.round(window.scrollY + headerH);
+    bar.classList.toggle('lot-action-bar--stuck', triggerPoint >= barTop);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+}
+
 // ── LOT: Загрузить страницу лота ─────────────────────────────────
 async function loadLot() {
   bindFadeCleanup();
@@ -940,28 +954,28 @@ async function loadLot() {
           </svg>
         </button>`;
       headerEl.innerHTML = `
-        <div class="lot-title-row">
-          <h1 class="lot-title">${escWithBr(title)}</h1>
-          ${lot.price ? `<div class="lot-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>` : ''}
-        </div>
-        ${lot.tanks10 ? `<p class="lot-tanks10-detail">${esc(lot.tanks10)}</p>` : ''}
-        <div class="lot-header-top">
-          <a href="${ROOT}gallery/" class="btn btn-ghost back-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-            Галерея
-          </a>
-          <div style="display:flex;align-items:center;gap:18px;">
-            ${favBtnHtml}
-            ${fp}
+        <div class="lot-header__inner">
+          <div class="lot-title-row">
+            <h1 class="lot-title">${escWithBr(title)}</h1>
+            ${lot.price ? `<div class="lot-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>` : ''}
           </div>
+          ${lot.tanks10 ? `<p class="lot-tanks10-detail">${esc(lot.tanks10)}</p>` : ''}
         </div>
       `;
 
-      // Выносим lot-header-top из #lot-header наружу, чтобы sticky работал
-      // (sticky ограничен высотой родителя; родителем должен быть .container)
-      const topBar = headerEl.querySelector('.lot-header-top');
-      if (topBar && headerEl.parentElement) {
-        headerEl.parentElement.insertBefore(topBar, headerEl.nextSibling);
+      const actionBar = document.getElementById('lot-action-bar');
+      if (actionBar) {
+        actionBar.innerHTML = `
+          <div class="lot-action-bar__inner">
+            <a href="${ROOT}gallery/" class="btn btn-ghost back-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>Ещё</a>
+            <div style="display:flex;align-items:center;gap:12px;">
+              ${favBtnHtml}
+              ${fp}
+            </div>
+          </div>
+        `;
+        initActionBarSticky();
       }
 
       const lotFavBtn = document.getElementById('lot-fav-btn');
