@@ -130,7 +130,7 @@ input, textarea { font-family: var(--font-body); }
 .logo-accent { color: var(--accent); }
 
 .logo-img {
-  height: 110px;
+  height: 84px;
   width: auto;
   display: block;
   margin-top: 5px;
@@ -1115,7 +1115,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 /* ── lot-header (pheader) ────────────────────────────────────── */
 .lot-header {
   position: relative;
-  background: #0a0c0f;
+  background: #111419;
 }
 
 .lot-header__inner {
@@ -3078,10 +3078,10 @@ body.qv-open {
 
 .af-tank-search {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 12px;
   background: #1a1d21;
   border: 0px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 10px;
   color: var(--text-primary);
   font-size: 13px;
 }
@@ -3164,11 +3164,11 @@ body.qv-open {
 }
 
 .af-tank-icon {
-  width: 178px;
-  height: 130px;
+  width: 160px;
+  height: 100px;
   object-fit: cover;
   flex-shrink: 0;
-  margin: -15px;
+  margin: 2px -15px;
 }
 
 .af-tank-no-icon {
@@ -3228,11 +3228,11 @@ body.qv-open {
 }
 
 .af-range-input {
-  width: 90px;
-  padding: 10px 10px;
+  width: 86px;
+  padding: 8px 10px;
   background: #1a1d21;
   border: 0px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   color: var(--text-primary);
   font-size: 13px;
   /* убираем стрелочки у number-полей */

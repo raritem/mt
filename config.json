@@ -30,5 +30,8 @@
     "camo": 15,
     "3dstyles": 16,
     "no_battles": 17
+  },
+  "admin": {
+    "page_size": 20
   }
 }

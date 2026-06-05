@@ -397,10 +397,10 @@
 /* Независимые стили поля поиска танков — не связаны с глобальным .af-search-input */
 .cf-tank-search {
   width: 100%;
-  padding: 7px 12px;
+  padding: 8px 12px;
   background: #1a1f27;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 0px solid var(--border);
+  border-radius: 10px;
   color: var(--text-primary);
   font-size: 13px;
   font-family: var(--font-body);
@@ -454,7 +454,7 @@
   padding: 10px 0px 10px 0px;
   background: #1d2229;
   border: 0px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 16px;
   font-size: 12px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -482,11 +482,11 @@
 }
 
 .cf-tank-icon {
-  width: 163px;
-  height: 130px;
+  width: 160px;
+  height: 100px;
   object-fit: cover;
   flex-shrink: 0;
-  margin: -15px;
+  margin: 2px -15px;
 }
 
 .cf-tank-no-icon {
@@ -498,6 +498,9 @@
   max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #30343c, transparent 70%);
+  padding: 3px 4px 3px 8px;
 }
 
 .cf-tank-tier {
@@ -544,11 +547,11 @@
 
 /* Независимые стили полей диапазонов — не связаны с глобальными стилями */
 .cf-range-input {
-  width: 100px;
+  width: 86px;
   padding: 6px 10px;
   background: #1a1f27;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 0px solid var(--border);
+  border-radius: 10px;
   color: var(--text-primary);
   font-size: 13px;
   font-family: var(--font-body);

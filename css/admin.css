@@ -187,6 +187,7 @@
   padding-bottom: 20px;
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .shop-panel-title {
@@ -212,33 +213,46 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 5px;
+  padding: 0;
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
 }
 
 .admin-lot-thumb {
   width: 120px;
-  height: 80px;
-  border-radius: var(--radius-sm);
+  height: 100%;
+  min-height: 80px;
+  border-radius: 0;
   object-fit: cover;
   background: #0d1117;
   flex-shrink: 0;
-  border: 0px solid var(--border);
+  display: block;
 }
 
 .admin-lot-thumb-placeholder {
   width: 100px;
-  height: 64px;
-  border-radius: var(--radius-sm);
+  height: 100%;
+  min-height: 64px;
+  border-radius: 0;
   background: linear-gradient(135deg, #111418, #0d1117);
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  border: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+/* Body = всё что правее миниатюры */
+.admin-lot-body {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+  gap: 16px;
+  padding: 10px 10px 10px 14px;
 }
 
 .admin-lot-info {
@@ -705,18 +719,23 @@
   /* Карточки лотов на мобиле — изображение меньше */
   .admin-lot-card {
     flex-direction: row;
-    gap: 10px;
-    padding: 10px;
+    gap: 0;
+    padding: 0;
+  }
+
+  .admin-lot-body {
+    padding: 8px 8px 8px 10px;
+    gap: 8px;
   }
 
   .admin-lot-thumb {
     width: 80px;
-    height: 56px;
+    min-height: 56px;
   }
 
   .admin-lot-thumb-placeholder {
     width: 80px;
-    height: 56px;
+    min-height: 56px;
   }
 
   .admin-lot-actions {
@@ -901,22 +920,113 @@
   border-bottom-color: transparent;
 }
 
-/* ── Bulk actions bar ──────────────────────────────────────────── */
+/* ── Bulk toolbar (Gmail-style row above tabs) ─────────────────── */
+.bulk-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 8px 16px;
+  background: rgba(245,197,24,0.04);
+  border-bottom: 1px solid rgba(245,197,24,0.12);
+  min-height: 44px;
+}
+
+/* Master checkbox */
+.master-checkbox-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  padding: 4px 8px 4px 0;
+}
+
+.master-cb-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.master-cb-ui {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.05);
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.master-cb-ui.is-checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.master-cb-ui.is-checked::after {
+  content: '';
+  width: 10px;
+  height: 7px;
+  border-left: 2px solid #000;
+  border-bottom: 2px solid #000;
+  transform: rotate(-45deg) translateY(-1px);
+  display: block;
+}
+
+.master-cb-ui.is-indeterminate {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.master-cb-ui.is-indeterminate::after {
+  content: '';
+  width: 10px;
+  height: 2px;
+  background: #000;
+  border-radius: 1px;
+  display: block;
+}
+
+.master-cb-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.master-checkbox-wrap:hover .master-cb-ui {
+  border-color: var(--accent);
+}
+
+/* Bulk actions bar — inline with master checkbox */
 .bulk-actions-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  background: rgba(245,197,24,0.05);
-  border-bottom: 1px solid rgba(245,197,24,0.15);
   flex-wrap: wrap;
+  margin-left: 8px;
+  padding: 0;
+  background: none;
+  border: none;
 }
 
 .bulk-actions-count {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--text-muted);
+  min-width: 70px;
+}
+
+.bulk-actions-count .bulk-count-num {
+  font-weight: 700;
+}
+
+#bulk-select-all-btn {
   color: var(--accent);
-  min-width: 80px;
 }
 
 .btn-sm {
@@ -927,13 +1037,35 @@
   gap: 5px;
 }
 
-/* ── Lot checkbox in select mode ───────────────────────────────── */
+/* ── Lot checkbox — always visible, overlaid on thumbnail ───────── */
+.lot-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.lot-checkbox-overlay {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 2;
+  padding: 2px;
+  cursor: pointer;
+  /* Subtle backdrop so checkbox is visible over any image */
+  background: rgba(0,0,0,0.35);
+  border-radius: 5px;
+  transition: background 0.15s;
+}
+
+.lot-checkbox-overlay:hover {
+  background: rgba(0,0,0,0.55);
+}
+
 .lot-checkbox-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  padding: 4px;
+  padding: 2px;
   cursor: pointer;
 }
 
@@ -983,12 +1115,160 @@
   opacity: 0.6;
 }
 
-
-  opacity: 0.55;
-}
-
 .admin-lot-badge-inactive {
   background: rgba(252,129,74,0.15);
   color: #fc814a;
   border: 1px solid rgba(252,129,74,0.3);
+}
+
+/* ── Кнопка «Показать ещё» ──────────────────────────────────────── */
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 20px;
+  border: 1px dashed rgba(255,255,255,0.12);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+
+.load-more-btn:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.22);
+  color: var(--text);
+}
+
+.load-more-btn:active {
+  background: rgba(255,255,255,0.07);
+}
+
+/* ── admin-lot-card thumb wrapper ───────────────────────────────── */
+.admin-lot-card > .lot-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+  align-self: stretch;
+}
+
+/* ── Поиск в шапке ─────────────────────────────────────────────── */
+.admin-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 180px;
+  max-width: 360px;
+}
+
+.admin-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.admin-search-input {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  padding: 9px 32px 9px 32px !important;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.admin-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.admin-search-input:focus {
+  border-color: var(--accent);
+  background: rgba(255,255,255,0.07);
+}
+
+.admin-search-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.admin-search-clear:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+}
+
+/* ── ID-капсула в admin-lot-meta ───────────────────────────────── */
+.admin-lot-id-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 7px 2px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: default;
+}
+
+.admin-lot-id-badge:hover {
+  border-color: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.08);
+}
+
+.admin-lot-id-badge--copied {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: rgba(245,197,24,0.08) !important;
+}
+
+.admin-lot-id-label {
+  user-select: all;
+}
+
+.admin-lot-id-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 1px;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+  border-radius: 3px;
+}
+
+.admin-lot-id-badge:hover .admin-lot-id-copy {
+  opacity: 1;
+}
+
+.admin-lot-id-copy:hover {
+  opacity: 1 !important;
 }

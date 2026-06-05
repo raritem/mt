@@ -1,7 +1,6 @@
 /* ================================================================
    TANKNEXUS — Tanks Block (tanks-block.js)
-   Рендерит блок с техникой на странице детального просмотра лота.
-   Вставляется между #lot-header и #gallery-grid.
+   Рендерит блок с техникой и ресурсами на странице лота.
    ================================================================ */
 
 (async function initTanksBlock() {
@@ -10,7 +9,6 @@
   const blockEl = document.getElementById('lot-tanks-block');
   if (!blockEl) return;
 
-  // ── Утилиты (дублируем из main.js, т.к. тот модуль не экспортирует) ──
   function getParam(name) {
     return new URLSearchParams(window.location.search).get(name);
   }
@@ -35,12 +33,18 @@
     return res.json();
   }
 
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = String(str || '');
+    return d.innerHTML;
+  }
+
   // ── Загрузка данных ───────────────────────────────────────────
   const lotId = getParam('id');
   if (!lotId) return;
 
   const rawBase = getGhRawBase();
-  const lotsUrl = rawBase ? rawBase + 'data/lots.json' : '../data/lots.json';
+  const lotsUrl  = rawBase ? rawBase + 'data/lots.json'  : '../data/lots.json';
   const tanksUrl = rawBase ? rawBase + 'data/tanks.json' : '../data/tanks.json';
 
   let lotsData, tanksData;
@@ -60,8 +64,6 @@
   const tanksMap = tanksData.tanks || {};
 
   // ── Разделы техники ──────────────────────────────────────────
-  // Поля танков в lots.json хранятся как массивы (после нормализации через importer.js).
-  // Для обратной совместимости со старыми записями поддерживаем и строковый формат.
   function asTankArray(val) {
     if (Array.isArray(val)) return val;
     if (!val || !String(val).trim()) return [];
@@ -69,62 +71,87 @@
   }
 
   const sections = [
-    {
-      key:   'prems_8_9',
-      label: 'PREM танки 8–9 уровня',
-      names: asTankArray(d.prems_8_9),
-    },
-    {
-      key:   'tanks_10',
-      label: 'Танки 10 уровня',
-      names: asTankArray(d.tanks_10),
-    },
-    {
-      key:   'prems_6_7_bonus',
-      label: 'PREM танки 5–7 уровня',
-      names: [
+    { key: 'prems_8_9',      label: 'PREM танки 8–9 уровня', names: asTankArray(d.prems_8_9) },
+    { key: 'tanks_10',       label: 'Танки 10 уровня',       names: asTankArray(d.tanks_10) },
+    { key: 'prems_6_7_bonus',label: 'PREM танки 5–7 уровня', names: [
         ...asTankArray(d.prems_6_7),
         ...asTankArray(d.bonus_tanks),
-      ],
+      ]
     },
   ];
 
-  // Отфильтровываем секции, в которых нет ни одного танка
   const activeSections = sections.filter(s => s.names.length > 0);
-  if (activeSections.length === 0) return;
 
-  // ── Рендер ───────────────────────────────────────────────────
-  function esc(str) {
-    const d = document.createElement('div');
-    d.textContent = String(str || '');
-    return d.innerHTML;
+  // ── Ресурсы ───────────────────────────────────────────────────
+  const RESOURCE_DEFS = [
+    { key: 'bonds',    label: 'Боны',     file: 'bons.png'     },
+    { key: 'gold',     label: 'Золото',   file: 'gold.png'     },
+    { key: 'silver',   label: 'Серебро',  file: 'credits.png'  },
+    { key: 'boosters', label: 'Резервы',  file: 'boosters.png' },
+    { key: 'camo',     label: 'Стили',    file: 'style.png'    },
+    { key: '3dstyles', label: '3D стили', file: 'style_3d.png' },
+    { key: 'crew',     label: 'Экипаж',   file: 'tankman.png'  },
+  ];
+
+  function parseResourceVal(val) {
+    if (val === null || val === undefined || String(val).trim() === '') return null;
+    const n = parseInt(String(val).replace(/\s+/g, ''), 10);
+    return isNaN(n) ? null : n;
   }
 
+  function formatNum(n) {
+    return n.toLocaleString('ru-RU');
+  }
+
+  function buildResourceItems() {
+    const items = [];
+    for (const def of RESOURCE_DEFS) {
+      const n = parseResourceVal(d[def.key]);
+      if (n === null) continue;
+      const iconSrc = assetUrl('icons/resources/' + def.file);
+      items.push(
+        `<div class="tb-resource-item">` +
+          `<img src="${esc(iconSrc)}" alt="${esc(def.label)}" class="tb-resource-icon tb-resource-icon--${esc(def.key)}" loading="lazy" onerror="this.style.display='none'">` +
+          `<div class="tb-resource-text">` +
+            `<div class="tb-resource-name">${esc(def.label)}</div>` +
+            `<div class="tb-resource-value">${esc(formatNum(n))}</div>` +
+          `</div>` +
+        `</div>`
+      );
+    }
+    return items;
+  }
+
+  // ── Рендер танков ─────────────────────────────────────────────
   function renderSection(section) {
     const items = section.names.map(name => {
-      const info = tanksMap[name] || {};
-      const icon = info.icon
-        ? assetUrl('icons/small/' + info.icon)
-        : null;
+      const info  = tanksMap[name] || {};
+      const icon  = info.icon ? assetUrl('icons/small/' + info.icon) : null;
       const descA = info.description_a || '';
+      const tier  = info.tier ? String(info.tier) : '';
 
       const imgHtml = icon
         ? `<img src="${esc(icon)}" alt="${esc(name)}" class="tank-icon" loading="lazy" onerror="this.style.display='none'">`
         : `<div class="tank-icon tank-icon--missing" title="${esc(name)}">?</div>`;
 
-      return { name, icon, descA, imgHtml };
+      const tierHtml = tier
+        ? `<span class="tb-tier-badge">${esc(tier)}</span>`
+        : '';
+
+      return { name, descA, imgHtml, tierHtml };
     });
 
     const itemsHtml = items.map(item => `
       <div class="tank-item" data-desc="${esc(item.descA)}">
         <div class="tank-icon-wrap">${item.imgHtml}</div>
-        <div class="tank-name">${esc(item.name)}</div>
+        <div class="tank-name-row">
+          <span class="tank-name">${esc(item.name)}</span>${item.tierHtml}
+        </div>
       </div>
     `).join('');
 
     return `
       <div class="tanks-section">
-        <div class="tanks-section-label">${esc(section.label)}</div>
         <div class="tanks-section-body">
           <div class="tanks-row">${itemsHtml}</div>
           <div class="tank-desc-panel" style="display:none"></div>
@@ -133,11 +160,34 @@
     `;
   }
 
-  blockEl.innerHTML = `
-    <div class="tanks-block">
-      ${activeSections.map(renderSection).join('')}
-    </div>
-  `;
+  // ── Рендер ресурсов ───────────────────────────────────────────
+  function renderResourcesBlock() {
+    const items = buildResourceItems();
+    if (items.length === 0) return '';
+    return `
+      <div class="tanks-block tb-resources-block">
+        <div class="tb-block-header">Ресурсы</div>
+        <div class="tb-resources-body">
+          ${items.join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Итоговый HTML ─────────────────────────────────────────────
+  let tanksBlockHtml = '';
+  if (activeSections.length > 0) {
+    tanksBlockHtml = `
+      <div class="tanks-block">
+        <div class="tb-block-header">Техника</div>
+        ${activeSections.map(renderSection).join('')}
+      </div>
+    `;
+  }
+
+  const resourcesBlockHtml = renderResourcesBlock();
+
+  blockEl.innerHTML = tanksBlockHtml + resourcesBlockHtml;
 
   // ── Клик по танку: раскрываем описание ───────────────────────
   blockEl.addEventListener('click', (e) => {
@@ -150,7 +200,6 @@
     const panel = sectionBody.querySelector('.tank-desc-panel');
     const desc  = item.dataset.desc || '';
 
-    // Если кликнули на уже активный — закрываем
     if (item.classList.contains('tank-item--active')) {
       item.classList.remove('tank-item--active');
       panel.style.display = 'none';
@@ -158,7 +207,6 @@
       return;
     }
 
-    // Снимаем активность с остальных в этой секции
     sectionBody.querySelectorAll('.tank-item--active')
       .forEach(el => el.classList.remove('tank-item--active'));
 
