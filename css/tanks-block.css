@@ -35,6 +35,13 @@
   flex-direction: column;
 }
 
+/* Разделитель между секциями внутри премиум-блока */
+/*.tanks-block--premium .tanks-section + .tanks-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 0px solid rgba(255,255,255,0.06);
+}
+*/
 .tanks-section-body {
   /*background: linear-gradient(90deg, #1a1c21, transparent 70%);*/
   border-radius: 0 0 14px 14px;

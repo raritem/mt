@@ -70,17 +70,22 @@
     return String(val).split(',').map(s => s.trim()).filter(Boolean);
   }
 
-  const sections = [
-    { key: 'prems_8_9',      label: 'PREM танки 8–9 уровня', names: asTankArray(d.prems_8_9) },
-    { key: 'tanks_10',       label: 'Танки 10 уровня',       names: asTankArray(d.tanks_10) },
-    { key: 'prems_6_7_bonus',label: 'PREM танки 5–7 уровня', names: [
+  // Секции премиум техники (8–9 и 5–7 объединены визуально)
+  const premSections = [
+    { key: 'prems_8_9',      label: 'Премиум техника', showLabel: true,  names: asTankArray(d.prems_8_9) },
+    { key: 'prems_6_7_bonus',label: null,              showLabel: false, names: [
         ...asTankArray(d.prems_6_7),
         ...asTankArray(d.bonus_tanks),
       ]
     },
-  ];
+  ].filter(s => s.names.length > 0);
 
-  const activeSections = sections.filter(s => s.names.length > 0);
+  // Секция 10 уровня — отдельный блок
+  const tier10Sections = [
+    { key: 'tanks_10', label: '10 уровень', showLabel: true, names: asTankArray(d.tanks_10) },
+  ].filter(s => s.names.length > 0);
+
+  const activeSections = [...premSections, ...tier10Sections];
 
   // ── Ресурсы ───────────────────────────────────────────────────
   const RESOURCE_DEFS = [
@@ -150,8 +155,13 @@
       </div>
     `).join('');
 
+    const headerHtml = section.showLabel && section.label
+      ? `<div class="tb-block-header">${esc(section.label)}</div>`
+      : '';
+
     return `
       <div class="tanks-section">
+        ${headerHtml}
         <div class="tanks-section-body">
           <div class="tanks-row">${itemsHtml}</div>
           <div class="tank-desc-panel" style="display:none"></div>
@@ -176,11 +186,21 @@
 
   // ── Итоговый HTML ─────────────────────────────────────────────
   let tanksBlockHtml = '';
-  if (activeSections.length > 0) {
-    tanksBlockHtml = `
-      <div class="tanks-block">
-        <div class="tb-block-header">Техника</div>
-        ${activeSections.map(renderSection).join('')}
+
+  // Блок премиум техники (8–9 + 5–7 под одним визуальным блоком)
+  if (premSections.length > 0) {
+    tanksBlockHtml += `
+      <div class="tanks-block tanks-block--premium">
+        ${premSections.map(renderSection).join('')}
+      </div>
+    `;
+  }
+
+  // Блок 10 уровня — отдельный
+  if (tier10Sections.length > 0) {
+    tanksBlockHtml += `
+      <div class="tanks-block tanks-block--tier10">
+        ${tier10Sections.map(renderSection).join('')}
       </div>
     `;
   }
