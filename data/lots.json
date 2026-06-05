@@ -144,6 +144,7 @@
       "no_battles": false,
       "ui": {
         "images": [
+          "images/lots/2dhneuyn/011.webp",
           "images/lots/2dhneuyn/001.webp",
           "images/lots/2dhneuyn/002.webp",
           "images/lots/2dhneuyn/003.webp",
@@ -153,8 +154,7 @@
           "images/lots/2dhneuyn/007.webp",
           "images/lots/2dhneuyn/008.webp",
           "images/lots/2dhneuyn/009.webp",
-          "images/lots/2dhneuyn/010.webp",
-          "images/lots/2dhneuyn/011.webp"
+          "images/lots/2dhneuyn/010.webp"
         ],
         "thumb": "images/lots/2dhneuyn/thumb.webp",
         "isHidden": false
