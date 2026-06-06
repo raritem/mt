@@ -603,19 +603,17 @@ function renderCataloguePanel() {
       }
     }
     // Копирование ID лота
-    const copyBtn = e.target.closest('.admin-lot-id-copy');
-    if (copyBtn) {
-      const lotId = copyBtn.dataset.id;
+    const idBadge = e.target.closest('.admin-lot-id-badge');
+    if (idBadge) {
+      const lotId = idBadge.dataset.id;
       navigator.clipboard.writeText(lotId).then(() => {
-        const badge = copyBtn.closest('.admin-lot-id-badge');
-        if (badge) {
-          badge.classList.add('admin-lot-id-badge--copied');
-          copyBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
-          setTimeout(() => {
-            badge.classList.remove('admin-lot-id-badge--copied');
-            copyBtn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
-          }, 1500);
-        }
+        const icon = idBadge.querySelector('.admin-lot-id-copy');
+        idBadge.classList.add('admin-lot-id-badge--copied');
+        if (icon) icon.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+        setTimeout(() => {
+          idBadge.classList.remove('admin-lot-id-badge--copied');
+          if (icon) icon.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+        }, 1500);
       }).catch(() => {});
       return;
     }
@@ -841,6 +839,21 @@ function updateBulkCount() {
   }
 }
 
+// ── Бесконечная прокрутка (admin) ────────────────────────────────
+let _adminScrollObserver = null;
+
+function getAdminSentinel(list) {
+  let el = document.getElementById('admin-scroll-sentinel');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'admin-scroll-sentinel';
+    el.className = 'admin-scroll-sentinel';
+  }
+  // Sentinel всегда после списка карточек, никогда внутри
+  list.parentElement.insertBefore(el, list.nextSibling);
+  return el;
+}
+
 function renderLots() {
   updateTabCounts();
   const list = $('admin-lots-list');
@@ -850,10 +863,12 @@ function renderLots() {
   if (entries.length === 0) {
     const labels = { active: 'Нет активных лотов', hidden: 'Нет скрытых лотов', inactive: 'Нет неактивных лотов' };
     list.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><h2>${labels[state.activeTab]||'Нет лотов'}</h2></div>`;
+    if (_adminScrollObserver) { _adminScrollObserver.disconnect(); _adminScrollObserver = null; }
+    const oldSentinel = document.getElementById('admin-scroll-sentinel');
+    if (oldSentinel) oldSentinel.remove();
     return;
   }
 
-  // Инициализируем счётчик пагинации при первом рендере вкладки
   if (!state.pagination[state.activeTab]) {
     state.pagination[state.activeTab] = ADMIN_PAGE_SIZE;
   }
@@ -869,28 +884,23 @@ function renderLots() {
     list.appendChild(buildLotCard(id, lot, isInactive));
   }
 
-  // Кнопка «Показать ещё»
-  const existingBtn = $('load-more-btn');
-  if (existingBtn) existingBtn.remove();
+  // Сбрасываем старый observer
+  if (_adminScrollObserver) { _adminScrollObserver.disconnect(); _adminScrollObserver = null; }
 
-  if (remaining > 0) {
-    const loadMoreBtn = document.createElement('button');
-    loadMoreBtn.id = 'load-more-btn';
-    loadMoreBtn.className = 'btn btn-ghost load-more-btn';
-    loadMoreBtn.innerHTML = `
-      <span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Показать ещё ${Math.min(remaining, ADMIN_PAGE_SIZE)} из ${remaining}
-      </span>`;
-    loadMoreBtn.addEventListener('click', () => {
-      const scrollY = window.scrollY;
-      state.pagination[state.activeTab] += ADMIN_PAGE_SIZE;
-      renderLots();
-      // Восстанавливаем позицию прокрутки
-      window.scrollTo({ top: scrollY, behavior: 'instant' });
-    });
-    list.appendChild(loadMoreBtn);
+  const sentinel = getAdminSentinel(list);
+
+  if (remaining <= 0) {
+    sentinel.remove();
+    return;
   }
+
+  _adminScrollObserver = new IntersectionObserver((entries) => {
+    if (!entries[0].isIntersecting) return;
+    state.pagination[state.activeTab] += ADMIN_PAGE_SIZE;
+    renderLots();
+  }, { rootMargin: '800px' });
+
+  _adminScrollObserver.observe(sentinel);
 }
 
 function buildLotCard(id, lot, isInactive) {
@@ -945,11 +955,11 @@ function buildLotCard(id, lot, isInactive) {
         <div class="admin-lot-info">
           <div class="admin-lot-title">${escWithBr(title)} ${badge}</div>
           <div class="admin-lot-meta">
-            <span class="admin-lot-id-badge" data-id="${esc(id)}">
-              <span class="admin-lot-id-label">#${esc(id)}</span>
-              <button class="admin-lot-id-copy" data-id="${esc(id)}" title="Скопировать ID" type="button">
+            <span class="admin-lot-id-badge" data-id="${esc(id)}" title="Скопировать ID">
+              <span class="admin-lot-id-label">ID: ${esc(id)}</span>
+              <span class="admin-lot-id-copy">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              </button>
+              </span>
             </span>
             <span>${(ui.images || []).length} фото</span>
             ${price ? `<span>💰 ${esc(price)}</span>` : ''}

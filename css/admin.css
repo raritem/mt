@@ -1121,31 +1121,12 @@
   border: 1px solid rgba(252,129,74,0.3);
 }
 
-/* ── Кнопка «Показать ещё» ──────────────────────────────────────── */
-.load-more-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  margin-top: 12px;
-  padding: 12px 20px;
-  border: 1px dashed rgba(255,255,255,0.12);
-  border-radius: 10px;
-  color: var(--text-muted);
-  font-size: 13px;
-  background: transparent;
-  cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, color 0.18s;
-}
-
-.load-more-btn:hover {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.22);
-  color: var(--text);
-}
-
-.load-more-btn:active {
-  background: rgba(255,255,255,0.07);
+/* ── Бесконечная прокрутка — невидимый sentinel ─────────────────── */
+.admin-scroll-sentinel {
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 /* ── admin-lot-card thumb wrapper ───────────────────────────────── */
@@ -1233,7 +1214,7 @@
   color: var(--text-muted);
   white-space: nowrap;
   transition: border-color 0.2s, background 0.2s;
-  cursor: default;
+  cursor: pointer;
 }
 
 .admin-lot-id-badge:hover {
@@ -1248,27 +1229,21 @@
 }
 
 .admin-lot-id-label {
-  user-select: all;
+  user-select: none;
+  pointer-events: none;
 }
 
 .admin-lot-id-copy {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: none;
-  border: none;
   padding: 1px;
-  cursor: pointer;
   color: inherit;
   opacity: 0.55;
   transition: opacity 0.15s;
-  border-radius: 3px;
+  pointer-events: none;
 }
 
 .admin-lot-id-badge:hover .admin-lot-id-copy {
   opacity: 1;
-}
-
-.admin-lot-id-copy:hover {
-  opacity: 1 !important;
 }

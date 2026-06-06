@@ -265,6 +265,17 @@ function animateIn(parent) {
   });
 }
 
+// ── Скролл-шапка ─────────────────────────────────────────────────
+function initHeaderScroll() {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
+  function update() {
+    header.classList.toggle('site-header--scrolled', window.scrollY > 10);
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+}
+
 // ── Генерация звёзд ──────────────────────────────────────────────
 function initStars() {
   if (!STARS_BG_ENABLED) return;
@@ -441,6 +452,7 @@ function buildLotCard(lot, catalogueId, opts) {
 async function loadCatalogue() {
   bindFadeCleanup();
   initStars();
+  initHeaderScroll();
 
   const gridEl       = document.getElementById('lots-grid');
   const viewBtnGrid  = document.getElementById('view-btn-grid');
@@ -620,46 +632,51 @@ async function loadCatalogue() {
       });
     }
 
-    // ── Пагинация и рендер лотов ──────────────────────────────────
-    let currentPage = 0;
+    // ── Бесконечная прокрутка ─────────────────────────────────────
+    let visibleCount = PAGE_SIZE;
     let _lastFilteredLots = allLots;
+    let _scrollObserver = null;
 
-    function getPaginationEl() {
-      let el = document.getElementById('lots-pagination');
+    function getSentinelEl() {
+      let el = document.getElementById('lots-scroll-sentinel');
       if (!el) {
         el = document.createElement('div');
-        el.id = 'lots-pagination';
-        el.className = 'lots-pagination';
-        gridEl.parentElement.insertBefore(el, gridEl.nextSibling);
+        el.id = 'lots-scroll-sentinel';
+        el.className = 'lots-scroll-sentinel';
       }
+      // Sentinel всегда после грида, никогда внутри
+      gridEl.parentElement.insertBefore(el, gridEl.nextSibling);
       return el;
     }
 
-    function renderPagination(total) {
-      const paginationEl = getPaginationEl();
-      paginationEl.innerHTML = '';
-      const totalPages = Math.ceil(total / PAGE_SIZE);
-      if (totalPages <= 1) return;
-      for (let i = 0; i < totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = String(i + 1);
-        btn.className = 'btn ' + (i === currentPage ? 'btn-primary' : 'btn-ghost');
-        btn.style.cssText = 'min-width:36px;padding:6px 10px;font-size:14px;';
-        btn.addEventListener('click', () => {
-          currentPage = i;
-          renderLotsFromFiltered(_lastFilteredLots, false);
-          gridEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-        paginationEl.appendChild(btn);
+    function renderLoadMore(filtered) {
+      if (_scrollObserver) { _scrollObserver.disconnect(); _scrollObserver = null; }
+
+      const sentinel = getSentinelEl();
+
+      const remaining = filtered.length - visibleCount;
+      if (remaining <= 0) {
+        sentinel.remove();
+        return;
       }
+
+      // rootMargin: observer срабатывает когда sentinel ещё на 800px
+      // ниже нижнего края экрана — карточки подгружаются заранее,
+      // до того как пользователь доскроллил до конца
+      _scrollObserver = new IntersectionObserver((entries) => {
+        if (!entries[0].isIntersecting) return;
+        visibleCount += PAGE_SIZE;
+        renderLotsFromFiltered(_lastFilteredLots, false);
+      }, { rootMargin: '800px' });
+
+      _scrollObserver.observe(sentinel);
     }
 
-    function renderLotsFromFiltered(filtered, resetPage = true) {
+    function renderLotsFromFiltered(filtered, resetVisible = true) {
       _lastFilteredLots = filtered;
-      if (resetPage) currentPage = 0;
+      if (resetVisible) visibleCount = PAGE_SIZE;
 
-      const start    = currentPage * PAGE_SIZE;
-      const pageLots = filtered.slice(start, start + PAGE_SIZE);
+      const pageLots = filtered.slice(0, visibleCount);
 
       const state = typeof AdaptiveFilter !== 'undefined' ? AdaptiveFilter.getState() : {};
       const activeScenarioId = state.scenario || null;
@@ -673,7 +690,7 @@ async function loadCatalogue() {
           : '<div class="empty-state" style="grid-column:1/-1;padding:48px 16px"><div class="empty-icon">🎯</div><h2>Нет подходящих аккаунтов</h2><p>Попробуйте другие параметры</p></div>';
         if (lotsGridViewEl)  lotsGridViewEl.innerHTML  = emptyMsg;
         if (lotsTableViewEl) lotsTableViewEl.innerHTML = emptyMsg;
-        renderPagination(0);
+        renderLoadMore([]);
         return;
       }
 
@@ -686,7 +703,7 @@ async function loadCatalogue() {
             scenarioTanks,
           }));
         });
-        if (resetPage) applyFadeUpStagger(lotsGridViewEl, '.lot-card', 0.05);
+        if (resetVisible) applyFadeUpStagger(lotsGridViewEl, '.lot-card', 0.05);
       }
 
       // Строки (table view)
@@ -734,10 +751,10 @@ async function loadCatalogue() {
           row.addEventListener('click', () => { window.location.href = lotUrl; });
           lotsTableViewEl.appendChild(row);
         });
-        if (resetPage) applyFadeUpStagger(lotsTableViewEl, '.lot-row-card', 0.04);
+        if (resetVisible) applyFadeUpStagger(lotsTableViewEl, '.lot-row-card', 0.04);
       }
 
-      renderPagination(filtered.length);
+      renderLoadMore(filtered);
     }
 
     // ── Обработчик изменения фильтра ──────────────────────────────
@@ -957,16 +974,43 @@ async function loadLot() {
       const coverDiv = previewSrc
         ? `<div class="lot-header__cover" style="background-image:url('${assetUrl(previewSrc)}')"></div>`
         : '';
+      const lotIdBadge = lot.id
+        ? `<span class="lot-id-badge" data-id="${esc(String(lot.id))}" title="Скопировать ID">
+            <span class="lot-id-label">ID: ${esc(String(lot.id))}</span>
+            <span class="lot-id-copy">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </span>
+          </span>`
+        : '';
       headerEl.innerHTML = `
         ${coverDiv}
         <div class="lot-header__inner">
           <div class="lot-title-row">
             <h1 class="lot-title">${escWithBr(title)}</h1>
-            ${lot.price ? `<div class="lot-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>` : ''}
           </div>
           ${lot.tanks10 ? `<p class="lot-tanks10-detail">${esc(lot.tanks10)}</p>` : ''}
+          <div class="lot-id-price-row">
+            ${lotIdBadge}
+            ${lot.price ? `<div class="lot-price-badge">${esc(lot.price)}<span class="price-rub"> ₽</span></div>` : ''}
+          </div>
         </div>
       `;
+
+      // Копирование ID на странице лота
+      headerEl.addEventListener('click', (e) => {
+        const badge = e.target.closest('.lot-id-badge');
+        if (!badge) return;
+        const id = badge.dataset.id;
+        navigator.clipboard.writeText(id).then(() => {
+          const icon = badge.querySelector('.lot-id-copy');
+          badge.classList.add('lot-id-badge--copied');
+          if (icon) icon.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+          setTimeout(() => {
+            badge.classList.remove('lot-id-badge--copied');
+            if (icon) icon.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+          }, 1500);
+        });
+      });
 
       const actionBar = document.getElementById('lot-action-bar');
       if (actionBar) {

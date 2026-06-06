@@ -154,7 +154,7 @@
   flex-shrink: 0;
   line-height: 1.2;
   position: absolute;
-  margin: 0px 0px 55px 65px;
+  margin: 0px 0px 167px -62px;
 }
 
 /* ── Панель описания (раскрывается по клику) ─────────────────── */
@@ -226,7 +226,7 @@
 
 .tb-resource-value {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--text, #eee);
   z-index: 1;
 }

@@ -82,6 +82,7 @@ window.QuickView = (() => {
 
           <!-- Правая панель: информация -->
           <div class="qv-info" id="qv-info">
+            <div class="qv-lot-id" id="qv-lot-id"></div>
             <h2 class="qv-title" id="qv-title"></h2>
             <div class="qv-tanks10" id="qv-tanks10"></div>
             <div class="qv-badges" id="qv-badges"></div>
@@ -117,6 +118,23 @@ window.QuickView = (() => {
     // Закрытие по бекдропу
     el.querySelector('#qv-backdrop').addEventListener('click', close);
     el.querySelector('#qv-close').addEventListener('click', close);
+
+    // Копирование ID лота
+    el.addEventListener('click', (e) => {
+      const badge = e.target.closest('.lot-id-badge');
+      if (!badge) return;
+      e.stopPropagation();
+      const lotId = badge.dataset.id;
+      navigator.clipboard.writeText(lotId).then(() => {
+        const icon = badge.querySelector('.lot-id-copy');
+        badge.classList.add('lot-id-badge--copied');
+        if (icon) icon.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+        setTimeout(() => {
+          badge.classList.remove('lot-id-badge--copied');
+          if (icon) icon.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+        }, 1500);
+      });
+    });
 
     // Стрелки галереи
     el.querySelector('#qv-prev').addEventListener('click', (e) => {
@@ -525,6 +543,19 @@ window.QuickView = (() => {
     const title = normalizeLotTitle(lot.title || '');
     _modal.querySelector('#qv-title').innerHTML = escWithBr(title);
 
+    // ID-капсула над заголовком
+    const lotIdEl = _modal.querySelector('#qv-lot-id');
+    if (lotIdEl) {
+      lotIdEl.innerHTML = lot.id
+        ? `<span class="lot-id-badge" data-id="${esc(String(lot.id))}" title="Скопировать ID">
+            <span class="lot-id-label">ID: ${esc(String(lot.id))}</span>
+            <span class="lot-id-copy">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </span>
+          </span>`
+        : '';
+    }
+
     // Цена
     const priceEl = _modal.querySelector('#qv-price-row');
     priceEl.innerHTML = lot.price
@@ -597,6 +628,7 @@ window.QuickView = (() => {
     _currentLotId    = lotId;
 
     // Очищаем текстовые поля, чтобы не проскакивало содержимое предыдущего лота
+    _modal.querySelector('#qv-lot-id').innerHTML     = '';
     _modal.querySelector('#qv-title').innerHTML      = '';
     _modal.querySelector('#qv-price-row').innerHTML  = '';
     _modal.querySelector('#qv-tanks10').innerHTML    = '';

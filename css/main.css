@@ -320,7 +320,7 @@ input, textarea { font-family: var(--font-body); }
   object-fit: cover;
   display: block;
   margin: 0px;
-  border-radius: 20px;
+  border-radius: 16px;
   /*-webkit-mask-image: linear-gradient(180deg, black 60%, transparent 95%);
   clip-path: inset(-1px -1px 3px -1px);*/
 }
@@ -657,6 +657,7 @@ input, textarea { font-family: var(--font-body); }
   gap: 6px;
   pointer-events: auto;
   z-index: 2;
+  padding: 0px 0px 0px 8px;
 }
 
 /* Shared badge base */
@@ -1127,8 +1128,6 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   background-size: cover;
   background-position: top;
   background-repeat: no-repeat;
-  filter: blur(7px);
-  transform: scale(1.0); /* компенсирует обрезку краёв от blur */
   opacity: 0.2;
 }
 
@@ -1208,11 +1207,12 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 
 .lot-price-badge {
   flex-shrink: 0;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
   letter-spacing: 0.01em;
+  line-height: 1;
 }
 
 .price-rub {
@@ -2262,8 +2262,8 @@ body.qv-open {
   margin: 0;
   padding-right: 30px; /* место для кнопки закрытия */
   background: linear-gradient(90deg, #30343c, transparent 70%);
-  padding: 2px 46px 2px 8px;
-  border-radius: 8px;
+  padding: 2px 46px 2px 12px;
+  border-radius: 12px;
 }
 
 .qv-price-row {
@@ -2299,9 +2299,10 @@ body.qv-open {
 .qv-price::after  { right: -6px; }
 
 .qv-tanks10-text {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-muted, #9ca3af);
   margin: 0;
+  padding: 0px 0px 0px 12px;
 }
 
 /* Кнопки */
@@ -2318,9 +2319,9 @@ body.qv-open {
   justify-content: center;
   gap: 3px;
   padding: 14px 18px;
-  background: var(--accent, #4e73f8);
-  color: #000000;
-  border-radius: 16px;
+  background: rgba(0, 91, 255, 1);
+  color: #ffffff;
+  border-radius: 36px;
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
@@ -2563,7 +2564,7 @@ body.qv-open {
   justify-content: center;
   padding: 0 0 21px;
   margin-bottom: 4px;
-  margin-top: 60px;
+  margin-top: 70px;
 }
 
 .scenario-card {
@@ -2676,13 +2677,79 @@ body.qv-open {
   .lots-grid__cards { grid-template-columns: 1fr 1fr; gap: 5px; }
 }
 
-/* ── Пагинация ───────────────────────────────────────────────── */
-.lots-pagination {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+/* ── ID-капсула лота (quickview + страница лота) ─────────────── */
+.lot-id-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 7px 2px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+  align-self: flex-start; /* не растягиваться в flex-контейнере */
+}
+
+.lot-id-badge:hover {
+  border-color: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.08);
+}
+
+.lot-id-badge--copied {
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  background: rgba(245,197,24,0.08) !important;
+}
+
+.lot-id-label {
+  user-select: none;
+  pointer-events: none;
+}
+
+.lot-id-copy {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  margin: 28px 0 8px;
+  background: none;
+  border: none;
+  padding: 1px;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+  border-radius: 3px;
+  pointer-events: none; /* клик перехватывает сама капсула */
+}
+
+.lot-id-badge:hover .lot-id-copy {
+  opacity: 1;
+}
+
+/* ID над заголовком в quickview */
+.qv-lot-id {
+  margin-bottom: 6px;
+}
+
+/* На странице лота — строка ID + цена */
+.lot-id-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+
+/* ── Бесконечная прокрутка — невидимый sentinel ──────────────── */
+.lots-scroll-sentinel {
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 /* ── Сценарные танки в карточке лота ─────────────────────────── */
@@ -2873,7 +2940,7 @@ body.qv-open {
 }
 
 .af-filter-btn--active {
-  background: rgba(245,197,24,0.08);
+  background: rgb(33 40 51);
 }
 
 .af-filter-count {
