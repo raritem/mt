@@ -2683,7 +2683,7 @@ body.qv-open {
   align-items: center;
   gap: 4px;
   background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
+  border: 0px solid var(--border);
   border-radius: 999px;
   padding: 4px 7px 4px 8px;
   font-size: 12px;
