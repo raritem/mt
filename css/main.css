@@ -130,10 +130,11 @@ input, textarea { font-family: var(--font-body); }
 .logo-accent { color: var(--accent); }
 
 .logo-img {
-  height: 84px;
+  height: 58px;
   width: auto;
   display: block;
-  margin-top: 5px;
+  margin-top: -3px;
+  margin-left: -8px;
 }
 
 /* ── Хлебные крошки ──────────────────────────────────────────── */
@@ -508,8 +509,8 @@ input, textarea { font-family: var(--font-body); }
 .header-fav-btn svg {
   width: 27px;
   height: 25px;
-  fill: #c4c4c4;
-  stroke: #c4c4c4;
+  fill: #e7e7e7;
+  stroke: #e7e7e7;
   transition: fill 0.18s ease, stroke 0.18s ease;
   margin: 0px 0px 2px 0px;
 }
@@ -1116,6 +1117,18 @@ main.container { min-height: calc(100vh - 64px - 80px); }
 .lot-header {
   position: relative;
   background: #111419;
+  overflow: hidden;
+}
+
+.lot-header__cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-size: cover;
+  background-position: top;
+  background-repeat: no-repeat;
+  filter: blur(70px);
+  transform: scale(1.0); /* компенсирует обрезку краёв от blur */
 }
 
 .lot-header__inner {
