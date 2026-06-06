@@ -1129,6 +1129,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   background-repeat: no-repeat;
   filter: blur(7px);
   transform: scale(1.0); /* компенсирует обрезку краёв от blur */
+  opacity: 0.2;
 }
 
 .lot-header__inner {
