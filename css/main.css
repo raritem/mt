@@ -1898,7 +1898,7 @@ body.qv-open {
   position: relative;
   background: #14181c;
   border: 0px solid var(--border, rgba(255,255,255,0.08));
-  border-radius: 16px;
+  border-radius: 26px;
   width: 100%;
   max-width: 1055px;
   height: 604px;       /* фиксированная высота на десктопе */
@@ -1998,7 +1998,7 @@ body.qv-open {
   background: #111418;
   border-right: 0px solid var(--border, rgba(255,255,255,0.07));
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 26px;
 }
 
 .qv-img-stage {
@@ -2010,7 +2010,7 @@ body.qv-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
+  border-radius: 26px;
 }
 
 .qv-main-img {
@@ -2116,7 +2116,7 @@ body.qv-open {
   cursor: pointer;
   color: #fff;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.4s ease;
   padding: 0;
   line-height: 0;
   margin: 0;
@@ -2136,10 +2136,13 @@ body.qv-open {
 
 /* SVG-иконка внутри стрелки */
 .qv-arrow svg {
-  width: 23px;
-  height: 23px;
+  width: 34px;
+  height: 50px;
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
   flex-shrink: 0;
+  padding: 5px;
+  background: #ffffff36;
+  border-radius: 44px;
 }
 
 /* Счётчик */
@@ -2321,7 +2324,7 @@ body.qv-open {
   padding: 14px 18px;
   background: rgba(0, 91, 255, 1);
   color: #ffffff;
-  border-radius: 18px;
+  border-radius: 36px;
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
