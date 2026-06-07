@@ -176,7 +176,7 @@ input, textarea { font-family: var(--font-body); }
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 39px 24px 80px;
+  padding: 20px 24px 80px;
   position: relative;
   z-index: 1;
 }
@@ -283,8 +283,9 @@ input, textarea { font-family: var(--font-body); }
 /* ── Сетка лотов — несколько колонок на ПК ───────────────────── */
 .lots-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
+  padding: 100px 0px 0px 0px;
 }
 
 @media (max-width: 768px) {
@@ -811,7 +812,7 @@ input, textarea { font-family: var(--font-body); }
   width: 44px;
   height: 44px;
   border-radius: 26px;
-  background: #5b96ff2e;
+  background: #ffffff14;
   border: none;
   display: flex;
   align-items: center;
@@ -836,7 +837,7 @@ input, textarea { font-family: var(--font-body); }
   margin: 0px -1px 0px 0px;
 }
 .lot-header-fav-btn:hover {
-  background: #5b96ff2e;
+  background: #ffffff21;
 }
 .lot-header-fav-btn:hover svg {
   fill: none;
@@ -1127,7 +1128,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   background-size: cover;
   background-position: top;
   background-repeat: no-repeat;
-  opacity: 0.2;
+  opacity: 0.1;
 }
 
 .lot-header__inner {
@@ -1150,7 +1151,7 @@ main.container { min-height: calc(100vh - 64px - 80px); }
   position: sticky;
   top: var(--header-h, 64px);
   z-index: 40;
-  margin: -68px 0 24px;
+  margin: -68px 0 0px;
   background: transparent;
   backdrop-filter: none;
   transition: none;
@@ -1627,7 +1628,7 @@ textarea::placeholder { color: var(--text-muted); }
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 6px;
+  border-radius: 8px;
       background: linear-gradient(to right, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 50%, transparent 85%);
   pointer-events: none;
   clip-path: inset(-1px 5px -1px -1px);
@@ -2260,9 +2261,9 @@ body.qv-open {
   color: var(--text, #e8eaf0);
   margin: 0;
   padding-right: 30px; /* место для кнопки закрытия */
-  background: linear-gradient(90deg, #30343c, transparent 70%);
-  padding: 2px 46px 2px 12px;
-  border-radius: 12px;
+  background: linear-gradient(90deg, #30343c8f, transparent 70%);
+  padding: 4px 46px 4px 16px;
+  border-radius: 18px;
 }
 
 .qv-price-row {
@@ -2272,12 +2273,12 @@ body.qv-open {
 }
 
 .qv-price {
-  font-size: 22px;
-  font-weight: 800;
+  font-size: 20px;
+  font-weight: 700;
   color: #e5e5e5;
   letter-spacing: -0.3px;
   background: #2f333b;
-  padding: 0px 14px;
+  padding: 0px 11px;
   border-radius: 6px;
   position: relative;
 }
@@ -2301,6 +2302,7 @@ body.qv-open {
   font-size: 14px;
   color: var(--text-muted, #9ca3af);
   margin: 0;
+  padding: 0px 0px 0px 4px;
 }
 
 /* Кнопки */
@@ -2319,13 +2321,13 @@ body.qv-open {
   padding: 14px 18px;
   background: rgba(0, 91, 255, 1);
   color: #ffffff;
-  border-radius: 36px;
+  border-radius: 18px;
   font-size: 16px;
   font-weight: 600;
   text-decoration: none;
   transition: background 0.15s, transform 0.12s;
   border: none;
-  margin: 30px 20px 0px 20px;
+  margin: 30px 10px 0px 10px;
 }
 
 .qv-btn-buy:hover,
@@ -2562,7 +2564,7 @@ body.qv-open {
   justify-content: center;
   padding: 0 0 21px;
   margin-bottom: 4px;
-  margin-top: 70px;
+  margin-top: 110px;
 }
 
 .scenario-card {
@@ -2700,8 +2702,8 @@ body.qv-open {
 
 .lot-id-badge--copied {
   border-color: var(--accent) !important;
-  color: var(--accent) !important;
-  background: rgba(245,197,24,0.08) !important;
+  color: rgb(119 255 0) !important;
+  background: #273A26 !important;
 }
 
 .lot-id-label {
@@ -2939,8 +2941,8 @@ body.qv-open {
 }
 
 .af-filter-btn--active {
-  background: rgb(33 40 51);
-  box-shadow: rgba(224, 182, 255, 0.28) 0px 0px 22px, rgba(166, 154, 255, 0.92) 0px 0px 30px inset, rgb(255, 255, 255) 0px 0px 6px inset;
+  background: rgb(57 68 87);
+  box-shadow: rgba(224, 182, 255, 0.28) 0px 0px 22px, rgba(166, 154, 255, 0.92) 0px 0px 41px inset, rgb(255, 255, 255) 0px 0px 8px inset;
   background: rgba(29, 34, 41, 0.38);
 }
 
@@ -2990,7 +2992,7 @@ body.qv-open {
   gap: 5px;
   padding: 5px 8px 5px 11px;
   background: rgba(245,197,24,0.12);
-  border: 1px solid rgba(245,197,24,0.3);
+  border: 0px solid rgba(245,197,24,0.3);
   border-radius: 20px;
   font-size: 13px;
   color: var(--text-primary);
@@ -3093,7 +3095,7 @@ body.qv-open {
   align-items: center;
   gap: 4px;
   padding: 5px 10px;
-  background: #212833;
+  background: #1e232b;
   border: 0px solid var(--border);
   border-radius: 20px;
   font-size: 13px;
@@ -3113,8 +3115,8 @@ body.qv-open {
 .af-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .af-chip--active {
-  background: rgba(245,197,24,0.12);
-  border-color: var(--accent);
+  background: rgb(93 107 131);
+  /*border-color: var(--accent);*/
   color: rgb(239 239 239);
   box-shadow: rgba(166, 154, 255, 0.92) 0px 0px 22px inset, rgb(255, 255, 255) 0px 0px 6px inset;
   background: rgba(29, 34, 41, 0.38);
@@ -3186,7 +3188,7 @@ body.qv-open {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  max-height: 285px;
+  max-height: 300px;
   overflow-y: auto;
   padding: 4px 0;
   /* Прозрачный фон скроллбара */

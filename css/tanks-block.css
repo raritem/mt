@@ -9,6 +9,14 @@
   display: flex;
   flex-direction: column;
   gap: 36px;
+  padding-top: 20px;
+}
+
+/* ── Обёртка: счётчики танков + ресурсы (визуально единый блок) ─ */
+.tb-info-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 /* ── Блок (техника / ресурсы) ────────────────────────────────── */
@@ -185,6 +193,10 @@
   gap: 8px 12px;
 }
 
+.tb-resources-block .tb-resources-body {
+  padding: 0px 9px;
+}
+
 .tb-resource-item {
   display: flex;
   flex-direction: row;
@@ -234,14 +246,14 @@
 /* ── Адаптив ─────────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .lot-tanks-block {
-    padding: 0 0px;
+    padding: 10px 0px 0px 0px;
   }
   .tanks-section-body,
   .tb-resources-body {
     padding: 10px 10px;
   }
   .tanks-row {
-    gap: 8px 10px;
+    gap: 8px 4px;
   }
   .tank-item {
     min-width: 85px;
@@ -262,7 +274,19 @@
     padding: 6px 8px;
   }
   .tb-resource-icon {
-    width: 32px;
-    height: 32px;
+    width: 60px;
+    height: 60px;
+  }
+  .tb-resource-icon--bonds {
+    width: 80px;
+    height: 80px;
+    margin: -13px
+  }
+  /* Бейдж уровня на мобилке */
+  .tb-tier-badge {
+    margin: 0px 0px 130px -54px;
+  }
+  .tb-resources-block .tb-resources-body {
+    padding: 0px 0px 0px 18px;
   }
 }

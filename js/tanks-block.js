@@ -98,6 +98,23 @@
     { key: 'crew',     label: 'Экипаж',   file: 'tankman.png'  },
   ];
 
+  // Используем прекомпьютные поля из JSON, если есть — иначе считаем сами
+  function getPremCount() {
+    const v = parseInt(d.premcount, 10);
+    if (!isNaN(v)) return v;
+    let count = 0;
+    for (const s of premSections) count += s.names.length;
+    return count;
+  }
+
+  function getTier10Count() {
+    const v = parseInt(d.tanks_10_count, 10);
+    if (!isNaN(v)) return v;
+    let count = 0;
+    for (const s of tier10Sections) count += s.names.length;
+    return count;
+  }
+
   function parseResourceVal(val) {
     if (val === null || val === undefined || String(val).trim() === '') return null;
     const n = parseInt(String(val).replace(/\s+/g, ''), 10);
@@ -170,13 +187,55 @@
     `;
   }
 
+  // ── Рендер блока счётчиков танков (над ресурсами, без хэдера) ─
+  function renderTanksCountBlock() {
+    const premCount   = getPremCount();
+    const tier10Count = getTier10Count();
+    if (premCount === 0 && tier10Count === 0) return '';
+
+    const items = [];
+
+    if (premCount > 0) {
+      const iconSrc = assetUrl('icons/resources/premtank.png');
+      items.push(
+        `<div class="tb-resource-item">` +
+          `<img src="${esc(iconSrc)}" alt="Прем танки" class="tb-resource-icon tb-resource-icon--premtank" loading="lazy" onerror="this.style.display='none'">` +
+          `<div class="tb-resource-text">` +
+            `<div class="tb-resource-name">Прем танки</div>` +
+            `<div class="tb-resource-value">${premCount} шт.</div>` +
+          `</div>` +
+        `</div>`
+      );
+    }
+
+    if (tier10Count > 0) {
+      const iconSrc = assetUrl('icons/resources/lvl10tank.png');
+      items.push(
+        `<div class="tb-resource-item">` +
+          `<img src="${esc(iconSrc)}" alt="10 уровень" class="tb-resource-icon tb-resource-icon--tier10tank" loading="lazy" onerror="this.style.display='none'">` +
+          `<div class="tb-resource-text">` +
+            `<div class="tb-resource-name">10 уровень</div>` +
+            `<div class="tb-resource-value">${tier10Count} шт.</div>` +
+          `</div>` +
+        `</div>`
+      );
+    }
+
+    return `
+      <div class="tanks-block tb-tanks-count-block">
+        <div class="tb-resources-body">
+          ${items.join('')}
+        </div>
+      </div>
+    `;
+  }
+
   // ── Рендер ресурсов ───────────────────────────────────────────
   function renderResourcesBlock() {
     const items = buildResourceItems();
     if (items.length === 0) return '';
     return `
       <div class="tanks-block tb-resources-block">
-        <div class="tb-block-header">Ресурсы</div>
         <div class="tb-resources-body">
           ${items.join('')}
         </div>
@@ -186,6 +245,12 @@
 
   // ── Итоговый HTML ─────────────────────────────────────────────
   let tanksBlockHtml = '';
+
+  const tanksCountBlockHtml = renderTanksCountBlock();
+  const resourcesBlockHtml  = renderResourcesBlock();
+
+  // Блок ресурсов — первый
+  blockEl.innerHTML = resourcesBlockHtml;
 
   // Блок премиум техники (8–9 + 5–7 под одним визуальным блоком)
   if (premSections.length > 0) {
@@ -205,9 +270,12 @@
     `;
   }
 
-  const resourcesBlockHtml = renderResourcesBlock();
+  // Порядок: [счётчики танков + ресурсы в общей обёртке] → техника
+  const combinedInfoHtml = (tanksCountBlockHtml || resourcesBlockHtml)
+    ? `<div class="tb-info-wrapper">${tanksCountBlockHtml}${resourcesBlockHtml}</div>`
+    : '';
 
-  blockEl.innerHTML = tanksBlockHtml + resourcesBlockHtml;
+  blockEl.innerHTML = combinedInfoHtml + tanksBlockHtml;
 
   // ── Клик по танку: раскрываем описание ───────────────────────
   blockEl.addEventListener('click', (e) => {
