@@ -31,28 +31,33 @@
   <div class="modal-overlay" id="settings-overlay"></div>
   <div class="modal" id="settings-modal">
     <div class="modal-header">
-      <h2>Вход в систему</h2>
+      <h2>Настройки GitHub</h2>
       <button class="modal-close" id="settings-close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label>Логин</label>
-        <input type="text" id="token-input" placeholder="admin" autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label>Пароль</label>
+        <label>GitHub Personal Access Token</label>
+        <p class="form-hint">Нужны права: <code>repo</code> (или <code>contents:write</code>)</p>
         <div class="input-with-eye">
-          <input type="password" id="repo-input" placeholder="••••••••" autocomplete="current-password">
+          <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
           <button class="eye-btn" id="token-eye">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
       </div>
-      <input type="text" id="branch-input" style="display:none">
+      <div class="form-group">
+        <label>Репозиторий</label>
+        <p class="form-hint">Формат: <code>username/repo-name</code></p>
+        <input type="text" id="repo-input" placeholder="username/tanknexus">
+      </div>
+      <div class="form-group">
+        <label>Ветка</label>
+        <input type="text" id="branch-input" value="main" placeholder="main">
+      </div>
       <div class="modal-actions">
-        <button class="btn btn-primary" id="settings-save">Войти</button>
+        <button class="btn btn-primary" id="settings-save">Сохранить и проверить</button>
       </div>
       <div class="status-msg" id="settings-status"></div>
     </div>
@@ -167,11 +172,12 @@
     </div>
   </div>
 
-  <script src="../js/main.js?v=api1"></script>
-  <script src="../js/resources.js?v=api1"></script>
-  <script src="../js/image-convert.js?v=api1"></script>
-  <script src="../js/importer.js?v=api1"></script>
-  <script src="../js/precompute.js?v=api1"></script>
-  <script src="../js/admin.js?v=api1"></script>
+  <script src="../js/main.js?v=55df51b"></script>
+  <script src="../js/resources.js?v=55df51b"></script>
+  <script src="../js/github-api.js?v=55df51b"></script>
+  <script src="../js/image-convert.js?v=55df51b"></script>
+  <script src="../js/importer.js?v=55df51b"></script>
+  <script src="../js/precompute.js?v=55df51b"></script>
+  <script src="../js/admin.js?v=55df51b"></script>
 </body>
 </html>
