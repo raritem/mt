@@ -1,0 +1,8 @@
+name = "wot-api"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "accounts-db"
+database_id = "7a25f788-b0b3-4e63-92c3-cc64e793755b"
