@@ -13,7 +13,7 @@ const STARS_BG_ENABLED = false;
 const CATALOGUE_ID = 'lots';
 
 // ── API ──────────────────────────────────────────────────────────
-const API_BASE = 'http://api.tanknexus.ru';;
+const API_BASE = 'http://api.tanknexus.ru';
 
 // ── Конфиг ──────────────────────────────────────────────────────
 const BASE_URL = (() => {
