@@ -1,15 +1,15 @@
 /* ================================================================
    TANKNEXUS — Админ панель (admin.js)
-   Авторизация и данные через REST API (api.tanknexus.ru)
+   Единая галерея аккаунтов: data/lots.json (объектная структура по id)
    ================================================================ */
 
 (function() {
 'use strict';
 
 const CATALOGUE_ID = 'lots';
-const API_BASE = 'https://api.tanknexus.ru';
 
 // ── Размер порции лотов — берётся из config.json (ключ admin.page_size) ──
+// Значение загружается асинхронно в loadAdminConfig(); до загрузки используется fallback.
 let ADMIN_PAGE_SIZE = 20;
 
 async function loadAdminConfig() {
@@ -23,28 +23,17 @@ async function loadAdminConfig() {
   } catch (_) { /* используем fallback */ }
 }
 
-// ── API helpers ──────────────────────────────────────────────────
-function getToken() { return localStorage.getItem('tn_admin_token') || ''; }
-function saveToken(t) { localStorage.setItem('tn_admin_token', t); }
-function clearToken() { localStorage.removeItem('tn_admin_token'); }
-function isLoggedIn() { return !!getToken(); }
-
-async function apiRequest(method, path, body) {
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() },
-  };
-  if (body !== undefined) opts.body = JSON.stringify(body);
-  const res = await fetch(API_BASE + path, opts);
-  if (res.status === 401) { clearToken(); updateTokenStatus(); throw new Error('Сессия истекла, войдите снова'); }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Ошибка сервера ' + res.status);
-  return data;
-}
-
-// Заглушка для getGhRawBase (совместимость с assetUrl ниже)
+// ── GitHub RAW ───────────────────────────────────────────────────
 function getGhRawBase() {
-  return null; // В API-режиме GitHub RAW не используется
+  try {
+    const cfg = (window.GH && GH.getConfig) ? GH.getConfig() : { repo: '', branch: 'main' };
+    const repo = String(cfg.repo || '').trim().replace(/\/+$/, '');
+    const branch = String(cfg.branch || 'main').trim() || 'main';
+    if (!repo) return null;
+    return 'https://raw.githubusercontent.com/' + repo + '/' + branch + '/';
+  } catch (_) {
+    return null;
+  }
 }
 
 function assetUrl(path) {
@@ -136,11 +125,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   updateTokenStatus();
   bindAllEvents();
 
-  if (isLoggedIn()) {
+  if (GH.isConfigured()) {
     await loadCatalogueData();
   } else {
     openModal('settings');
-    setStatus(dom.settingsStatus, 'Войдите в систему для начала работы', 'info');
+    setStatus(dom.settingsStatus, 'Настройте GitHub для начала работы', 'info');
   }
 });
 
@@ -184,46 +173,42 @@ function bindAllEvents() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  SETTINGS / АВТОРИЗАЦИЯ
+//  SETTINGS
 // ════════════════════════════════════════════════════════════════
 function loadSettingsToForm() {
-  // Поля логина/пароля — не заполняем из storage по соображениям безопасности
-  if (dom.tokenInput)  dom.tokenInput.value  = '';
-  if (dom.repoInput)   dom.repoInput.value   = '';
-  if (dom.branchInput) dom.branchInput.value = '';
+  const cfg = GH.getConfig();
+  dom.tokenInput.value  = cfg.token;
+  dom.repoInput.value   = cfg.repo;
+  dom.branchInput.value = cfg.branch || 'main';
 }
 
 function updateTokenStatus() {
-  if (isLoggedIn()) {
+  if (GH.isConfigured()) {
+    const repo = GH.getConfig().repo;
     dom.tokenStatus.innerHTML = `
       <span class="token-status-icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>
       </span>
-      <span class="token-status-repo">API подключено</span>
+      <span class="token-status-repo">${esc(repo)}</span>
     `;
     dom.tokenStatus.classList.add('connected');
   } else {
-    dom.tokenStatus.textContent = 'Не авторизован';
+    dom.tokenStatus.textContent = 'Не настроено';
     dom.tokenStatus.classList.remove('connected');
   }
 }
 
 async function onSettingsSave() {
-  const login    = dom.tokenInput.value.trim();   // поле логина (переиспользуем token-input)
-  const password = dom.repoInput.value.trim();    // поле пароля (переиспользуем repo-input)
-  if (!login)    { setStatus(dom.settingsStatus, 'Введите логин', 'err'); return; }
-  if (!password) { setStatus(dom.settingsStatus, 'Введите пароль', 'err'); return; }
-  setStatus(dom.settingsStatus, 'Вхожу…', 'info');
+  const token  = dom.tokenInput.value.trim();
+  const repo   = dom.repoInput.value.trim().replace(/\/+$/, '');
+  const branch = dom.branchInput.value.trim() || 'main';
+  if (!token) { setStatus(dom.settingsStatus, 'Введите токен', 'err'); return; }
+  if (!repo)  { setStatus(dom.settingsStatus, 'Введите репозиторий', 'err'); return; }
+  GH.saveConfig(token, repo, branch);
+  setStatus(dom.settingsStatus, 'Проверяю подключение…', 'info');
   try {
-    const res = await fetch(API_BASE + '/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: login, password }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Неверный логин или пароль');
-    saveToken(data.token);
-    setStatus(dom.settingsStatus, '✓ Вход выполнен!', 'ok');
+    await GH.ping();
+    setStatus(dom.settingsStatus, '✓ Подключено!', 'ok');
     updateTokenStatus();
     setTimeout(() => { closeModal('settings'); loadCatalogueData(); }, 800);
   } catch (e) {
@@ -237,17 +222,48 @@ async function onSettingsSave() {
 async function loadCatalogueData() {
   dom.adminMain.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div>';
   try {
-    // Загружаем все лоты с API — включая скрытые и неактивные
-    const data = await apiRequest('GET', '/api/admin/lots');
+    let data = null;
+    let fileExists = false;
+    // Retry до 3 раз с задержкой — GitHub CDN иногда отдаёт старый кеш
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const result = await GH.readJSON('data/' + CATALOGUE_ID + '.json');
+      data = result.data;
+      // Если файл вернул хоть что-то (даже пустые lots) — файл существует
+      if (result.sha) fileExists = true;
+      // Если получили непустой объект с лотами — выходим
+      if (data && data.lots && typeof data.lots === 'object' && !Array.isArray(data.lots) && Object.keys(data.lots).length > 0) break;
+      if (data && Array.isArray(data.lots) && data.lots.length > 0) break;
+      if (attempt < 2) await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+    }
 
-    state.meta = {
-      id:          data.id          || CATALOGUE_ID,
-      name:        data.name        || 'TankNexus',
-      description: data.description || '',
-      seller:      data.seller      || '',
-    };
-    state.lots = (data.lots && typeof data.lots === 'object') ? data.lots : {};
+    // Проверяем, есть ли реальные лоты в полученных данных
+    const hasLots = data && data.lots && (
+      (Array.isArray(data.lots) && data.lots.length > 0) ||
+      (!Array.isArray(data.lots) && typeof data.lots === 'object' && Object.keys(data.lots).length > 0)
+    );
 
+    if (data === null || !fileExists) {
+      // Файл не существует — инициализируем новый
+      await GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
+        id: CATALOGUE_ID, name: 'Галерея', description: '', seller: '', lots: {}
+      }, 'Init lots.json');
+      state.lots = {};
+    } else if (!hasLots && Object.keys(state.lots || {}).length > 0) {
+      // Файл существует, но вернул пустые lots — скорее всего GitHub CDN кэш.
+      // Уже есть данные в state (от предыдущей операции) — используем их, не сбрасываем.
+      console.warn('loadCatalogueData: GitHub вернул пустые lots (вероятно кэш CDN). Используем текущий state.lots.');
+    } else {
+      // Сохраняем метаданные в state.meta чтобы не читать файл при каждом сохранении
+      state.meta = {
+        id:          data.id          || CATALOGUE_ID,
+        name:        data.name        || 'Галерея',
+        description: data.description || '',
+        seller:      data.seller      || '',
+      };
+      state.lots = Array.isArray(data.lots)
+        ? migrateLotsArray(data.lots)
+        : (data.lots && typeof data.lots === 'object' ? data.lots : {});
+    }
     renderCataloguePanel();
 
     // Кэшируем tanks.json для вычисления counts при ручном сохранении лота
@@ -497,8 +513,15 @@ function renderCataloguePanel() {
       updateBulkCount();
       renderLots(); // instant UI update
 
-      // Сохраняем статус (удаление) через API
-      try { await saveCatalogueJSON(); } catch (_) {}
+      // Fire network ops concurrently: file deletes in parallel + one catalogue save
+      const tasks = [saveCatalogueJSON()];
+      if (allFiles.length) {
+        // Delete all files in parallel (not sequential)
+        tasks.push(
+          Promise.all(allFiles.map(p => GH.deleteFile(p, 'Bulk delete').catch(() => {})))
+        );
+      }
+      try { await Promise.all(tasks); } catch (_) {}
     });
   });
 
@@ -617,23 +640,43 @@ async function onCSVFileSelected(file) {
 
   try {
     const text = await file.text();
-    bar.textContent = 'Отправляю на сервер…';
 
-    const res = await fetch(API_BASE + '/api/import/accounts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain', 'Authorization': 'Bearer ' + getToken() },
-      body: text,
-    });
-    if (res.status === 401) { clearToken(); updateTokenStatus(); throw new Error('Сессия истекла, войдите снова'); }
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Ошибка сервера ' + res.status);
+    // Используем state.lots и state.meta вместо повторного чтения с GitHub
+    const base = {
+      id:          (state.meta && state.meta.id)          || CATALOGUE_ID,
+      name:        (state.meta && state.meta.name)        || 'Галерея',
+      description: (state.meta && state.meta.description) || '',
+      seller:      (state.meta && state.meta.seller)      || '',
+      lots:        { ...state.lots },
+    };
 
-    const stats = data.stats || {};
+    const { updatedJson, stats } = await CSVImporter.importCSV(
+      text, base,
+      (msg) => { bar.textContent = msg; }
+    );
+
+    state.lots = updatedJson.lots;
+    bar.textContent = 'Сохраняю на GitHub…';
+    await saveCatalogueJSON();
+
+    // ── Precompute: обновляем индексы после импорта ────────────
+    try {
+      const tanksMap = await CSVImporter.loadTanks();
+      await Precompute.run(
+        state.lots,
+        tanksMap,
+        (msg) => { bar.textContent = msg; }
+      );
+    } catch (e) {
+      // Ошибка precompute не должна мешать основному импорту
+      console.warn('[Precompute] Ошибка при генерации индексов:', e.message);
+    }
+
     bar.className = 'import-status-bar ok';
-    bar.textContent = `✓ Готово — добавлено: ${stats.added || 0}, обновлено: ${stats.updated || 0}, неактивных: ${stats.markedInactive || 0}, удалено: ${stats.deleted || 0}`;
-
-    // Перезагружаем данные с сервера чтобы отобразить актуальное состояние
-    await loadCatalogueData();
+    bar.textContent = `✓ Готово — добавлено: ${stats.added}, обновлено: ${stats.updated}, неактивных: ${stats.markedInactive}, удалено: ${stats.deleted}`;
+    // Импорт меняет список кардинально — сбрасываем пагинацию и скролл всех вкладок
+    resetTabState('active'); resetTabState('hidden'); resetTabState('inactive');
+    renderLots();
     window.scrollTo({ top: 0, behavior: 'instant' });
     setTimeout(() => { bar.style.display = 'none'; }, 8000);
   } catch (e) {
@@ -653,20 +696,35 @@ async function onTanksCSVFileSelected(file) {
 
   try {
     const text = await file.text();
-    bar.textContent = 'Отправляю на сервер…';
 
-    const res = await fetch(API_BASE + '/api/import/tanks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain', 'Authorization': 'Bearer ' + getToken() },
-      body: text,
-    });
-    if (res.status === 401) { clearToken(); updateTokenStatus(); throw new Error('Сессия истекла, войдите снова'); }
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Ошибка сервера ' + res.status);
+    // Читаем текущий tanks.json с GitHub
+    let currentTanksJson = { tanks: {} };
+    try {
+      const { data } = await GH.readJSON('data/tanks.json');
+      if (data && data.tanks) currentTanksJson = data;
+    } catch (_) {}
 
-    const stats = data.stats || {};
+    const { updatedJson, stats } = await CSVImporter.importTanksCSV(
+      text, currentTanksJson,
+      (msg) => { bar.textContent = msg; }
+    );
+
+    bar.textContent = 'Сохраняю tanks.json на GitHub…';
+    await GH.writeJSON('data/tanks.json', updatedJson, 'Update tanks');
+
+    // ── Precompute: пересчитываем индексы с новым tanks.json ───
+    try {
+      await Precompute.run(
+        state.lots || {},
+        updatedJson.tanks || {},
+        (msg) => { bar.textContent = msg; }
+      );
+    } catch (e) {
+      console.warn('[Precompute] Ошибка при генерации индексов:', e.message);
+    }
+
     bar.className = 'import-status-bar ok';
-    bar.textContent = `✓ Танки обновлены — добавлено: ${stats.added || 0}, обновлено: ${stats.updated || 0}, удалено: ${stats.deleted || 0}`;
+    bar.textContent = `✓ Танки обновлены — добавлено: ${stats.added}, обновлено: ${stats.updated}, удалено: ${stats.deleted}`;
     setTimeout(() => { bar.style.display = 'none'; }, 8000);
   } catch (e) {
     bar.className = 'import-status-bar err';
@@ -1117,7 +1175,11 @@ async function deleteLot(lotId) {
   renderLots(); // instant
 
   // Fire catalogue save and file deletes concurrently
-  try { await saveCatalogueJSON(lotId); } catch (_) {}
+  const tasks = [saveCatalogueJSON()];
+  if (files.length) {
+    tasks.push(Promise.all(files.map(p => GH.deleteFile(p, 'Delete lot ' + lotId).catch(() => {}))));
+  }
+  try { await Promise.all(tasks); } catch (_) {}
 }
 
 async function toggleLotHide(lotId) {
@@ -1304,8 +1366,8 @@ function hideUndoToast() {
 
 async function commitPendingDelete() {
   if (!undoPending) return;
-  undoPending = null;
-  // Удаление файла изображения с сервера не поддерживается в API-режиме
+  const { path } = undoPending; undoPending = null;
+  try { await GH.deleteFile(path, 'Delete image'); } catch (e) { console.error('commitPendingDelete:', e.message); }
 }
 
 async function deleteImage(idx) {
@@ -1328,7 +1390,29 @@ async function deleteImage(idx) {
 }
 
 async function regenerateThumb() {
-  alert('Загрузка изображений через GitHub не поддерживается в API-режиме.');
+  if (!imImages.length) { alert('Нет изображений.'); return; }
+  const btn = $('im-refresh-thumb');
+  if (btn) { btn.textContent = '⏳…'; btn.disabled = true; }
+  try {
+    const { bytes } = await GH.getFileBytes(imImages[0]);
+    let mime = 'image/webp';
+    if (bytes[0] === 0xFF && bytes[1] === 0xD8) mime = 'image/jpeg';
+    if (bytes[0] === 0x89 && bytes[1] === 0x50) mime = 'image/png';
+    if (bytes[0] === 0x47 && bytes[1] === 0x49) mime = 'image/gif';
+    const file = new File([new Blob([bytes], { type: mime })], 'source', { type: mime });
+    const { base64, ext } = await ImageConvert.toWebP(file, 0.92, 1600);
+    const thumbPath = 'images/' + CATALOGUE_ID + '/' + imLotId + '/thumb.' + ext;
+    const sha = await GH.getFileSha(thumbPath);
+    await GH.putBinaryFile(thumbPath, base64, 'Regenerate thumb', sha || undefined);
+    const lot = state.lots[imLotId];
+    if (lot) { if (!lot.ui) lot.ui = {}; lot.ui.thumb = thumbPath; }
+    await saveCatalogueJSON();
+    if (btn) btn.textContent = '✓ Готово';
+    setTimeout(() => { if (btn) { btn.textContent = '🖼 Обновить превью'; btn.disabled = false; } }, 2000);
+  } catch (e) {
+    if (btn) { btn.textContent = '⚠'; btn.disabled = false; }
+    alert('Ошибка: ' + e.message);
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1336,7 +1420,58 @@ async function regenerateThumb() {
 // ════════════════════════════════════════════════════════════════
 async function uploadFiles(files) {
   const queue = $('im-upload-queue');
-  if (queue) queue.innerHTML = '<div class="upload-item"><span class="upload-item-status err">Загрузка изображений через GitHub не поддерживается в API-режиме.</span></div>';
+  const fileList = Array.from(files);
+  queue.innerHTML = '';
+  fileList.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'upload-item';
+    div.innerHTML = `<span class="upload-item-name">${esc(f.name)}</span><span class="upload-item-status busy" id="upload-status-${i}">Подготовка…</span>`;
+    queue.appendChild(div);
+  });
+
+  const baseDir = 'images/' + CATALOGUE_ID + '/' + imLotId;
+  const startIdx = (() => {
+    let max = -1;
+    for (const p of imImages) {
+      const m = String(p || '').match(/\/(\d{3,})\.[a-z0-9]+$/i);
+      if (m) { const n = parseInt(m[1], 10); if (Number.isFinite(n)) max = Math.max(max, n - 1); }
+    }
+    return max + 1;
+  })();
+  let rateLimitHit = false;
+
+  for (let i = 0; i < fileList.length; i++) {
+    const statusEl = $('upload-status-' + i);
+    if (rateLimitHit) { statusEl.textContent = 'Пропущено'; statusEl.className = 'upload-item-status err'; continue; }
+    try {
+      statusEl.textContent = 'Конвертация…';
+      const { base64, ext } = await ImageConvert.toWebP(fileList[i]);
+      const repoPath = baseDir + '/' + ImageConvert.numberedName(startIdx + i, ext);
+      statusEl.textContent = 'Загрузка…';
+      const existingSha = await GH.getFileSha(repoPath);
+      await GH.putBinaryFile(repoPath, base64, 'Upload ' + repoPath, existingSha || undefined);
+      if (imImages.length === 0 && i === 0) {
+        try {
+          const { base64: tB64, ext: tExt } = await ImageConvert.toWebP(fileList[i], 0.92, 1600);
+          const thumbPath = baseDir + '/thumb.' + tExt;
+          const thumbSha  = await GH.getFileSha(thumbPath);
+          await GH.putBinaryFile(thumbPath, tB64, 'Thumb for ' + imLotId, thumbSha || undefined);
+          const lot = state.lots[imLotId];
+          if (lot) { if (!lot.ui) lot.ui = {}; lot.ui.thumb = thumbPath; }
+        } catch (_) {}
+      }
+      imImages.push(repoPath);
+      const lot = state.lots[imLotId];
+      if (lot) { if (!lot.ui) lot.ui = {}; lot.ui.images = [...imImages]; }
+      statusEl.textContent = '✓ Готово'; statusEl.className = 'upload-item-status ok';
+    } catch (e) {
+      statusEl.textContent = e.message; statusEl.className = 'upload-item-status err';
+      if (e.status === 403 && e.message.includes('лимит')) rateLimitHit = true;
+    }
+  }
+  try { await saveCatalogueJSON(); } catch (e) { console.error('upload saveCatalogueJSON:', e.message); }
+  renderManagedImages(); renderLots();
+  setTimeout(() => { if (queue) queue.innerHTML = ''; }, 4000);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1344,42 +1479,21 @@ async function uploadFiles(files) {
 // ════════════════════════════════════════════════════════════════
 let _savePromise = null;
 
-// saveCatalogueJSON — сохраняет изменённые лоты через API
-// В API-режиме сохраняем каждый изменённый лот через PUT /api/lots/:id
-// Для упрощения: вызывается с конкретным lotId или без (сохраняет весь state).
-// Чтобы не ломать существующие вызовы, принимаем необязательный lotId.
-async function saveCatalogueJSON(lotId) {
+async function saveCatalogueJSON() {
+  // If a save is already in flight, wait for it to finish then save again
+  // (so rapid calls always flush the latest state, but never run in parallel)
   if (_savePromise) {
     await _savePromise.catch(() => {});
   }
-  if (lotId) {
-    // Сохраняем один лот
-    const lot = state.lots[lotId];
-    if (!lot) return;
-    _savePromise = apiRequest('PUT', '/api/lots/' + lotId, _lotToApiPayload(lot))
-      .finally(() => { _savePromise = null; });
-  } else {
-    // Сохраняем все изменения (используется при bulk-операциях)
-    // Отправляем параллельно — быстрее, чем последовательно
-    const entries = Object.entries(state.lots);
-    _savePromise = Promise.all(
-      entries.map(([id, lot]) => apiRequest('PUT', '/api/lots/' + id, _lotToApiPayload(lot)).catch(() => {}))
-    ).finally(() => { _savePromise = null; });
-  }
+  const m = state.meta || {};
+  _savePromise = GH.writeJSON('data/' + CATALOGUE_ID + '.json', {
+    id:          m.id          || CATALOGUE_ID,
+    name:        m.name        || 'Галерея',
+    description: m.description || '',
+    seller:      m.seller      || '',
+    lots:        state.lots,
+  }, 'Update lots').finally(() => { _savePromise = null; });
   return _savePromise;
-}
-
-// Конвертирует внутренний объект лота в формат API (PUT /api/lots/:id)
-function _lotToApiPayload(lot) {
-  return {
-    status:      lot.status      || 'active',
-    price:       (lot.data && lot.data.price)       || '',
-    funpay_link: (lot.data && lot.data.funpay_link) || '',
-    is_hidden:   (lot.ui && lot.ui.isHidden)  ? 1 : 0,
-    on_funpay:   lot.onFunpay                 ? 1 : 0,
-    thumb:       (lot.ui && lot.ui.thumb)     || '',
-    images:      JSON.stringify((lot.ui && lot.ui.images) || []),
-  };
 }
 
 // ════════════════════════════════════════════════════════════════

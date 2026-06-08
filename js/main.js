@@ -12,9 +12,6 @@ const STARS_BG_ENABLED = false;
 // (совместимость: также читает data/shop1.json если id задан через ?id=)
 const CATALOGUE_ID = 'lots';
 
-// ── API ──────────────────────────────────────────────────────────
-const API_BASE = 'https://api.tanknexus.ru';
-
 // ── Конфиг ──────────────────────────────────────────────────────
 const BASE_URL = (() => {
   const p = window.location.pathname;
@@ -485,7 +482,9 @@ async function loadCatalogue() {
   try {
     const rawBase = getGhRawBase();
     const [data, tanksDataRaw, nationIndex, tierIndex, typeIndex, tanksIndex, comboIndex] = await Promise.all([
-      fetchJSON(API_BASE + '/api/lots/all'),
+      rawBase
+        ? fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
+        : fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json'),
       rawBase
         ? fetchJSON(rawBase + 'data/tanks.json').catch(() => ({ tanks: {} }))
         : fetchJSON(ROOT + 'data/tanks.json').catch(() => ({ tanks: {} })),
@@ -931,7 +930,10 @@ async function loadLot() {
   const gridEl   = document.getElementById('gallery-grid');
 
   try {
-    const data = await fetchJSON(API_BASE + '/api/lots/all');
+    const rawBase = getGhRawBase();
+    const data = rawBase
+      ? await fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
+      : await fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json');
     const _cleanId = lotId.replace(/^lot_/, '');
     // Поддержка объектной структуры и старого массива
     let lot = null;
@@ -1113,7 +1115,9 @@ async function loadFavourites() {
   try {
     const rawBase = getGhRawBase();
     const [data, tanksDataRaw] = await Promise.all([
-      fetchJSON(API_BASE + '/api/lots/all'),
+      rawBase
+        ? fetchJSON(rawBase + 'data/' + CATALOGUE_ID + '.json')
+        : fetchJSON(ROOT + 'data/' + CATALOGUE_ID + '.json'),
       rawBase
         ? fetchJSON(rawBase + 'data/tanks.json').catch(() => ({ tanks: {} }))
         : fetchJSON(ROOT + 'data/tanks.json').catch(() => ({ tanks: {} })),
